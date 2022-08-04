@@ -7,20 +7,17 @@ main:
   - name: Home
     url: '/'
     weight: 10
-  - name: Courses
+  - name: Programa
+    url: '/programa'
     weight: 20
-    identifier: courses
-  - name: Data science
-    PageRef: course/data-science/_index.md
-    weight: 10
-    parent: courses
-  - name: Robotics
-    PageRef: course/robotics/_index.md
-    weight: 20
-    parent: courses
-  - name: Blog
-    PageRef: post/_index.md
+  - name: Reglas
+    url: '/reglas'
     weight: 30
-  - name: Contact
-    PageRef: contact/index.md
+    weight: 40
+  - name: Presentaciones
+    url: '/presentaciones'
     weight: 60
+  - name: Tareas
+    url: '/tareas'
+    weight: 70
+  
