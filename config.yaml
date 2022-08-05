@@ -4,7 +4,7 @@
 # This file is formatted using YAML syntax - learn more at https://learnxinyminutes.com/docs/yaml/
 
 title: 'Evaluación de programas 2022' # Website name
-baseURL: 'https://example.com/' # Website URL
+baseURL: 'https://eps-2022.netlify.app/' # Website URL
 
 ############################
 ## PAGE OPTIONS
