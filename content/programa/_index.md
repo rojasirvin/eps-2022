@@ -70,12 +70,12 @@ Unidad 2. Métodos de evaluación
   - Pareamiento por puntaje de propensión (PSM)
   - Aplicaciones del PSM
 
-* Diseños de discontinuidad en regresión
+* Diseños con discontinuidades
   - Supuestos fundamentales
-  - Regresión discontinua nítida y difusa
+  - Discontinuidades nítidas y difusas
   - Discontinuidades geográficas
-  - Regresión con pliegues
-  - Aplicaciones de regresión discontinua
+  - Pliegues en la regresión
+  - Aplicaciones diseños con discontinuidades
 
 * Método del control sintético
   - Supuestos fundamentales
@@ -84,7 +84,7 @@ Unidad 2. Métodos de evaluación
 
 Unidad 3. Temas actuales de evaluación
 
-* Extensiones II
+* Extensiones I
   - Aprendizaje automatizado y _big data_ en la evaluación de impacto
 
 
