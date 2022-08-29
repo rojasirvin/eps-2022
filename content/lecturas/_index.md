@@ -137,7 +137,7 @@ Las lecturas obligatorias (marcadas con “*”) permiten una discusión informa
 
 * ANCOVA  
   + \* McKenzie, D. (2012). Beyond baseline and follow-up: The case for more T in experiments. *Journal of development Economics*, 99(2), 210-221.
-  + \+ Rojas Valdes, R.I., Wydick, B., & Lybbert, T.J. (2021). Can Hope Elevate Microfinance? Evidence from Oaxaca, Mexico. *Oxford Economic Papers*.
+  + Rojas Valdes, R.I., Wydick, B., & Lybbert, T.J. (2021). Can Hope Elevate Microfinance? Evidence from Oaxaca, Mexico. *Oxford Economic Papers*.
 
 
 

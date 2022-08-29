@@ -11,21 +11,18 @@ Por favor, seleccione una de las lecturas marcadas con una "+" de la lista de le
 
 | **Autores** | **Tema** | **Presentador** | **Fecha de exposición** |
 | --- | --- | --- | --- |
-| De la O (2013) | Experimental |  |  |
-| McIntosh et al. (2018) | LATE |  |  |
-| Rojas et al. (2021) | ANCOVA |  |  |
-| Gutiérrez & Parrado (2016) | DID   |  |  |
-| Campos et al. (2017) | DID |  |  |
-| Becerril & Abdulai (2010) | PSM |  |  |
-|García-Díaz et al. (2018) | PSM | |  |
-| Espinosa & Rubin (2015) | PSM |  |  |
-| Chang et al. (2017) | PSM |  |  |
-| Del Valle et al. (2020)| Regresión discontinua |  |  |
-| Dell (2015) | Regresión discontinua   |  |  |
-| Aguilar et al. (2021) | Regresión discontinua |  |  |
-| Abadie et al. (2015) | Control sintético |  |  |
-| Mitze et al. (2020)| Control sintético |  |  |
-| Campos y Esquivel (2020) | Control sintético |  |  |
-| Attanasio et al. (2011) | Estructurales |  | |
+| [Lecturas de la semana 3 con "+"](https://eps-2022.netlify.app/lecturas/#semana-3) | Experimental |  | Jueves 8 de septiembre |
+| [Lecturas de la semana 3 con "+"](https://eps-2022.netlify.app/lecturas/#semana-3) | Experimental |  |  Jueves 8 de septiembre |
+| [González-Navarro & Quintana-Domeque (2016)]((https://eps-2022.netlify.app/lecturas/#semana-5)) | LATE |  | Jueves 22 de septiembre |
+| [Lecturas de la semana 7 con "+"](https://eps-2022.netlify.app/lecturas/#semana-7) | DID   |  | Jueves 6 de octubre |
+| [Lecturas de la semana 7 con "+"](https://eps-2022.netlify.app/lecturas/#semana-7) | DID |  | Jueves 6 de octubre |
+| [Lecturas de la semana 9 con "+"](https://eps-2022.netlify.app/lecturas/#semana-9) | PSM |  | Jueves 20 de octubre |
+| [Lecturas de la semana 9 con "+"](https://eps-2022.netlify.app/lecturas/#semana-9) | PSM |  | Jueves 20 de octubre |
+|  [Lecturas de la semana 11 con "+"](https://eps-2022.netlify.app/lecturas/#semana-11) | Diseños con discontinuidades |  | Jueves 3 de noviembre  |
+| [Lecturas de la semana 11 con "+"](https://eps-2022.netlify.app/lecturas/#semana-11)  | Diseños con discontinuidades   |  | Jueves 3 de noviembre  |
+| [Lecturas de la semana 13 con "+"](https://eps-2022.netlify.app/lecturas/#semana-13)  | Control sintético |  | Martes 15 de noviembre |
+| [Lecturas de la semana 13 con "+"](https://eps-2022.netlify.app/lecturas/#semana-13) | Control sintético |  | Martes 15 de noviembre |
+| [Lecturas de la semana 14 con "+"](https://eps-2022.netlify.app/lecturas/#semana-14) | ML e inferencia |  | Jueves 24 de noviembre |
+| [Lecturas de la semana 14 con "+"](https://eps-2022.netlify.app/lecturas/#semana-14) | ML e inferencia |  | Jueves 24 de noviembre |
 
 
