@@ -157,8 +157,6 @@ Semana de examen parcial.
   + \* MT, Capítulo 5
 
 
-## Semana 9
-
 * Aplicaciones del PSM  
   + Abadie, A., & Imbens, G. W. (2016). Matching on the estimated propensity score. *Econometrica*, 84(2), 781-807.  
   + Angrist, J., Estimating the Labor Market Impact of Voluntary Military Service Using Social Security Data on Military Applicants, *Econometrica* 66(2), 1998, 249-288.
