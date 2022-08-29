@@ -13,7 +13,7 @@ Por favor, seleccione una de las lecturas marcadas con una "+" de la lista de le
 | --- | --- | --- | --- |
 | [Lecturas de la semana 3 con "+"](https://eps-2022.netlify.app/lecturas/#semana-3) | Experimental |  | Jueves 8 de septiembre |
 | [Lecturas de la semana 3 con "+"](https://eps-2022.netlify.app/lecturas/#semana-3) | Experimental |  |  Jueves 8 de septiembre |
-| [González-Navarro & Quintana-Domeque (2016)]((https://eps-2022.netlify.app/lecturas/#semana-5)) | LATE |  | Jueves 22 de septiembre |
+| [González-Navarro & Quintana-Domeque (2016)](https://eps-2022.netlify.app/lecturas/#semana-5) | LATE |  | Jueves 22 de septiembre |
 | [Lecturas de la semana 7 con "+"](https://eps-2022.netlify.app/lecturas/#semana-7) | DID   |  | Jueves 6 de octubre |
 | [Lecturas de la semana 7 con "+"](https://eps-2022.netlify.app/lecturas/#semana-7) | DID |  | Jueves 6 de octubre |
 | [Lecturas de la semana 9 con "+"](https://eps-2022.netlify.app/lecturas/#semana-9) | PSM |  | Jueves 20 de octubre |
