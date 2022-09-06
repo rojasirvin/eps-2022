@@ -11,9 +11,9 @@ Por favor, seleccione una de las lecturas marcadas con una "+" de la lista de le
 
 | **Autores** | **Tema** | **Presentador** | **Fecha de exposición** |
 | --- | --- | --- | --- |
-| [Lecturas de la semana 3 con "+"](https://eps-2022.netlify.app/lecturas/#semana-3) | Experimental |  | Jueves 8 de septiembre |
-| [Lecturas de la semana 3 con "+"](https://eps-2022.netlify.app/lecturas/#semana-3) | Experimental |  |  Jueves 8 de septiembre |
-| [González-Navarro & Quintana-Domeque (2016)](https://eps-2022.netlify.app/lecturas/#semana-5) | LATE |  | Jueves 22 de septiembre |
+| Campos & Arceo (2014)| Experimental | Abigail Quintana  | Jueves 8 de septiembre |
+| De la O. (2013) | Experimental |  |  Jueves 8 de septiembre |
+| González-Navarro & Quintana-Domeque (2016) | LATE | Jesús Patricio | Jueves 22 de septiembre |
 | [Lecturas de la semana 7 con "+"](https://eps-2022.netlify.app/lecturas/#semana-7) | DID   |  | Jueves 6 de octubre |
 | [Lecturas de la semana 7 con "+"](https://eps-2022.netlify.app/lecturas/#semana-7) | DID |  | Jueves 6 de octubre |
 | [Lecturas de la semana 9 con "+"](https://eps-2022.netlify.app/lecturas/#semana-9) | PSM |  | Jueves 20 de octubre |
