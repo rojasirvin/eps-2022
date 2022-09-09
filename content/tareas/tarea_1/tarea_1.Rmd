@@ -111,9 +111,9 @@ g. [5 puntos] La nota al pie de la tabla 2 indica que se reportan errores están
 
 Suponga que se busca entender si los estudiantes de nuevo ingreso a la universidad que reciben consejos y apoyo académico de los estudiantes más grandes, tienen mejor desempeño, medido como su calificación promedio de las clases al final del semestre. Para este propósito, un grupo de investigadores levanta una muestra grande de estudiantes universitarios al final de su primer año en todo el país. En dicha encuesta se registra $y_i$, el promedio de calificaciones al final del semestre de cada estudiante, así como $D_i$, una variable indicadora que toma el valor de 1 si el estudiante declara haber recibido apoyo de estudiantes de los grados superiores y 0 en otro caso. Los investigadores observan que los estudiantes de primer año que reciben apoyo de sus pares tienen una calificación 20% mayor que aquellos que no lo reciben.
 
-[10 puntos] ¿Cómo valora el diseño del estudio descrito? ¿Qué fortalezas y/o debilidades encuentra? 
+a. [10 puntos] ¿Cómo valora el diseño del estudio descrito? ¿Qué fortalezas y/o debilidades encuentra? 
 
-[10 puntos] ¿De qué signo esperaría que fuera el sesgo de selección, en caso de existir? Explique sus razones.
+a. [10 puntos] ¿De qué signo esperaría que fuera el sesgo de selección, en caso de existir? Explique sus razones.
 
 
 ## Pregunta 3
