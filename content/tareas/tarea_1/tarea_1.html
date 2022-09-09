@@ -1,0 +1,418 @@
+---
+title: "Tarea 1"
+summary: "Miércoles 21 de septiembre a las 20:00"
+weight: 1
+type: book
+toc: false
+---
+
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+
+
+<div id="instrucciones" class="section level2">
+<h2>Instrucciones</h2>
+<p>Las tareas deben entregarse de manera individual, pero se recomienda ampliamente colaborar en grupos de estudio. Para evitar confusiones, escriban en su tarea con quiénes colaboraron. Las tareas deberán entregarse en Teams antes de la fecha y hora señalada. No se aceptarán tareas fuera de tiempo. Por favor, <strong>no comprima los archivos</strong> en carpetas comprimidas. Las tareas deberán contener dos archivos:</p>
+<p>Un primer documento de respuestas donde se incluyan las respuestas a las preguntas teóricas y conceptuales. Este documento debe estar en formato pdf y debe ser generado usando un software de procesamiento de textos científicos, por ejemplo, usando los leguajes LaTeX o Markdown. En este documento también se deben incluir las respuestas a preguntas sobre conclusiones que se desprenden de las secciones prácticas. Por ejemplo, si una pregunta pide obtener la media de la variable x en cierta base de datos, entonces el documento de respuestas debe incluir la pregunta y respuesta correspondiente: “la media de la variable x es 32.6”. En este documento también deberán incluirse las tablas y gráficas que se soliciten.</p>
+<p>Un segundo archivo deberá contener el código replicable usado para generar los resultados de la sección práctica. El código debe también crear las tablas y gráficas solicitadas. Los archivos de código se verificarán para comprobar su replicabilidad.</p>
+</div>
+<div id="fecha-de-entrega" class="section level2">
+<h2>Fecha de entrega</h2>
+<p>Miércoles 21 de septiembre a las 20:00.</p>
+</div>
+<div id="archivos" class="section level2">
+<h2>Archivos</h2>
+<p><a href="/tareas/tarea_1/STAR_public_use.csv">STAR_public_use.csv</a></p>
+</div>
+<div id="pregunta-1" class="section level2">
+<h2>Pregunta 1</h2>
+<p>Se diseñó una intervención que consistió en entregar zapatos a niños en cuatro áreas con altos niveles de pobreza de cierto país. Se sabe que los niños caminan bastante para ir a la escuela y realizan una serie de tareas domésticas después de la escuela. Por tanto, se tiene la hipótesis de que la entrega de zapatos tendrá impactos en el desarrollo de los niños. Se seleccionaron aleatoriamente localidades de control y localidades de tratamiento. Dentro de las localidades asignadas al tratamiento, todos los niños de entre 7 y 12 años de edad recibieron zapatos. Los investigadores deciden usar un <span class="math inline">\(\alpha=0.10\)</span> durante el estudio.</p>
+<p>La tabla 1 presenta información sobre una serie de características de los niños que participaron en el estudio en la línea base.</p>
+<table class=" lightable-paper lightable-hover" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;border-bottom: 0;">
+<thead>
+<tr>
+<th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; font-weight: bold; padding-right: 4px; padding-left: 4px; background-color: white !important;" colspan="4">
+<div style="TRUE">
+Tabla 1. Covariables entre grupos de tratamiento y control (datos en la línea base)
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:center;">
+<span class="math inline">\((1)\)</span>
+</th>
+<th style="text-align:center;">
+<span class="math inline">\((2)\)</span>
+</th>
+<th style="text-align:center;">
+<span class="math inline">\((3)\)</span>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Variables
+</td>
+<td style="text-align:center;">
+Media control
+</td>
+<td style="text-align:center;">
+Media tratamiento
+</td>
+<td style="text-align:center;">
+<code>p</code>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Edad
+</td>
+<td style="text-align:center;">
+9.486
+</td>
+<td style="text-align:center;">
+9.332
+</td>
+<td style="text-align:center;">
+0.114
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sexo (masculino=1)
+</td>
+<td style="text-align:center;">
+0.545
+</td>
+<td style="text-align:center;">
+0.497
+</td>
+<td style="text-align:center;">
+0.073*
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Jefe trabaja en agricultura
+</td>
+<td style="text-align:center;">
+0.462
+</td>
+<td style="text-align:center;">
+0.522
+</td>
+<td style="text-align:center;">
+0.435
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Grado máximo de estudios en el hogar
+</td>
+<td style="text-align:center;">
+5.836
+</td>
+<td style="text-align:center;">
+5.346
+</td>
+<td style="text-align:center;">
+0.406
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Índice calidad de vivienda
+</td>
+<td style="text-align:center;">
+0.492
+</td>
+<td style="text-align:center;">
+0.593
+</td>
+<td style="text-align:center;">
+0.447
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Índice de consumo de durables
+</td>
+<td style="text-align:center;">
+0.441
+</td>
+<td style="text-align:center;">
+0.467
+</td>
+<td style="text-align:center;">
+0.829
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Número de pares de zapatos que posee
+</td>
+<td style="text-align:center;">
+2.06
+</td>
+<td style="text-align:center;">
+1.825
+</td>
+<td style="text-align:center;">
+0.213
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Horas que pasa sin zapatos
+</td>
+<td style="text-align:center;">
+2.09
+</td>
+<td style="text-align:center;">
+1.963
+</td>
+<td style="text-align:center;">
+0.917
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Días que no fue a la escuela
+</td>
+<td style="text-align:center;">
+0.701
+</td>
+<td style="text-align:center;">
+0.886
+</td>
+<td style="text-align:center;">
+0.465
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Horas para dormir
+</td>
+<td style="text-align:center;">
+10.68
+</td>
+<td style="text-align:center;">
+9.98
+</td>
+<td style="text-align:center;">
+0.388
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Horas para comer
+</td>
+<td style="text-align:center;">
+1.931
+</td>
+<td style="text-align:center;">
+1.934
+</td>
+<td style="text-align:center;">
+0.986
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Horas para lavar
+</td>
+<td style="text-align:center;">
+0.732
+</td>
+<td style="text-align:center;">
+0.835
+</td>
+<td style="text-align:center;">
+0.228
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Horas en escuela
+</td>
+<td style="text-align:center;">
+4.613
+</td>
+<td style="text-align:center;">
+4.154
+</td>
+<td style="text-align:center;">
+0.168
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Horas para trabajar
+</td>
+<td style="text-align:center;">
+0.409
+</td>
+<td style="text-align:center;">
+0.572
+</td>
+<td style="text-align:center;">
+0.082*
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+N
+</td>
+<td style="text-align:center;">
+666
+</td>
+<td style="text-align:center;">
+912
+</td>
+<td style="text-align:center;">
+1,578
+</td>
+</tr>
+</tbody>
+<tfoot>
+<tr>
+<td style="padding: 0; " colspan="100%">
+<span style="font-style: italic;">Nota:</span> <sup></sup> Los valores <code>p</code> son de una prueba <code>t</code> simple.
+</td>
+</tr>
+</tfoot>
+</table>
+<p>La tabla 2 muestra los resultados de estimar una regresión del tipo <span class="math display">\[y_i=\alpha+X_i&#39;\beta+\theta T_i+\varepsilon_i\]</span></p>
+<p>donde <span class="math inline">\(T_i\)</span> indica la pertenencia al grupo de tratamiento, <span class="math inline">\(X_i\)</span> es un vector de características observables usadas como controles y <span class="math inline">\(y_i\)</span> es cada una de las siguientes variables sobre las que se estima el impacto del programa: 1) número de zapatos que posee; 2) días que no fue a la escuela; y 3) horas para trabajar.</p>
+<table class=" lightable-paper lightable-hover" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;border-bottom: 0;">
+<thead>
+<tr>
+<th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; font-weight: bold; padding-right: 4px; padding-left: 4px; background-color: white !important;" colspan="4">
+<div style="TRUE">
+Tabla 2. Efectos del tratamiento en variables seleccionadas
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:center;">
+<span class="math inline">\((1)\)</span>
+</th>
+<th style="text-align:center;">
+<span class="math inline">\((2)\)</span>
+</th>
+<th style="text-align:center;">
+<span class="math inline">\((3)\)</span>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+Número de pares de zapatos que posee
+</td>
+<td style="text-align:center;">
+Días que no fue a la escuela
+</td>
+<td style="text-align:center;">
+Horas para trabajar
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span class="math inline">\(\hat{\theta}\)</span>
+</td>
+<td style="text-align:center;">
+0.075
+</td>
+<td style="text-align:center;">
+-0.165**
+</td>
+<td style="text-align:center;">
+0.348
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+(e.e)
+</td>
+<td style="text-align:center;">
+(0.061)
+</td>
+<td style="text-align:center;">
+(0.057)
+</td>
+<td style="text-align:center;">
+(0.243)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+N
+</td>
+<td style="text-align:center;">
+1,302
+</td>
+<td style="text-align:center;">
+664
+</td>
+<td style="text-align:center;">
+556
+</td>
+</tr>
+</tbody>
+<tfoot>
+<tr>
+<td style="padding: 0; " colspan="100%">
+<span style="font-style: italic;">Nota:</span> <sup></sup> * <code>p</code> &lt;0.10, ** <code>p</code> &lt;0.05, *** <code>p</code> &lt;0.01. Todas las regresiones controlan por edad, sexo, ocupación del jefe del hogar y calidad de la vivienda. Errores estándar agrupados a nivel localidad entre paréntesis.
+</td>
+</tr>
+</tfoot>
+</table>
+<ol style="list-style-type: lower-alpha">
+<li><p>[5 puntos] ¿Qué representan los valores <span class="math inline">\(p\)</span> reportados en la columna (3) en la tabla 1?</p></li>
+<li><p>[5 puntos] Un donante está preocupado por los resultados de la intervención porque considera que los niños que tenían más zapatos antes de que iniciara el programa tuvieron una menor probabilidad de estar en el grupo que recibió zapatos por parte del programa. ¿Considera esto una preocupación válida sobre la integridad del experimento?</p></li>
+<li><p>[5 puntos] ¿Cómo se interpreta el asterisco al lado del valor <span class="math inline">\(p\)</span> de 0.082 asociado a las horas para trabajar?</p></li>
+<li><p>[5 puntos] ¿Cuál es el impacto del programa en el número de pares zapatos que los niños en promedio poseen? Mencione la magnitud y significancia estadística de dicho impacto.</p></li>
+<li><p>[5 puntos] En columna (2) de la tabla 2, ¿qué interpretación tienen los dos asteriscos al lado de -0.165?</p></li>
+<li><p>[5 puntos] ¿Cuántos días sin ir a la escuela esperaríamos observar después de la intervención en los niños que recibieron zapatos?</p></li>
+<li><p>[5 puntos] La nota al pie de la tabla 2 indica que se reportan errores estándar agrupados? ¿Por qué los investigadores realizan la estimación de los errores estándar de esta manera?</p></li>
+</ol>
+</div>
+<div id="pregunta-2" class="section level2">
+<h2>Pregunta 2</h2>
+<p>Suponga que se busca entender si los estudiantes de nuevo ingreso a la universidad que reciben consejos y apoyo académico de los estudiantes más grandes, tienen mejor desempeño, medido como su calificación promedio de las clases al final del semestre. Para este propósito, un grupo de investigadores levanta una muestra grande de estudiantes universitarios al final de su primer año en todo el país. En dicha encuesta se registra <span class="math inline">\(y_i\)</span>, el promedio de calificaciones al final del semestre de cada estudiante, así como <span class="math inline">\(D_i\)</span>, una variable indicadora que toma el valor de 1 si el estudiante declara haber recibido apoyo de estudiantes de los grados superiores y 0 en otro caso. Los investigadores observan que los estudiantes de primer año que reciben apoyo de sus pares tienen una calificación 20% mayor que aquellos que no lo reciben.</p>
+<p>[10 puntos] ¿Cómo valora el diseño del estudio descrito? ¿Qué fortalezas y/o debilidades encuentra?</p>
+<p>[10 puntos] ¿De qué signo esperaría que fuera el sesgo de selección, en caso de existir? Explique sus razones.</p>
+</div>
+<div id="pregunta-3" class="section level2">
+<h2>Pregunta 3</h2>
+<p>Use los datos del archivo <em>STAR_public_use.csv</em> para este problema. En este problema replicará la fila correspondiente a la variable <strong>age</strong> de la tabla 1 en <a href="https://pubs.aeaweb.org/doi/pdfplus/10.1257/app.1.1.136">Angrist et al. (2009)</a>.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+<ol style="list-style-type: lower-alpha">
+<li><p>[5 puntos] Obtenga la media y la desviación estándar de la edad, <strong>age</strong>, en el grupo de control (columna 1), restringiendo la muestra a aquellos individuos con <strong>noshow</strong> igual a 0.</p></li>
+<li><p>[10 puntos] Estime el siguiente modelo lineal <span class="math inline">\(age_i=\alpha+\beta1_ssp_i+\beta_2 sfp_i + \beta_3 sfsp_i + u_i\)</span>, usado por los autores para producir las columnas 2 a 4. De nuevo, debe restringir la muestra quienes tienen <strong>noshow</strong> igual a 0. Reporte los coeficientes y los errores estándar.</p></li>
+<li><p>[5 puntos] Realice una prueba de significancia conjunta de los coeficientes obtenidos en el punto b. Reporte el estadístico <span class="math inline">\(F\)</span> y el valor <span class="math inline">\(p\)</span> asociado (columna 5).</p></li>
+<li><p>[10 puntos] ¿Cuál es el propósito de la prueba F realizada en el punto c.? ¿Qué hipótesis nula prueban los autores? ¿Qué concluimos a partir de la tabla 1?</p></li>
+</ol>
+</div>
+<div id="pregunta-4" class="section level2">
+<h2>Pregunta 4</h2>
+<p>Nuevamente, use los datos del archivo <em>STAR_public_use.csv</em> para este problema. En este problema, replicará dos columnas del efecto de tratamiento de la tabla 5. Note que de nuevo se deben usar solo las observaciones que tienen <strong>noshow</strong> igual a 0. Además, note que se usan las siguientes variables de control: <strong>sex</strong>, <strong>mtongue</strong>, <strong>hsgroup</strong>, <strong>numcourses_nov1</strong>, <strong>lastmin</strong>, <strong>mom_edn</strong>, y <strong>dad_edn</strong>, todas ellas categóricas.</p>
+<p>Antes de estimar los efectos, los autores sustituyen <strong>gpa_year1</strong> por NA cuando <strong>grade_20059_fall</strong> es NA y sustituyen <strong>grade_20059_fall</strong> por NA cuando <strong>gpa_year1</strong> es NA Esto le permitirá quedarse con los individuos que tienen información completa.</p>
+<ol style="list-style-type: lower-alpha">
+<li><p>[10 puntos] Estime el efecto de cada tipo de tratamiento sobre el <em>GPA</em>, es decir, sobre la variable <strong>gpa_year1</strong>, para toda la muestra (panel B, columna 1). Calcule correctamente los errores estándar. Interprete los resultados.</p></li>
+<li><p>[5 puntos] Estime el efecto de recibir cada tipo de tratamiento, considerando los tratamientos SSP o SFP (de cualquier tipo) en las mujeres de la muestra (Panel B, columna 6). Esto es, considere el tratamiento SSP como un primer tipo de tratamiento y, ya sea SFP o SFSP, como un segundo tipo de tratamiento. Calcule correctamente los errores estándar. Interprete sus resultados.</p></li>
+</ol>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Angrist, J., Lang, D., y Oreopoulos, P. (2009). Incentives and services for college achievement: Evidence from a randomized trial. <em>American Economic Journal: Applied Economics</em>, 1(1), 136-63.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>

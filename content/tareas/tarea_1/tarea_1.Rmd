@@ -1,0 +1,142 @@
+---
+title: "Tarea 1"
+summary: "Miércoles 21 de septiembre a las 20:00"
+weight: 1
+type: book
+toc: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE)
+library(kableExtra)
+library(tidyverse)
+```
+
+## Instrucciones
+
+Las tareas deben entregarse de manera individual, pero se recomienda ampliamente colaborar en grupos de estudio. Para evitar confusiones, escriban en su tarea con quiénes colaboraron. Las tareas deberán entregarse en Teams antes de la fecha y hora señalada. No se aceptarán tareas fuera de tiempo. Por favor, **no comprima los archivos** en carpetas comprimidas. Las tareas deberán contener dos archivos:
+
+Un primer documento de respuestas donde se incluyan las respuestas a las preguntas teóricas y conceptuales. Este documento debe estar en formato pdf y debe ser generado usando un software de procesamiento de textos científicos, por ejemplo, usando los leguajes LaTeX o Markdown. En este documento también se deben incluir las respuestas a preguntas sobre conclusiones que se desprenden de las secciones prácticas. Por ejemplo, si una pregunta pide obtener la media de la variable x en cierta base de datos, entonces el documento de respuestas debe incluir la pregunta y respuesta correspondiente: “la media de la variable x es 32.6”. En este documento también deberán incluirse las tablas y gráficas que se soliciten.
+
+Un segundo archivo deberá contener el código replicable usado para generar los resultados de la sección práctica. El código debe también crear las tablas y gráficas solicitadas. Los archivos de código se verificarán para comprobar su replicabilidad.
+
+## Fecha de entrega
+
+Miércoles 21 de septiembre a las 20:00.
+
+## Archivos
+
+[STAR_public_use.csv](/tareas/tarea_1/STAR_public_use.csv)
+
+## Pregunta 1
+
+Se diseñó una intervención que consistió en entregar zapatos a niños en cuatro áreas con altos niveles de pobreza de cierto país. Se sabe que los niños caminan bastante para ir a la escuela y realizan una serie de tareas domésticas después de la escuela. Por tanto, se tiene la hipótesis de que la entrega de zapatos tendrá impactos en el desarrollo de los niños. Se seleccionaron aleatoriamente localidades de control y localidades de tratamiento. Dentro de las localidades asignadas al tratamiento, todos los niños de entre 7 y 12 años de edad recibieron zapatos. Los investigadores deciden usar un $\alpha=0.10$ durante el estudio.
+
+La tabla 1 presenta información sobre una serie de características de los niños que participaron en el estudio en la línea base.
+
+```{r table.balance, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+
+variable <- c("Variables","Edad", "Sexo (masculino=1)","Jefe trabaja en agricultura", "Grado máximo de estudios en el hogar","Índice calidad de vivienda", "Índice de consumo de durables", "Número de pares de zapatos que posee","Horas que pasa sin zapatos","Días que no fue a la escuela", "Horas para dormir","Horas para comer","Horas para lavar", "Horas en escuela","Horas para trabajar","N")
+c <- c("Media control",9.486,0.545,0.462,5.836,0.492,0.441,2.060,2.090,0.701,10.68,1.931,0.732,4.613,0.409, 666)
+
+t <- c("Media tratamiento",9.332,0.497,0.522,5.346,0.593,0.467,1.825,1.963,0.886,9.98,1.934,0.835,4.154,0.572, 912)
+
+pvalue <- c("`p`","0.114","0.073*","0.435","0.406","0.447","0.829","0.213","0.917","0.465","0.388","0.986","0.228","0.168","0.082*", "1,578")
+
+table.balance <- data.frame(cbind(variable, c, t,pvalue))
+colnames(table.balance) = c(" ","$(1)$","$(2)$","$(3)$")
+
+table.balance %>%
+  kbl(align = "lccc",
+      escape = FALSE,
+      full_width = FALSE) %>%
+  kable_paper(c("hover", "condensed", "responsive")) %>% 
+  add_header_above(c("Tabla 1. Covariables entre grupos de tratamiento y control (datos en la línea base) " = 4 ),
+                   bold = TRUE,
+                   background = "white") %>% 
+  footnote(general = "Los valores `p` son de una prueba `t` simple.",
+           general_title = "Nota:",
+           footnote_as_chunk = T)
+
+```
+
+
+La tabla 2 muestra los resultados de estimar una regresión del tipo $$y_i=\alpha+X_i'\beta+\theta T_i+\varepsilon_i$$
+
+donde $T_i$ indica la pertenencia al grupo de tratamiento, $X_i$ es un vector de características observables usadas como controles y $y_i$ es cada una de las siguientes variables sobre las que se estima el impacto del programa: 1) número de zapatos que posee; 2) días que no fue a la escuela; y 3) horas para trabajar.
+
+
+```{r table.efectos, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+
+variable <- c("", "$\\hat{\\theta}$","(e.e)","N")
+
+zapatos <- c("Número de pares de zapatos que posee","0.075","(0.061)","1,302")
+dias <- c("Días que no fue a la escuela","-0.165**","(0.057)","664")
+trabajo <- c("Horas para trabajar","0.348","(0.243)","556")
+
+
+table.efectos <- data.frame(cbind(variable,zapatos,dias,trabajo))
+colnames(table.efectos) = c(" ","$(1)$","$(2)$","$(3)$")
+
+table.efectos %>%
+  kbl(align = "lccc",
+      escape = FALSE,
+      full_width = FALSE) %>%
+  kable_paper(c("hover", "condensed", "responsive")) %>% 
+  add_header_above(c("Tabla 2. Efectos del tratamiento en variables seleccionadas" = 4 ),
+                   bold = TRUE,
+                   background = "white") %>% 
+  footnote(general = "* `p` <0.10, ** `p` <0.05, *** `p` <0.01. Todas las regresiones controlan por edad, sexo, ocupación del jefe del hogar y calidad de la vivienda. Errores estándar agrupados a nivel localidad entre paréntesis.",
+           general_title = "Nota:",
+           footnote_as_chunk = T)
+
+```
+
+a. [5 puntos] ¿Qué representan los valores $p$ reportados en la columna (3) en la tabla 1?
+
+b. [5 puntos] Un donante está preocupado por los resultados de la intervención porque considera que los niños que tenían más zapatos antes de que iniciara el programa tuvieron una menor probabilidad de estar en el grupo que recibió zapatos por parte del programa. ¿Considera esto una preocupación válida sobre la integridad del experimento?
+
+c. [5 puntos] ¿Cómo se interpreta el asterisco al lado del valor $p$ de 0.082 asociado a las horas para trabajar?
+
+d. [5 puntos] ¿Cuál es el impacto del programa en el número de pares zapatos que los niños en promedio poseen? Mencione la magnitud y significancia estadística de dicho impacto.
+
+e. [5 puntos] En columna (2) de la tabla 2, ¿qué interpretación tienen los dos asteriscos al lado de -0.165?
+
+f. [5 puntos] ¿Cuántos días sin ir a la escuela esperaríamos observar después de la intervención en los niños que recibieron zapatos?
+
+g. [5 puntos] La nota al pie de la tabla 2 indica que se reportan errores estándar agrupados? ¿Por qué los investigadores realizan la estimación de los errores estándar de esta manera?
+
+
+## Pregunta 2
+
+Suponga que se busca entender si los estudiantes de nuevo ingreso a la universidad que reciben consejos y apoyo académico de los estudiantes más grandes, tienen mejor desempeño, medido como su calificación promedio de las clases al final del semestre. Para este propósito, un grupo de investigadores levanta una muestra grande de estudiantes universitarios al final de su primer año en todo el país. En dicha encuesta se registra $y_i$, el promedio de calificaciones al final del semestre de cada estudiante, así como $D_i$, una variable indicadora que toma el valor de 1 si el estudiante declara haber recibido apoyo de estudiantes de los grados superiores y 0 en otro caso. Los investigadores observan que los estudiantes de primer año que reciben apoyo de sus pares tienen una calificación 20% mayor que aquellos que no lo reciben.
+
+[10 puntos] ¿Cómo valora el diseño del estudio descrito? ¿Qué fortalezas y/o debilidades encuentra? 
+
+[10 puntos] ¿De qué signo esperaría que fuera el sesgo de selección, en caso de existir? Explique sus razones.
+
+
+## Pregunta 3
+
+
+Use los datos del archivo *STAR_public_use.csv* para este problema. En este problema replicará la fila correspondiente a la variable **age** de la tabla 1 en [Angrist et al. (2009)](https://pubs.aeaweb.org/doi/pdfplus/10.1257/app.1.1.136).[^1]
+  
+[^1]: Angrist, J., Lang, D., y Oreopoulos, P. (2009). Incentives and services for college achievement: Evidence from a randomized trial. *American Economic Journal: Applied Economics*, 1(1), 136-63.
+
+a. [5 puntos] Obtenga la media y la desviación estándar de la edad, **age**, en el grupo de control (columna 1), restringiendo la muestra a aquellos individuos con **noshow** igual a 0.
+
+a. [10 puntos] Estime el siguiente modelo lineal $age_i=\alpha+\beta1_ssp_i+\beta_2 sfp_i + \beta_3 sfsp_i + u_i$, usado por los autores para producir las columnas 2 a 4. De nuevo, debe restringir la muestra quienes tienen **noshow** igual a 0. Reporte los coeficientes y los errores estándar.
+
+a. [5 puntos] Realice una prueba de significancia conjunta de los coeficientes obtenidos en el punto b. Reporte el estadístico $F$ y el valor $p$ asociado (columna 5).
+
+a. [10 puntos] ¿Cuál es el propósito de la prueba F realizada en el punto c.? ¿Qué hipótesis nula prueban los autores? ¿Qué concluimos a partir de la tabla 1?
+
+## Pregunta 4
+
+Nuevamente, use los datos del archivo *STAR_public_use.csv* para este problema. En este problema, replicará dos columnas del efecto de tratamiento de la tabla 5. Note que de nuevo se deben usar solo las observaciones que tienen **noshow** igual a 0. Además, note que se usan las siguientes variables de control: **sex**, **mtongue**, **hsgroup**, **numcourses_nov1**, **lastmin**, **mom_edn**, y **dad_edn**, todas ellas categóricas.
+
+Antes de estimar los efectos, los autores sustituyen **gpa_year1** por NA cuando **grade_20059_fall** es NA y sustituyen **grade_20059_fall** por NA cuando **gpa_year1** es NA Esto le permitirá quedarse con los individuos que tienen información completa.
+
+a.	[10 puntos] Estime el efecto de cada tipo de tratamiento sobre el *GPA*, es decir, sobre la variable **gpa_year1**, para toda la muestra (panel B, columna 1). Calcule correctamente los errores estándar. Interprete los resultados.
+
+a. [5 puntos] Estime el efecto de recibir cada tipo de tratamiento, considerando los tratamientos SSP o SFP (de cualquier tipo) en las mujeres de la muestra (Panel B, columna 6). Esto es, considere el tratamiento SSP como un primer tipo de tratamiento y, ya sea SFP o SFSP, como un segundo tipo de tratamiento. Calcule correctamente los errores estándar. Interprete sus resultados.
