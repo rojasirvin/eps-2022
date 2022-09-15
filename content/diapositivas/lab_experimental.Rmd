@@ -33,6 +33,7 @@ library(janitor)
 library(sandwich)
 library(clubSandwich)
 library(modelsummary)
+library(stargazer)
 
 xfun::pkg_load2(c('base64enc', 'htmltools', 'mime'))
 ```
@@ -63,14 +64,11 @@ xfun::pkg_load2(c('base64enc', 'htmltools', 'mime'))
 ---
 # Agenda
 
-1. Breve recordatorio de estructura de bases
-
 1. Estadística descriptiva y pruebas de hipótesis
----
 
-class: inverse, middle, center
+1. Regresión para hacer comparaciones
 
-# Estructura de bases usando la ENOE
+1. Errores estándar
 
 ---
 
@@ -82,26 +80,23 @@ class: inverse, middle, center
 
 # Datos de Angrist
 
-- Noten que aquí solo analizaremos UN tratamiento
+Noten que aquí solo analizaremos UN tratamiento
 
 
-- Los números que generemos no serán iguales a los reportados en el artículo
+Los resultados que generemos no serán iguales a los reportados en el artículo
 
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
-
 data.angrist<-read_csv("./STAR_public_use.csv",
                        locale = locale(encoding = "latin1"))   %>% 
   clean_names()
 
 
 #Usemos por ahora un solo tratamiento, SSP
-data.angrist.table1<-data.angrist %>% 
-  select(noshow,age,female, mtongue, gpa0, ssp) %>%
+data.angrist.table1 <- data.angrist %>% 
+  select(noshow,age,female, mtongue, gpa0, sfsp) %>%
   mutate(mtongue=ifelse(mtongue=="English",1,0)) %>% 
-  mutate(ssp=factor(ssp,levels=c(0,1),
-             labels=c("Control","SSP")))
-
-
+  mutate(sfsp=factor(sfsp,levels=c(0,1),
+             labels=c("Control","SFSP")))
 
 ```
 
@@ -113,7 +108,7 @@ data.angrist.table1<-data.angrist %>%
 #Pedimos estadísticas por grupo
 data.angrist.table1 %>% 
   filter(noshow==0) %>% 
-  group_by(ssp) %>% 
+  group_by(sfsp) %>% 
   summarize(mean=mean(age),
             std=sd(age), n=n()) %>% 
   ungroup()
@@ -123,20 +118,20 @@ data.angrist.table1 %>%
 
 # Diferencias de medias
 
-- Con *prueba t*
+Con *prueba t*
 
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
 t.test(data=filter(data.angrist.table1,noshow==0),
-       age ~ ssp)
+       age ~ sfsp)
 ```
 
 ---
 
 # Diferencias de medias
 
-- Con una regresión
+Con una regresión
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
-dif_age <- lm(age ~ ssp,
+dif_age <- lm(age ~ sfsp,
               data=filter(data.angrist.table1,noshow==0))
 summary(dif_age)$coef
 ```
@@ -147,7 +142,7 @@ summary(dif_age)$coef
 # ¿Los observables predicen el tratamiento?
 
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
-predict_t <- lm(as.numeric(ssp) ~ age + female + mtongue + gpa0,
+predict_t <- lm(as.numeric(sfsp) ~ age + female + mtongue + gpa0,
                 data=filter(data.angrist.table1,noshow==0) )
 summary(predict_t)$coef
 ```
@@ -155,18 +150,18 @@ summary(predict_t)$coef
 
 class: inverse, middle, center
 
-# Un paréntesis: *modelsummary*
+# *modelsummary*
 ---
 
-# Un paréntesis
+# Estadística descriptiva
 
 .pull-left[
-- El paquete *modelsummary* puede serles útil para construir tablas
+El paquete *modelsummary* puede serles útil para construir tablas
 
-- Para hacer estadística descriptiva:
+Para hacer estadística descriptiva:
 
-```{r echo=TRUE, warning=FALSE, message=FALSE}
-tabla.descriptiva <- datasummary(noshow+age+female~ ssp*(mean + sd)*Arguments(na.rm=TRUE),
+```{r echo=TRUE, warning=FALSE, message=FALSE, eval=F}
+datasummary(noshow+age+female~ sfsp*(mean + sd)*Arguments(na.rm=TRUE),
                     fmt = "%.2f",
                     data = data.angrist.table1,
                     title = "Pruebas de balance",
@@ -174,19 +169,24 @@ tabla.descriptiva <- datasummary(noshow+age+female~ ssp*(mean + sd)*Arguments(na
 ```
 ]
 .pull-right[
-```{r echo=TRUE, warning=FALSE, message=FALSE}
-tabla.descriptiva
+```{r echo=F, warning=FALSE, message=FALSE}
+datasummary(noshow+age+female~ sfsp*(mean + sd)*Arguments(na.rm=TRUE),
+                    fmt = "%.2f",
+                    data = data.angrist.table1,
+                    title = "Pruebas de balance",
+                    notes = "Fuente: Angrist, Lang & Oreopoulos (2009)")
 ```
 ]
 
 ---
 
-# Un paréntesis
+# Estadística descriptiva
 
 .pull-left[
-- Para hacer tablas de balance:
-```{r echo=TRUE,warning=FALSE, message=FALSE}
-tabla.balance <- datasummary_balance(~ssp,
+
+Para hacer tablas de balance:
+```{r echo=TRUE,warning=FALSE, message=FALSE, eval=F}
+datasummary_balance(~sfsp,
                     fmt = "%.2f",
                     data = data.angrist.table1,
                     title = "Pruebas de balance",
@@ -196,8 +196,13 @@ tabla.balance <- datasummary_balance(~ssp,
 ]
 
 .pull-right[
-```{r echo=TRUE,warning=FALSE, message=FALSE}
-tabla.balance
+```{r echo=F,warning=FALSE, message=FALSE}
+datasummary_balance(~sfsp,
+                    fmt = "%.2f",
+                    data = data.angrist.table1,
+                    title = "Pruebas de balance",
+                    notes = "Fuente: Angrist, Lang & Oreopoulos (2009)")
+
 ```
 ]
 
@@ -205,110 +210,110 @@ tabla.balance
 
 class: inverse, middle, center
 
-# Cumplimiento imperfecto
+# Errores estándar
 
 ---
 
-# Cumplimiento imperfecto
+# Efecto del tratamiento
 
-- Crépon, Devoto, Duflo & Parienté (2015), Estimating the Impact of Microcredit on Those Who Take It Up
+.pull-left[
+Estimemos el tratamiento de **sfsp** sobre el promedio de calificaciones:
 
-- Experimento en Marruecos
+```{r echo=T}
+reg <- lm(gpa_year1 ~ sfsp +
+            factor(sex)+
+            factor(mtongue)+
+            factor(hsgroup)+
+            factor(mom_edn)+
+            factor(dad_edn),
+            data=filter(data.angrist, noshow==0))
+```
+]
 
---
+.pull-right[
+```{r echo=T}
+summary(reg)$coef[1:2,]
+```
+]
+---
 
-- Pareciera que las intervenciones de microfinanzas no tienen efectos en el hogar promedio
+# *stargazer* para reportar resultados
 
-- Los autores estudian con detalle el efecto de la adopción
+.pull-left[
+Vale la pena explorar las opciones de 
+*stargazer* que les sean útiles
 
-- En 81 de 162 localidades se **introdujo** aleatoriamente una empresa de microfinanzas
+```{r echo=T, eval=F}
+stargazer(reg,
+          type = "html",
+          se = list(NULL),
+          column.labels = "Clásicos",
+          keep = c("ssp", "sfp", "sfsp"))
+```
+]
 
-- Para seleccionar las localidades de tratamiento, primer se emparejaron localidades de acuerdo a características observables y, para cada pareja se asignó a tratamiento y otra a control
-
-
---
-
-- Tenemos entonces dos indicadores
-
-  - **treatment** es la variable de asignación aleatoria
-  
-  - **client** es la variable de adopción
+.pull-right[
+```{r echo=F, results='asis'}
+stargazer(reg,
+          type = "html",
+          se = list(NULL),
+          column.labels = "Clásicos",
+          keep = c("ssp", "sfp", "sfsp"))
+```
+]
 
 ---
 
-# Cumplimiento imperfecto
+# Construimos errores robustos
 
-```{r echo=TRUE,warning=FALSE, message=FALSE}
-data.morocco<-read_csv("./crepon_morocco.csv",
-                       locale = locale(encoding = "latin1"))   %>% 
-  clean_names() %>% 
-  filter(merge_indicator!=1)   # 2 y 3 incluyen la línea base
+.pull-left[
+Usando *sandwich* estimamos la varianza y luego obtenemos los errores estándar:
+
+```{r echo=T}
+cov0       <- vcovHC(reg, type = "HC0")
+robse0    <- sqrt(diag(cov0))
 ```
+]
 
-- Veamos la estadística descriptiva básica de la variable de tamaño del hogar:
-
-```{r echo=TRUE,warning=FALSE, message=FALSE}
-data.morocco %>% 
-  group_by(treatment) %>%
-  summarize(mean=mean(members_resid_bl),
-            std=sd(members_resid_bl), n=n()) %>% 
-  ungroup()
+.pull-right[
+```{r echo=F,  results='asis'}
+stargazer(reg, reg,
+          type = "html",
+          se = list(NULL, robse0),
+          column.labels =c("Clásicos", "White"),
+          keep = c("ssp", "sfp", "sfsp"))
 ```
+]
 
 ---
 
-# Prueba de balance con regresión
+# Construimos errores robustos
 
-```{r echo=TRUE,warning=FALSE, message=FALSE}
-#Con una regresión:
-dif_members <- lm(members_resid_bl ~ treatment + factor(paire), data=data.morocco)
-summary(dif_members)$coef[1:7,]
+
+.pull-left[
+Podemos usar distintos tipos de errores robustos:
+
+```{r echo=T}
+cov3      <- vcovHC(reg)
+robse3    <- sqrt(diag(cov3))
 ```
+]
 
----
-
-# Errores estándar *agrupados*
-
-```{r echo=TRUE,warning=FALSE, message=FALSE}
-#Usemos errores estándar agrupados
-#Esto es lo más cercano que he llegado de lo que producen los autores
-coef_test(dif_members, vcov = "CR1", 
-          cluster = data.morocco$demi_paire, test = "naive-t")[1:2,]
-
+.pull-right[
+```{r echo=F,  results='asis'}
+stargazer(reg, reg, reg,
+          type = "html",
+          se = list(NULL, robse0, robse3),
+          column.labels =c("Clásicos", "White", "HC3"),
+          keep = c("ssp", "sfp", "sfsp"))
 ```
+]
 
----
 
-# Hay selección
 
-```{r echo=TRUE,warning=FALSE, message=FALSE}
-##Pero hay selección, veamos un tabulado cruzado
-data.morocco %>%
-  mutate(treatment=factor(treatment, levels=c(0,1),labels=c("Control", "Tratamiento"))) %>% 
-  mutate(client=factor(client, levels=c(0,1),labels=c("No cliente", "Cliente"))) %>% 
-  tabyl(treatment, client)
 
-```
----
 
-# Ser cliente no es independiente
 
-```{r echo=TRUE,warning=FALSE, message=FALSE}
-#¿Ser cliente es independiente del tamaño del hogar?
-dif_members_client <- lm(members_resid_bl ~ client + factor(paire), data=data.morocco)
-coef_test(dif_members_client, vcov = "CR1", 
-          cluster = data.morocco$demi_paire, test = "naive-t")[1:2,]
-```
-
---
-
-```{r echo=TRUE,warning=FALSE, message=FALSE}
-#¿El número de actividades es independiente de ser cliente?
-dif_activities_client <- lm(act_number_bl ~ client + factor(paire), data=data.morocco)
-coef_test(dif_activities_client, vcov = "CR1", 
-          cluster = data.morocco$demi_paire, test = "naive-t")[1:2,]
-
-```
 ---
 
 class: center, middle
