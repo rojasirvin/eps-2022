@@ -22,4 +22,7 @@ main:
   - name: Tareas
     url: '/tareas'
     weight: 70
+  - name: Diapostivas
+    url: '/diapositivas'
+    weight: 80
   
