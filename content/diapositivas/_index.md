@@ -8,10 +8,12 @@ weight: 30
 
 # Diapositivas
 
-[Métodos experimentales en R
-](/diapositivas/lab_experimental.html)
+[Métodos experimentales en R](/diapositivas/lab_experimental.html)
 
 # Datos
 
-[STAR_public_use.csv
-](/diapositivas/STAR_public_use.csv)
+[STAR_public_use.csv](/diapositivas/STAR_public_use.csv)
+
+# Scripts
+
+[lab_experimental.R](/diapositivas/lab_experimental.R)
