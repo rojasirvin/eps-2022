@@ -14,7 +14,7 @@ library(stargazer)
 #Por tanto, los números que generemos no serán iguales
 #a los reportados en el artículo
 
-data.angrist <- read_csv("./content/diapositivas/STAR_public_use.csv",
+data.angrist <- read_csv("./content/laboratorios/STAR_public_use.csv",
                        locale = locale(encoding = "latin1"))   %>% 
   clean_names()
 
