@@ -6,4 +6,4 @@ date: "`r as.Date(file.mtime(knitr::current_input()))`"
 weight: 30
 ---
 
-{{< list_children >}}
+  {{< toc hide_on="xl" >}}
