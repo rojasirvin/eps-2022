@@ -1,9 +1,10 @@
 ---
 title: "Tarea 1"
-summary: "Miércoles 21 de septiembre a las 20:00"
+summary: Miércoles 21 de septiembre a las 20:00
 weight: 1
+output: pdf_document
+toc: no
 type: book
-toc: false
 ---
 
 ```{r setup, include=FALSE}

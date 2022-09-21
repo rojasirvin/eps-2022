@@ -3,10 +3,10 @@ rm(list = ls())
 options(scipen=999) # Prevenir notación científica
 
 library(tidyverse)
-library(janitor)
-library(sandwich)
-library(clubSandwich)
-library(modelsummary)
+library(janitor) #limpiar datos
+library(sandwich) #matrices robustas
+library(clubSandwich) #matrices robustas agrupadas
+library(modelsummary) #estadística descriptiva
 library(stargazer)
 
 #Usamos los datos de Angrist et al. en la Tarea 1----

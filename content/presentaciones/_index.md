@@ -17,7 +17,7 @@ Por favor, seleccione una de las lecturas marcadas con una "+" de la lista de le
 | Gutiérrez Vázquez & Parrado (2016) | DID   | Daniela Rodriguez  | Jueves 6 de octubre |
 | Boruchowicz, Parker & Robbins (2022) | DID | Victor Copto | Jueves 6 de octubre |
 | García-Díaz, Sosa-Rubí, Serván-Mori & Nigenda (2018) | PSM | José Francisco Blas  | Jueves 20 de octubre |
-| [Lecturas de la semana 9 con "+"](https://eps-2022.netlify.app/lecturas/#semana-9) | PSM |  | Jueves 20 de octubre |
+| Espinosa & Rubin (2015) | PSM | José Eduardo Campos  | Jueves 20 de octubre |
 |  [Lecturas de la semana 11 con "+"](https://eps-2022.netlify.app/lecturas/#semana-11) | Diseños con discontinuidades |  | Jueves 3 de noviembre  |
 | [Lecturas de la semana 11 con "+"](https://eps-2022.netlify.app/lecturas/#semana-11)  | Diseños con discontinuidades   |  | Jueves 3 de noviembre  |
 | [Lecturas de la semana 13 con "+"](https://eps-2022.netlify.app/lecturas/#semana-13)  | Control sintético |  | Martes 15 de noviembre |
