@@ -1,0 +1,296 @@
+---
+title: "Errores agrupados y remuestreo en R"
+author: "Irvin Rojas"
+institute: "CIDE"
+header-includes:
+  - \usepackage{tikz}
+  - \usetikzlibrary{shapes, shadows,arrows}
+output:
+  xaringan::moon_reader:
+    css: [default, "libs/cide.css", metropolis-fonts, "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap-grid.min.css", "https://use.fontawesome.com/releases/v5.7.2/css/all.css", "https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"]
+    seal: false
+    chakra: "https://remarkjs.com/downloads/remark-latest.min.js"
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      titleSlideClass: ["middle", "center"]
+      ratio: "16:9"
+      beforeInit: ["https://platform.twitter.com/widgets.js", "libs/cols_macro.js"]
+      navigation:
+        scroll: false
+
+
+---
+class: title-slide
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.path = "figures/")
+
+options(scipen=999) # Prevenir notación científica
+
+library(tidyverse)
+library(janitor)
+library(sandwich)
+library(clubSandwich)
+library(stargazer)
+library(lmtest)
+
+
+xfun::pkg_load2(c('base64enc', 'htmltools', 'mime'))
+```
+
+```{css, echo = FALSE}
+.huge .remark-code { /*Change made here*/
+  font-size: 200% !important;
+}
+.tiny .remark-code { /*Change made here*/
+  font-size: 60% !important;
+}
+
+table {
+  font-size: 16px;     
+}
+```
+
+
+
+.title[
+# Errores agrupados y remuestreo en R
+]
+.subtitle[
+## Evaluación de Programas
+]
+.author[
+### Irvin Rojas <br> [rojasirvin.com](https://www.rojasirvin.com/) <br> [<i class="fab fa-github"></i>](https://github.com/rojasirvin) [<i class="fab fa-twitter"></i>](https://twitter.com/RojasIrvin) [<i class="ai ai-google-scholar"></i>](https://scholar.google.com/citations?user=FUwdSTMAAAAJ&hl=en)
+]
+
+.affiliation[
+### Centro de Investigación y Docencia Económicas <br> División de Economía
+]
+
+---
+# Agenda
+
+1. Introducir un ejemplo de cumplimiento imperfecto
+
+1. Mostrar cómo estimar errores estándar agrupados
+
+1. Mostrar cómo hacer un remuestreo en R
+
+
+---
+
+# Cumplimiento imperfecto
+
+Crépon, Devoto, Duflo & Parienté (2015), Estimating the Impact of Microcredit on Those Who Take It Up
+
+Experimento en Marruecos en el contexto de microfinanzas
+
+Pareciera que las intervenciones de microfinanzas no tienen efectos en el hogar promedio
+
+Los autores estudian con detalle el efecto de la adopción
+
+En 81 de 162 localidades se **introdujo** aleatoriamente una empresa de microfinanzas
+
+Para seleccionar las localidades de tratamiento, primer se emparejaron localidades de acuerdo a características observables y, para cada pareja se asignó a tratamiento y otra a control
+
+Tenemos entonces dos indicadores
+
+  - **treatment** es la variable de asignación aleatoria
+  
+  - **client** es la variable de adopción
+
+---
+
+# Cumplimiento imperfecto
+
+```{r echo=TRUE,warning=FALSE, message=FALSE}
+data.morocco<-read_csv("./crepon_morocco.csv",
+                       locale = locale(encoding = "latin1"))   %>% 
+  clean_names() %>% 
+  filter(merge_indicator!=1)   # 2 y 3 incluyen la línea base
+```
+
+- Veamos la estadística descriptiva básica de la variable de jefe del hogar:
+
+```{r echo=TRUE,warning=FALSE, message=FALSE}
+data.morocco %>% 
+  group_by(treatment) %>%
+  summarize(mean=mean(head_age_bl),
+            std=sd(head_age_bl),
+            n=n()) %>% 
+  ungroup()
+```
+
+---
+
+# Prueba de balance con regresión
+
+```{r echo=TRUE,warning=FALSE, message=FALSE}
+#Con una regresión:
+dreg <- lm(head_age_bl ~ treatment + factor(paire), data=data.morocco)
+
+round(summary(dreg)$coef[1:7,], digits=4)
+nobs(dreg)
+```
+
+---
+
+# Errores estándar robustos a la heterocedasticidad
+
+
+```{r echo=TRUE,warning=FALSE, message=FALSE}
+#Ignorando la agrupación
+coeftest(dreg,
+         vcov = vcovHC(dreg, type="HC1"))[1:2,]
+```
+
+---
+
+# Errores agrupados
+
+
+```{r echo=TRUE,warning=FALSE, message=FALSE}
+#CR0 implementa la corrección de sándwich para errores agrupados
+coef_test(dreg,
+          vcov = "CR0", 
+          cluster = data.morocco$demi_paire)[1:2,]
+```
+
+---
+# Errores agrupados
+
+
+```{r echo=TRUE,warning=FALSE, message=FALSE}
+#Errores CR1S, que significan clustered roubst "Stata" :3
+coef_test(dreg,
+          vcov = "CR1S", 
+          cluster = data.morocco$demi_paire)[1:2,]
+```
+
+---
+
+# Coleccionamos con stargazer
+
+.pull-left[
+```{r echo=TRUE,warning=FALSE, message=FALSE, eval=F}
+
+stargazer(dreg, dreg, dreg,
+          type = "html",
+          se = list(sqrt(diag(vcovHC(dreg, type = "HC0"))),
+                    sqrt(diag(vcovCR (dreg, type = "CR0", cluster= data.morocco$demi_paire))),
+                    sqrt(diag(vcovCR (dreg, type = "CR1S", cluster= data.morocco$demi_paire)))),
+          column.labels =c("HC0", "CR0", "CR1S"),
+          report=("vc*p"),
+          keep = c("treatment"))
+```
+]
+
+.pull-right[
+```{r echo=F,warning=FALSE, message=FALSE, results='asis'}
+stargazer(dreg, dreg, dreg,
+          type = "html",
+          se = list(sqrt(diag(vcovHC(dreg, type = "HC0"))),
+                    sqrt(diag(vcovCR (dreg, type = "CR0", cluster= data.morocco$demi_paire))),
+                    sqrt(diag(vcovCR (dreg, type = "CR1S", cluster= data.morocco$demi_paire)))),
+          column.labels =c("HC0", "CR0", "CR1S"),
+          report=("vc*p"),
+          keep = c("treatment"))
+```
+]
+
+---
+
+class: inverse, middle, center
+
+# Remuestreo
+
+---
+
+# Semilla
+
+Fijar una semilla permite generar números pseudo aleatorios que pueden replicarse
+
+```{r echo=T,warning=FALSE, message=FALSE}
+set.seed(927)
+
+data.morocco<-read_csv("./crepon_morocco.csv",
+                       locale = locale(encoding = "latin1"))   %>% 
+  clean_names() %>%
+  select(treatment, client, expense_total)
+
+obs <- nrow(data.morocco)
+obs
+
+#Veamos la media del gasto total
+mean(data.morocco$expense_total, na.rm=T)
+```
+
+---
+
+# Muestra bootstrap
+
+Una muestra bootstrap se obtiene remuestreando del data frame original una nueva muestra del mismo tamaño con reemplazo
+
+```{r echo=T,warning=FALSE, message=FALSE}
+data.b <- data.morocco[sample(nrow(data.morocco),
+                              obs,
+                              replace = TRUE), ]
+
+mean(data.b$expense_total, na.rm=T)
+
+```
+
+---
+
+# Muestra bootstrap
+
+Con otra muestra, la media es diferente
+
+```{r echo=T,warning=FALSE, message=FALSE}
+
+data.b <- data.morocco[sample(nrow(data.morocco),
+                              obs,
+                              replace = TRUE), ]
+mean(data.b$expense_total, na.rm=T)
+```
+
+---
+
+# Ciclos
+
+En muchas aplicaciones es necesario realizar la misma tarea muchas veces
+
+Este es el pan de cada día, por ejemplo, de las técnicas de simulación Monte Carlo
+
+```{r echo=T,warning=FALSE, message=FALSE}
+reps=10
+resultados <- data.frame(medias=matrix(ncol = 1, nrow = reps))
+
+for (i in 1:reps)
+{
+  data.b <- data.morocco[sample(nrow(data.morocco),
+                                obs,
+                                replace = TRUE), ]
+
+  
+  #Guardamos en cada entrada la media estimada
+  resultados[i,1] <- mean(data.b$expense_total, na.rm=T)
+}
+```
+
+---
+
+class: center, middle
+
+Presentación creada usando el paquete [**xaringan**](https://github.com/yihui/xaringan) en R.
+
+El *chakra* viene de [remark.js](https://remarkjs.com), [**knitr**](http://yihui.org/knitr), y [R Markdown](https://rmarkdown.rstudio.com).
+
+Material de clase en versión preliminar.
+
+**No reproducir, no distribuir, no citar.**
+
+

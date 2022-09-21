@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Errores agrupados y remuestreo en R</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Irvin Rojas" />
+    <script src="libs/header-attrs-2.16/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="libs/cide.css" type="text/css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap-grid.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+class: title-slide
+
+
+
+&lt;style type="text/css"&gt;
+.huge .remark-code { /*Change made here*/
+  font-size: 200% !important;
+}
+.tiny .remark-code { /*Change made here*/
+  font-size: 60% !important;
+}
+
+table {
+  font-size: 16px;     
+}
+&lt;/style&gt;
+
+
+
+.title[
+# Errores agrupados y remuestreo en R
+]
+.subtitle[
+## Evaluación de Programas
+]
+.author[
+### Irvin Rojas &lt;br&gt; [rojasirvin.com](https://www.rojasirvin.com/) &lt;br&gt; [&lt;i class="fab fa-github"&gt;&lt;/i&gt;](https://github.com/rojasirvin) [&lt;i class="fab fa-twitter"&gt;&lt;/i&gt;](https://twitter.com/RojasIrvin) [&lt;i class="ai ai-google-scholar"&gt;&lt;/i&gt;](https://scholar.google.com/citations?user=FUwdSTMAAAAJ&amp;hl=en)
+]
+
+.affiliation[
+### Centro de Investigación y Docencia Económicas &lt;br&gt; División de Economía
+]
+
+---
+# Agenda
+
+1. Introducir un ejemplo de cumplimiento imperfecto
+
+1. Mostrar cómo estimar errores estándar agrupados
+
+1. Mostrar cómo hacer un remuestreo en R
+
+
+---
+
+# Cumplimiento imperfecto
+
+Crépon, Devoto, Duflo &amp; Parienté (2015), Estimating the Impact of Microcredit on Those Who Take It Up
+
+Experimento en Marruecos en el contexto de microfinanzas
+
+Pareciera que las intervenciones de microfinanzas no tienen efectos en el hogar promedio
+
+Los autores estudian con detalle el efecto de la adopción
+
+En 81 de 162 localidades se **introdujo** aleatoriamente una empresa de microfinanzas
+
+Para seleccionar las localidades de tratamiento, primer se emparejaron localidades de acuerdo a características observables y, para cada pareja se asignó a tratamiento y otra a control
+
+Tenemos entonces dos indicadores
+
+  - **treatment** es la variable de asignación aleatoria
+  
+  - **client** es la variable de adopción
+
+---
+
+# Cumplimiento imperfecto
+
+
+```r
+data.morocco&lt;-read_csv("./crepon_morocco.csv",
+                       locale = locale(encoding = "latin1"))   %&gt;% 
+  clean_names() %&gt;% 
+  filter(merge_indicator!=1)   # 2 y 3 incluyen la línea base
+```
+
+- Veamos la estadística descriptiva básica de la variable de jefe del hogar:
+
+
+```r
+data.morocco %&gt;% 
+  group_by(treatment) %&gt;%
+  summarize(mean=mean(head_age_bl),
+            std=sd(head_age_bl),
+            n=n()) %&gt;% 
+  ungroup()
+```
+
+```
+## # A tibble: 2 × 4
+##   treatment  mean   std     n
+##       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;
+## 1         0  47.8  16.0  2266
+## 2         1  48.7  16.1  2199
+```
+
+---
+
+# Prueba de balance con regresión
+
+
+```r
+#Con una regresión:
+dreg &lt;- lm(head_age_bl ~ treatment + factor(paire), data=data.morocco)
+
+round(summary(dreg)$coef[1:7,], digits=4)
+```
+
+```
+##                Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)     45.5784     2.0445 22.2927   0.0000
+## treatment        1.0765     0.4745  2.2687   0.0233
+## factor(paire)2   4.2363     2.7861  1.5205   0.1285
+## factor(paire)3   1.0289     2.9228  0.3520   0.7248
+## factor(paire)4   1.2312     3.0827  0.3994   0.6896
+## factor(paire)5   8.0742     2.9803  2.7092   0.0068
+## factor(paire)6  -0.2075     2.8601 -0.0725   0.9422
+```
+
+```r
+nobs(dreg)
+```
+
+```
+## [1] 4465
+```
+
+---
+
+# Errores estándar robustos a la heterocedasticidad
+
+
+
+```r
+#Ignorando la agrupación
+coeftest(dreg,
+         vcov = vcovHC(dreg, type="HC1"))[1:2,]
+```
+
+```
+##              Estimate Std. Error   t value
+## (Intercept) 45.578409  1.9133431 23.821347
+## treatment    1.076516  0.4739456  2.271392
+##                                                                                                                                   Pr(&gt;|t|)
+## (Intercept) 0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004761349
+## treatment   0.0231715298434622962719942051990074105560779571533203125000000000000000000000000000000000000000000000000000000000000000000000
+```
+
+---
+
+# Errores agrupados
+
+
+
+```r
+#CR0 implementa la corrección de sándwich para errores agrupados
+coef_test(dreg,
+          vcov = "CR0", 
+          cluster = data.morocco$demi_paire)[1:2,]
+```
+
+```
+##        Coef. Estimate    SE t-stat d.f. (Satt) p-val (Satt) Sig.
+##  (Intercept)    45.58 0.745  61.17        1.03      0.00936   **
+##    treatment     1.08 0.416   2.59       76.54      0.01161    *
+```
+
+---
+# Errores agrupados
+
+
+
+```r
+#Errores CR1S, que significan clustered roubst "Stata" :3
+coef_test(dreg,
+          vcov = "CR1S", 
+          cluster = data.morocco$demi_paire)[1:2,]
+```
+
+```
+##        Coef. Estimate    SE t-stat d.f. (Satt) p-val (Satt) Sig.
+##  (Intercept)    45.58 0.754  60.43        1.03      0.00947   **
+##    treatment     1.08 0.421   2.55       76.54      0.01262    *
+```
+
+---
+
+# Coleccionamos con stargazer
+
+.pull-left[
+
+```r
+stargazer(dreg, dreg, dreg,
+          type = "html",
+          se = list(sqrt(diag(vcovHC(dreg, type = "HC0"))),
+                    sqrt(diag(vcovCR (dreg, type = "CR0", cluster= data.morocco$demi_paire))),
+                    sqrt(diag(vcovCR (dreg, type = "CR1S", cluster= data.morocco$demi_paire)))),
+          column.labels =c("HC0", "CR0", "CR1S"),
+          report=("vc*p"),
+          keep = c("treatment"))
+```
+]
+
+.pull-right[
+
+&lt;table style="text-align:center"&gt;&lt;tr&gt;&lt;td colspan="4" style="border-bottom: 1px solid black"&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td colspan="3"&gt;&lt;em&gt;Dependent variable:&lt;/em&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td colspan="3" style="border-bottom: 1px solid black"&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td colspan="3"&gt;head_age_bl&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;HC0&lt;/td&gt;&lt;td&gt;CR0&lt;/td&gt;&lt;td&gt;CR1S&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;(1)&lt;/td&gt;&lt;td&gt;(2)&lt;/td&gt;&lt;td&gt;(3)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td colspan="4" style="border-bottom: 1px solid black"&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style="text-align:left"&gt;treatment&lt;/td&gt;&lt;td&gt;1.077&lt;sup&gt;**&lt;/sup&gt;&lt;/td&gt;&lt;td&gt;1.077&lt;sup&gt;***&lt;/sup&gt;&lt;/td&gt;&lt;td&gt;1.077&lt;sup&gt;**&lt;/sup&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;p = 0.022&lt;/td&gt;&lt;td&gt;p = 0.010&lt;/td&gt;&lt;td&gt;p = 0.011&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td colspan="4" style="border-bottom: 1px solid black"&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style="text-align:left"&gt;Observations&lt;/td&gt;&lt;td&gt;4,465&lt;/td&gt;&lt;td&gt;4,465&lt;/td&gt;&lt;td&gt;4,465&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;R&lt;sup&gt;2&lt;/sup&gt;&lt;/td&gt;&lt;td&gt;0.052&lt;/td&gt;&lt;td&gt;0.052&lt;/td&gt;&lt;td&gt;0.052&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;Adjusted R&lt;sup&gt;2&lt;/sup&gt;&lt;/td&gt;&lt;td&gt;0.035&lt;/td&gt;&lt;td&gt;0.035&lt;/td&gt;&lt;td&gt;0.035&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;Residual Std. Error (df = 4383)&lt;/td&gt;&lt;td&gt;15.730&lt;/td&gt;&lt;td&gt;15.730&lt;/td&gt;&lt;td&gt;15.730&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;F Statistic (df = 81; 4383)&lt;/td&gt;&lt;td&gt;2.988&lt;sup&gt;***&lt;/sup&gt;&lt;/td&gt;&lt;td&gt;2.988&lt;sup&gt;***&lt;/sup&gt;&lt;/td&gt;&lt;td&gt;2.988&lt;sup&gt;***&lt;/sup&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td colspan="4" style="border-bottom: 1px solid black"&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;em&gt;Note:&lt;/em&gt;&lt;/td&gt;&lt;td colspan="3" style="text-align:right"&gt;&lt;sup&gt;*&lt;/sup&gt;p&lt;0.1; &lt;sup&gt;**&lt;/sup&gt;p&lt;0.05; &lt;sup&gt;***&lt;/sup&gt;p&lt;0.01&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+]
+
+---
+
+class: inverse, middle, center
+
+# Remuestreo
+
+---
+
+# Semilla
+
+Fijar una semilla permite generar números pseudo aleatorios que pueden replicarse
+
+
+```r
+set.seed(927)
+
+data.morocco&lt;-read_csv("./crepon_morocco.csv",
+                       locale = locale(encoding = "latin1"))   %&gt;% 
+  clean_names() %&gt;%
+  select(treatment, client, expense_total)
+
+obs &lt;- nrow(data.morocco)
+obs
+```
+
+```
+## [1] 5898
+```
+
+```r
+#Veamos la media del gasto total
+mean(data.morocco$expense_total, na.rm=T)
+```
+
+```
+## [1] 22396.94
+```
+
+---
+
+# Muestra bootstrap
+
+Una muestra bootstrap se obtiene remuestreando del data frame original una nueva muestra del mismo tamaño con reemplazo
+
+
+```r
+data.b &lt;- data.morocco[sample(nrow(data.morocco),
+                              obs,
+                              replace = TRUE), ]
+
+mean(data.b$expense_total, na.rm=T)
+```
+
+```
+## [1] 19802.54
+```
+
+---
+
+# Muestra bootstrap
+
+Con otra muestra, la media es diferente
+
+
+```r
+data.b &lt;- data.morocco[sample(nrow(data.morocco),
+                              obs,
+                              replace = TRUE), ]
+mean(data.b$expense_total, na.rm=T)
+```
+
+```
+## [1] 20727.35
+```
+
+---
+
+# Ciclos
+
+En muchas aplicaciones es necesario realizar la misma tarea muchas veces
+
+Este es el pan de cada día, por ejemplo, de las técnicas de simulación Monte Carlo
+
+
+```r
+reps=10
+resultados &lt;- data.frame(medias=matrix(ncol = 1, nrow = reps))
+
+for (i in 1:reps)
+{
+  data.b &lt;- data.morocco[sample(nrow(data.morocco),
+                                obs,
+                                replace = TRUE), ]
+
+  
+  #Guardamos en cada entrada la media estimada
+  resultados[i,1] &lt;- mean(data.b$expense_total, na.rm=T)
+}
+```
+
+---
+
+class: center, middle
+
+Presentación creada usando el paquete [**xaringan**](https://github.com/yihui/xaringan) en R.
+
+El *chakra* viene de [remark.js](https://remarkjs.com), [**knitr**](http://yihui.org/knitr), y [R Markdown](https://rmarkdown.rstudio.com).
+
+Material de clase en versión preliminar.
+
+**No reproducir, no distribuir, no citar.**
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script src="libs/cols_macro.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9",
+"navigation": {
+"scroll": false
+}
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

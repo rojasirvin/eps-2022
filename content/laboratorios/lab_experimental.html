@@ -123,8 +123,7 @@ t.test(data=filter(data.angrist.table1,noshow==0),
 ## 	Welch Two Sample t-test
 ## 
 ## data:  age by sfsp
-## t = -0.76023, df = 168.4, p-value =
-## 0.4482
+## t = -0.76023, df = 168.4, p-value = 0.4482
 ## alternative hypothesis: true difference in means between group Control and group SFSP is not equal to 0
 ## 95 percent confidence interval:
 ##  -0.14390888  0.06388798
@@ -146,12 +145,9 @@ summary(dif_age)$coef
 ```
 
 ```
-##                Estimate Std. Error
-## (Intercept) 18.27653631 0.01618504
-## sfspSFSP     0.04001045 0.05441196
-##                  t value  Pr(&gt;|t|)
-## (Intercept) 1129.2242305 0.0000000
-## sfspSFSP       0.7353245 0.4622518
+##                Estimate Std. Error      t value  Pr(&gt;|t|)
+## (Intercept) 18.27653631 0.01618504 1129.2242305 0.0000000
+## sfspSFSP     0.04001045 0.05441196    0.7353245 0.4622518
 ```
 
 
@@ -167,18 +163,12 @@ summary(predict_t)$coef
 ```
 
 ```
-##                  Estimate  Std. Error
-## (Intercept)  0.9110852259 0.269011127
-## age          0.0097489103 0.011876867
-## female      -0.0017004625 0.014577031
-## mtongue      0.0184883163 0.015871109
-## gpa0        -0.0001641727 0.001708233
-##                 t value     Pr(&gt;|t|)
-## (Intercept)  3.38679384 0.0007246546
-## age          0.82083184 0.4118669919
-## female      -0.11665355 0.9071495547
-## mtongue      1.16490385 0.2442353306
-## gpa0        -0.09610672 0.9234481087
+##                  Estimate  Std. Error     t value     Pr(&gt;|t|)
+## (Intercept)  0.9110852259 0.269011127  3.38679384 0.0007246546
+## age          0.0097489103 0.011876867  0.82083184 0.4118669919
+## female      -0.0017004625 0.014577031 -0.11665355 0.9071495547
+## mtongue      0.0184883163 0.015871109  1.16490385 0.2442353306
+## gpa0        -0.0001641727 0.001708233 -0.09610672 0.9234481087
 ```
 ---
 
@@ -369,12 +359,9 @@ summary(reg)$coef[1:2,]
 ```
 
 ```
-##              Estimate Std. Error  t value
-## (Intercept) 1.6473575 0.17724946 9.294006
-## sfsp        0.1586396 0.07905252 2.006762
-##                                 Pr(&gt;|t|)
-## (Intercept) 0.00000000000000000005627702
-## sfsp        0.04497032756182435531133734
+##              Estimate Std. Error  t value                     Pr(&gt;|t|)
+## (Intercept) 1.6473575 0.17724946 9.294006 0.00000000000000000005627702
+## sfsp        0.1586396 0.07905252 2.006762 0.04497032756182435531133734
 ```
 ]
 ---
