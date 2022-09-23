@@ -1,7 +1,6 @@
 ---
 title: "Respuestas a la tarea 1"
-summary: Miércoles 21 de septiembre a las 20:00
-weight: 1
+weight: 2
 output:
   html_document:
     df_print: paged
