@@ -247,13 +247,17 @@ Semana de examen parcial.
 ## Semana 14
 
 * Aprendizaje automático y _big data_ 
-  + \* Athey, S. (2017). Beyond prediction: Using big data for policy problems. *Science*, 355(6324), 483-485.  
+  + Athey, S. (2017). Beyond prediction: Using big data for policy problems. *Science*, 355(6324), 483-485.  
   + \* Athey, S., & Imbens, G. W. (2019). Machine learning methods that economists should know about. *Annual Review of Economics*, 11.
+  + \* Baiardi, A., & Naghi, A. A. (2021). The value added of machine learning to causal inference: Evidence from revisited studies. arXiv preprint arXiv:2101.00878.
   + Chetty, R. (2021). Improving equality of opportunity: New insights from big data. *Contemporary Economic Policy*, 39(1), 7-41.
+  + \+ Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., & Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. *Econometrics Journal*, 21(1), pp. C1–C68.
+  + Chernozhukov, V., Demirer, M., Duflo, E., & Fernandez-Val, I. (2018). Generic machine learning inference on heterogeneous treatment effects in randomized experiments, with an application to immunization in India. Woring Paper No. w24678. National Bureau of Economic Research.
   + Cole, M. A., Elliott, R. J., & Liu, B. (2020). The impact of the Wuhan Covid-19 lockdown on air pollution and health: a machine learning and augmented synthetic control approach. *Environmental and Resource Economics*, 76(4), 553-580.
   + Naimi, A. I., Mishler, A. E., & Kennedy, E. H. (2017). Challenges in obtaining valid causal effect estimates with machine learning algorithms. ArXiv preprint 1711.07137.
   + Storm, H., Baylis, K., & Heckelei, T. (2020). Machine learning in agricultural and applied economics. *European Review of Agricultural Economics*, 47(3), 849-892.
   + Torrats-Espinosa, G. (2021). Using machine learning to estimate the effect of racial segregation on COVID-19 mortality in the United States. *Proceedings of the National Academy of Sciences*, 118(7).
+  + \+ Wager, S., & Athey, S. (2018). Estimation and inference of heterogeneous treatment effects using random forests. *Journal of the American Statistical Association*, 113(523), 1228-1242.
   + \* Varian, H. R. (2014). Big data: New tricks for econometrics. *Journal of Economic Perspectives*, 28(2), 3-28
 
 
