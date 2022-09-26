@@ -95,18 +95,18 @@ class: inverse, middle, center
 .pull-left[
 - Si realizamos una prueba, la probabilidad de cometer un error es $\alpha$ y la de no cometer un error es $1-\alpha$
 
-- Si realizamos $n$ pruebas, la probabilidad de no cometer un error es $(1-\alpha)^n$ y la probabilidad de cometer al menos un error es $1-(1-\alpha)^n$
+- Si realizamos $m$ pruebas, la probabilidad de no cometer un error es $(1-\alpha)^m$ y la probabilidad de cometer al menos un error es $1-(1-\alpha)^m$
 
 - Es decir, la probabilidad de cometer al menos un error se incrementa exponencialmente
 ]
 
 .pull-right[
 ```{r echo=T, eval=T, fig.height= 5}
-alpha=0.05
-n <- 1:1000
-p <- 1-(1-alpha)^n
+alpha <- 0.05
+m <- 1:100
+p <- 1-(1-alpha)^m
 
-plot(p,n, xlab="n", ylab="1-(1-alpha)^n")
+plot(m,p, xlab="n", ylab="1-(1-alpha)^m")
 
 ```
 ]
@@ -150,7 +150,7 @@ class: inverse, middle, center
 
 - Recordemos que $p_i$ es la probabilidad de que el estadístico $T_i$ exceda el valor teórico $t_i$
 
-- Ordenamos las hipótesis de menor a mayor,con $p_1$ siendo el valor más pequeño: $p_1\leq p_2\ldots \leq p_n$
+- Ordenamos las hipótesis de menor a mayor,con $p_1$ siendo el valor más pequeño: $p_1\leq p_2\ldots \leq p_m$
 
 
 ---
@@ -163,7 +163,7 @@ class: inverse, middle, center
 
 - Consiste en rechazar $H_i$ si $p_i\leq \alpha_i$, donde $\alpha_i$ se escoge de forma que $\sum_i\alpha_i=\alpha$
 
-- Usualmente se hace $\alpha_i=\frac{\alpha}{n}$
+- Usualmente se hace $\alpha_i=\frac{\alpha}{m}$
 
 --
 
@@ -173,7 +173,7 @@ class: inverse, middle, center
 
 - Noten que esta corrección es bastante conservadora
 
-- También podemos ver este test como crear unos valores $p^B$ ajustados: $p_i^B=p_i\times n$
+- También podemos ver este test como crear unos valores $p^B$ ajustados: $p_i^B=p_i\times m$
 
 ---
 
@@ -196,7 +196,7 @@ class: inverse, middle, center
 --
 
 - Sea $k$ el más grande de los $i$ tal que
-$$p_i\leq\frac{i}{n}\alpha$$
+$$p_i\leq\frac{i}{m}\alpha$$
 entonces rechar todos los $H_i$ para $i=1,2,\ldots,k$
 
 - En la práctica usamos R
@@ -211,7 +211,7 @@ entonces rechar todos los $H_i$ para $i=1,2,\ldots,k$
 
 data.pvalues<-read_csv("./data_benjamini_hochberg.csv",
                        locale = locale(encoding = "latin1"))  
-n <- 15
+m <- 15
 alpha <- 0.05
 ```
 ]
@@ -231,7 +231,7 @@ data.pvalues
 ```{r echo=T, include=T, eval=T, message=F, warning=F}
 #Bonferroni
 data.bonferroni <- data.pvalues %>% 
-  mutate(bonferroni_alpha=alpha/n) %>% 
+  mutate(bonferroni_alpha=alpha/m) %>% 
   mutate(bonferrini_rechazar=ifelse(poriginal<=bonferroni_alpha,1,0))
 ```
 ]
@@ -253,7 +253,7 @@ data.bonferroni
 ```{r echo=T, include=T, eval=T, message=F, warning=F}
 #Benjamini & Hochberg
 data.bh <- data.pvalues %>% 
-  mutate(bh_alpha=alpha*hipotesis/n) %>% 
+  mutate(bh_alpha=alpha*hipotesis/m) %>% 
   mutate(bh_rechazar=ifelse(poriginal<=bh_alpha,1,0))
 ```
 ]
