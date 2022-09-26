@@ -15,7 +15,6 @@ weight: 30
 [Múltiples hipótesis](/laboratorios/lab_multiples_hipotesis.html)
 
 
-
 # Datos
 
 [STAR_public_use.csv](/laboratorios/STAR_public_use.csv)
