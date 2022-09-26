@@ -12,6 +12,10 @@ weight: 30
 
 [Errores agrupados y remuestreo en R](/laboratorios/lab_errores_agrupados.html)
 
+[Múltiples hipótesis](/laboratorios/lab_multiples_hipotesis.html)
+
+
+
 # Datos
 
 [STAR_public_use.csv](/laboratorios/STAR_public_use.csv)
