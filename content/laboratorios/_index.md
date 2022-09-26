@@ -18,8 +18,12 @@ weight: 30
 
 [crepon_morocco.csv](/laboratorios/crepon_morocco.csv)
 
+[data_benjamini_hochberg.csv](/laboratorios/data_benjamini_hochberg.csv)
+
 # Scripts
 
 [lab_experimental.R](/laboratorios/lab_experimental.R)
 
 [lab_errores_agrupados.R](/laboratorios/lab_errores_agrupados.R)
+
+[lab_multiples_hipotesis.R](/laboratorios/lab_multiples_hipotesis.R)

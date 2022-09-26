@@ -1,0 +1,227 @@
+---
+title: "Hipótesis múltiples"
+author: "Irvin Rojas"
+institute: "CIDE"
+header-includes:
+  - \usepackage{tikz}
+  - \usetikzlibrary{shapes, shadows,arrows}
+output:
+  xaringan::moon_reader:
+    css: [default, "libs/cide.css", metropolis-fonts, "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap-grid.min.css", "https://use.fontawesome.com/releases/v5.7.2/css/all.css", "https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css"]
+    seal: false
+    chakra: "https://remarkjs.com/downloads/remark-latest.min.js"
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      titleSlideClass: ["middle", "center"]
+      ratio: "16:9"
+      beforeInit: ["https://platform.twitter.com/widgets.js", "libs/cols_macro.js"]
+      navigation:
+        scroll: false
+
+
+---
+
+
+
+
+
+<p>class: title-slide</p>
+<style type="text/css">
+.huge .remark-code { /*Change made here*/
+  font-size: 200% !important;
+}
+.tiny .remark-code { /*Change made here*/
+  font-size: 60% !important;
+}
+</style>
+<p>.title[
+# Hipótesis múltiples]
+.subtitle[
+## Evaluación de Programas]
+.author[
+### Irvin Rojas <br> <a href="https://www.rojasirvin.com/">rojasirvin.com</a> <br> <a href="https://github.com/rojasirvin"><i class="fab fa-github"></i></a> <a href="https://twitter.com/RojasIrvin"><i class="fab fa-twitter"></i></a> <a href="https://scholar.google.com/citations?user=FUwdSTMAAAAJ&amp;hl=en"><i class="ai ai-google-scholar"></i></a>]</p>
+<p>.affiliation[
+### Centro de Investigación y Docencia Económicas <br> División de Economía]</p>
+<hr />
+<p>class: inverse, middle, center</p>
+<div id="hipótesis-múltiples" class="section level1">
+<h1>Hipótesis múltiples</h1>
+<hr />
+</div>
+<div id="hipótesis-múltiples-1" class="section level1">
+<h1>Hipótesis múltiples</h1>
+<ul>
+<li><p><strong>Error tipo I</strong>: concluir que hay un efecto de tratamiento cuando la <span class="math inline">\(H_0\)</span> es verdadera, es decir, cuando <span class="math inline">\(H_0:\;\beta_i=0\)</span></p></li>
+<li><p>En una investigación fijamos <span class="math inline">\(\alpha\)</span>, la probabilidad de rechazar <span class="math inline">\(H_0\)</span> cuando <span class="math inline">\(H_0\)</span> es cierto</p></li>
+<li><p>En economía trabajamos con <span class="math inline">\(\alpha=0.05\)</span> o <span class="math inline">\(\alpha=0.01\)</span></p></li>
+<li><p>El problema con probar múltiples hipótesis es que inflamos la tasa de error tipo I</p></li>
+</ul>
+<p>–</p>
+<ul>
+<li>Por ejemplo, si tenemos 100 hipótesis y si usamos un valor estándar de <span class="math inline">\(\alpha=0.05\)</span>, esperaríamos rechazar 5 hipótesis <em>por suerte</em></li>
+</ul>
+<hr />
+</div>
+<div id="hipótesis-múltiples-2" class="section level1">
+<h1>Hipótesis múltiples</h1>
+<p>.pull-left[
+- Si realizamos una prueba, la probabilidad de cometer un error es <span class="math inline">\(\alpha\)</span> y la de no cometer un error es <span class="math inline">\(1-\alpha\)</span>]</p>
+<p>.pull-right[]</p>
+<hr />
+</div>
+<div id="hipótesis-múltiples-3" class="section level1">
+<h1>Hipótesis múltiples</h1>
+<ul>
+<li><p>Dos estrategias que abordaremos son:</p>
+<ul>
+<li><p>Controlar o ajustar <span class="math inline">\(\alpha\)</span></p></li>
+<li><p>Crear índices que agreguen varias variables</p></li>
+</ul></li>
+</ul>
+<hr />
+<p>class: inverse, middle, center</p>
+</div>
+<div id="control-del-error-tipo-i" class="section level1">
+<h1>Control del error tipo I</h1>
+<hr />
+</div>
+<div id="control-del-error-tipo-i-1" class="section level1">
+<h1>Control del error tipo I</h1>
+<ul>
+<li><p>Popper (1995), Multiple Hypothesis Testing</p></li>
+<li><p>Definimos <em>familias</em> de variables</p></li>
+<li><p>Haremos el ajuste <em>hacia adentro</em> de estas familias</p></li>
+<li><p>Antes habíamos estudiado de Banerjee et al. (2015)</p>
+<ul>
+<li>Seguridad alimentaria</li>
+<li>Consumo</li>
+<li>Activos</li>
+<li>Salud mental</li>
+</ul></li>
+<li><p>Dentro de cada familia tenemos <span class="math inline">\(n\)</span> hipótesis <span class="math inline">\(H_i\)</span>, con un valor <span class="math inline">\(p\)</span> asociado <span class="math inline">\(p_i\)</span></p></li>
+<li><p>Recordemos que <span class="math inline">\(p_i\)</span> es la probabilidad de que el estadístico <span class="math inline">\(T_i\)</span> exceda el valor teórico <span class="math inline">\(t_i\)</span></p></li>
+<li><p>Ordenamos las hipótesis de menor a mayor,con <span class="math inline">\(p_1\)</span> siendo el valor más pequeño: <span class="math inline">\(p_1\leq p_2\ldots \leq p_n\)</span></p></li>
+</ul>
+<hr />
+</div>
+<div id="método-de-bonferroni" class="section level1">
+<h1>Método de Bonferroni</h1>
+<ul>
+<li>El método propuesto por Bonferroni controla la <strong>tasa de error por familia</strong> (FEWR por <em>family-wise error rate</em>) definida como la probabilidad de cometer al menos un error tipo I</li>
+</ul>
+<p>–</p>
+<ul>
+<li><p>Consiste en rechazar <span class="math inline">\(H_i\)</span> si <span class="math inline">\(p_i\leq \alpha_i\)</span>, donde <span class="math inline">\(\alpha_i\)</span> se escoge de forma que <span class="math inline">\(\sum_i\alpha_i=\alpha\)</span></p></li>
+<li><p>Usualmente se hace <span class="math inline">\(\alpha_i=\frac{\alpha}{n}\)</span></p></li>
+</ul>
+<p>–</p>
+<ul>
+<li>Por ejemplo, con dos tests y <span class="math inline">\(\alpha=0.05\)</span>, <span class="math inline">\(\alpha_i^B=0.025\)</span></li>
+</ul>
+<p>–</p>
+<ul>
+<li><p>Noten que esta corrección es bastante conservadora</p></li>
+<li><p>También podemos ver este test como crear unos valores <span class="math inline">\(p^B\)</span> ajustados: <span class="math inline">\(p_i^B=p_i\times n\)</span></p></li>
+</ul>
+<hr />
+</div>
+<div id="por-qué-preocuparnos-por-la-fwer" class="section level1">
+<h1>¿Por qué preocuparnos por la FWER?</h1>
+<ul>
+<li><p>La idea de la FWER tiene sentido si nos preocupa tener incluso un solo falso positivo</p></li>
+<li><p>En la práctica, podemos vivir con algunos falsos positivos</p></li>
+</ul>
+<hr />
+</div>
+<div id="método-de-benjamini-y-hochberg" class="section level1">
+<h1>Método de Benjamini y Hochberg</h1>
+<ul>
+<li><p>Este método controla la tasa de falso descubrimiento</p></li>
+<li><p>Si <span class="math inline">\(V\)</span> es el número de falsos rechazos (cuando rechazamos la <span class="math inline">\(H_0\)</span> que es verdadera) y si <span class="math inline">\(R\)</span> es el número total de rechazos, entonces <span class="math inline">\(Q=V/R\)</span> es la proporción de falsos rechazos</p></li>
+<li><p>Al valor esperado de <span class="math inline">\(Q\)</span> se le conoce como <strong>tasa de falsos rechazos</strong> (FDR por <em>false discovery rate</em>)</p></li>
+</ul>
+<p>–</p>
+<ul>
+<li><p>Sea <span class="math inline">\(k\)</span> el más grande de los <span class="math inline">\(i\)</span> tal que
+<span class="math display">\[p_i\leq\frac{i}{n}\alpha\]</span>
+entonces rechar todos los <span class="math inline">\(H_i\)</span> para <span class="math inline">\(i=1,2,\ldots,k\)</span></p></li>
+<li><p>En la práctica usamos R</p></li>
+</ul>
+<hr />
+</div>
+<div id="ejemplo-benjamini-hochberg-1995" class="section level1">
+<h1>Ejemplo: Benjamini &amp; Hochberg (1995)</h1>
+<p>.pull-left[]</p>
+<p>.pull-right[]</p>
+<hr />
+</div>
+<div id="ejemplo-bonferroni" class="section level1">
+<h1>Ejemplo: Bonferroni</h1>
+<p>.pull-left[]</p>
+<p>.tiny[
+.pull-right[]]</p>
+<hr />
+</div>
+<div id="ejemplo-benjamini-hochberg" class="section level1">
+<h1>Ejemplo: Benjamini &amp; Hochberg</h1>
+<p>.pull-left[]</p>
+<p>.tiny[
+.pull-right[]]</p>
+<hr />
+<p>class: inverse, middle, center</p>
+</div>
+<div id="índices" class="section level1">
+<h1>Índices</h1>
+<hr />
+</div>
+<div id="creación-de-z-scores" class="section level1">
+<h1>Creación de <span class="math inline">\(z\)</span>-scores</h1>
+<ul>
+<li><p>Otra forma comúnmente usada de evitar el problema de las múltiples hipótesis es crear índices</p></li>
+<li><p>Kling, Liebmand y Katz (2007) proponen el siguiente promedio de los <span class="math inline">\(z\)</span>-score para generar un solo índice</p>
+<ol style="list-style-type: decimal">
+<li><p>Definir las familias y las variables que componen cada familia, donde <span class="math inline">\(y_{ij}\)</span> es la <span class="math inline">\(j\)</span>ésima variable en la familia con <span class="math inline">\(J\)</span> variables</p></li>
+<li><p>Definir las varibles <span class="math inline">\(y_{ij}\)</span> de tal forma que mayores valores se interpreten como <em>mejora</em></p></li>
+<li><p>Crear <span class="math inline">\(z_{ij}\)</span> como <span class="math inline">\(z_{ij}=\frac{y_{ij}-\bar{y_j}^C}{sd(y_j)^C}\sim(0,1)\)</span>, es decir, estandarizar cada una de las <span class="math inline">\(J\)</span> variables usando al grupo de control como referencia</p></li>
+<li><p>Crear <span class="math inline">\(z_i\)</span>, un solo índice para cada individuo que agregue los <span class="math inline">\(J\)</span> índices creados antes</p></li>
+</ol></li>
+<li><p>El procedimiento descrito en Banerjee et al. (2015) es bastante general, pues incluye el caso donde hay varias rondas de seguimiento y varios países</p></li>
+</ul>
+<hr />
+</div>
+<div id="creación-de-z-scores-1" class="section level1">
+<h1>Creación de <span class="math inline">\(z\)</span>-scores</h1>
+<ul>
+<li><p>Podemos escribir el índice descrito como</p>
+<p><span class="math display">\[z_i=\frac{(\frac{1}{J}\sum_j z_{ij})-\bar{z}_j^C}{sd(z_j^C)}\]</span></p></li>
+<li><p>Esta transformación tiene la ventaja de que en la siguiente regresión de efecto de tratamiento</p></li>
+</ul>
+<p><span class="math display">\[z_i=\alpha+\beta T_i + X_i&#39;\gamma+\varepsilon_i\]</span></p>
+<p>el coeficiente <span class="math inline">\(\beta\)</span> se interpreta como el efecto del tratamiento medido en desviaciones estándar con respecto a la media del grupo de control</p>
+<p>–</p>
+<ul>
+<li><p>Noten que todos las variables dentro de la familia <em>pesan</em> igual</p></li>
+<li><p>Quizás nos gustaría tomar en cuenta la correlación entre las variables dentro del índice</p></li>
+</ul>
+<hr />
+</div>
+<div id="índice-de-anderson" class="section level1">
+<h1>Índice de Anderson</h1>
+<ul>
+<li><a href="https://are.berkeley.edu/~mlanderson/pdf/Anderson%202008a.pdf">Anderson (2008)</a> propone el siguiente índice, que puede verse como una generalización del de Kling:</li>
+</ul>
+<p><span class="math display">\[\bar{s}_i=\frac{1}{W_{i}}\sum_{j\in J} w_j z_{ij}\]</span>
+- <span class="math inline">\(w_j\)</span> es el peso para la variable <span class="math inline">\(j\)</span> y <span class="math inline">\(W_i=\sum_{j\in J}w_{j}\)</span></p>
+<ul>
+<li>Los pesos son una función de la matriz de covarianzas entre las variables que conforman la familia</li>
+</ul>
+<hr />
+<p>class: center, middle</p>
+<p>Presentación creada usando el paquete <a href="https://github.com/yihui/xaringan"><strong>xaringan</strong></a> en R.</p>
+<p>El <em>chakra</em> viene de <a href="https://remarkjs.com">remark.js</a>, <a href="http://yihui.org/knitr"><strong>knitr</strong></a>, y <a href="https://rmarkdown.rstudio.com">R Markdown</a>.</p>
+<p>Material de clase en versión preliminar.</p>
+<p><strong>No reproducir, no distribuir, no citar.</strong></p>
+</div>
