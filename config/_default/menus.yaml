@@ -25,4 +25,7 @@ main:
   - name: Laboratorios
     url: '/laboratorios'
     weight: 80
+  - name: Notas
+    url: '/notas'
+    weight: 90
   
