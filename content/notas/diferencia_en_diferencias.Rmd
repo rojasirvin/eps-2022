@@ -1,0 +1,180 @@
+---
+title: "Diferencia en diferencias"
+summary: " "
+weight: 1
+type: book
+toc: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE)
+
+library(tidyverse)
+library(janitor)
+library(sandwich)
+library(readr)
+library(clubSandwich)
+library(modelsummary)
+library(estimatr)
+library(lubridate)
+library(ExPanDaR) #for describing panel data
+library(plm)
+library(ggbrace)
+```
+
+## Corridas bancarias en la Gran Depresión
+
+Angrist & Pischke (2014) describen lo sucedido con el sector bancario en Mississippi durante la Gran Depresión. En EUA, la FED tiene 12 bancos regionales y cada uno tiene autonomía para tomar ciertas decisiones de política monetaria. En particular, Mississippi tiene una parte del estado bajo el mando del distrito 6 (Atlanta) y la otra mitad en el distrito 8 (San Luis).
+
+```{r, echo=F, out.width="75%",fig.cap='Fuente: Richardson & Troost (2009)',fig.align='center'}
+knitr::include_graphics("./banks_map.png")
+```
+
+Como respuesta a las corridas bancarias que caracterizaron la crisis de 1929, los bancos comerciales en Mississippi se vieron expuestos a dos políticas distintas.
+
+$$
+T=
+\begin{cases}
+1\quad\quad \text{proveer liquidez adicional (distrito 6)} \\
+0\quad\quad \text{dar igual o menos liquidez (distrito 8)} \\
+\end{cases}
+$$
+
+Si estamos interesados en la cantidad de bancos que sobrevivieron y decir algo sobre qué política es más efectiva, ¿qué podemos hacer?
+
+Una primera respuesta sería contar la diferencia después de la crisis:
+
+| Distrito 8 | Distrito 6 | Diferencia |
+|:---:|:---:|:---:|
+| $T=0$ | $T=1$ | |
+| 132 bancos | 121 bancos | 11 bancos
+
+Pareciera que la política de proveer liquidez, *easy money*, **causó** que quebraran más bancos Sin embargo, esta comparación claramente ignora las condiciones iniciales.
+
+## Geometría de DID
+
+Gráficamente observamos:
+
+```{r, echo=T, eval=T, message=F, warning=F, out.width="90%", fig.align='center'}
+banks<-read_csv("./banks_mm.csv",
+                       locale = locale(encoding = "latin1"))
+
+banks <- banks %>%
+  filter(month(date) == 7L,
+         mday(date) == 1L) %>%
+  mutate(year = year(date)) %>%
+  select(year,
+         matches("bi[ob][68]")) %>% 
+  select(year,bib6,bib8) %>% 
+  gather(distrito,banks,bib6:bib8) %>% 
+  mutate(treatment=ifelse(distrito=="bib6",1,0)) %>% 
+  mutate(post=ifelse(year>=1931,1,0))
+
+banks %>% 
+  mutate(banks=ifelse(year==1930 | year==1931,banks,NA)) %>% 
+  filter(year <= 1932) %>% 
+  ggplot(aes(x=year, y=banks, color=distrito)) +
+  geom_line(size=2) +
+  scale_y_continuous(limits=c(100,180))
+```
+
+Del distrito 8 (no tratado) podemos obtener la pendiente:
+
+$$m_{NT}=\frac{Y_{8,post}-Y_{8,pre}}{X_{8,post}-X_{8,pre}}=\frac{132-165}{1931-1930}=-33$$
+
+Y entonces, podemos encontrar cuál hubiera sido el número de bancos en el distrio 6 (tratado) si hubiera seguido la pendiente del distrito 8:
+
+$$m_T=\frac{\tilde{Y}_{6,post}-Y_{6,pre}}{X_{6,post}-X_{6,pre}}=\frac{\tilde{Y}_{6,post}-135}{1931-1930}=-33$$
+
+Por tanto, $\tilde{Y}_{6,post}=102$ es el número de bancos que el distrito 6 hubiera tenido si hubiera seguido una tendencia paralela a la del distrito 8.
+
+Podemos contruir el contrafactual para el distrito 6 observando la pendiente del distrito 8
+
+```{r, out.width="100%", fig.align='center', message=F, warning=F, echo=T, eval=T, fig.height=5}
+banks_contrafactual <- banks %>%
+    mutate(banks=ifelse(year==1930 | year==1931,banks,NA)) %>% 
+  filter(year <= 1932) %>% 
+  mutate(tipo="observado")
+  
+d6_contrafactual <- banks_contrafactual %>% 
+  filter(distrito=="bib6") %>% 
+  mutate(banks=ifelse(year==1931,102,banks),
+         tipo="contrafactual")
+
+banks_contrafactual <- rbind(banks_contrafactual,d6_contrafactual)
+
+banks_contrafactual %>% 
+  ggplot(aes(x=year, y=banks, color=distrito, linetype=tipo))+
+  geom_line(size=2) +
+  scale_linetype_manual(values=c("dashed", "solid")) +
+  scale_y_continuous(limits=c(100,180))+
+  geom_brace(aes(c(1931.1,1931.3), c(121,102), label="Efecto del\ntratamiento"), inherit.data=F, labelsize=3, rotate = 90)
+
+```
+
+## Diferencia en diferencias en el caso 2 x 2
+
+Podemos dar así una primera definición de lo que es la diferencia en diferencias del número de bancos que sobrevivieron a la Gran Depresión en Mississippi
+
+$$
+\begin{aligned}
+\delta_{DID}&=(Y_{6,post}-Y_{6,pre})-(Y_{8,post}-Y_{8,pre}) \\
+&=(Y_{6,1931}-Y_{6,1931})-(Y_{8,1930}-Y_{8,1930}) \\
+&=(121-135)-(132-165) \\
+&=-14+33 = 19
+\end{aligned}
+$$
+
+El estimador de DID toma en cuenta las diferencias inciales. En este caso, el distrito 8 ya tenía más bancos abiertos que el 6 antes de la crisis. DID construye un contrafactual para las unidades tratadas usando la pendiente de las unidades no tratadas
+
+
+## Tendencias comunes
+
+El supuesto fundamental es el de **tendencias comunes**, es decir, que en ausencia del tratamiento, el grupo de tratamiento se hubiera comportado igual al grupo de control.
+
+El supuesto de tendencias comunes es un supuesto entendido en el sentido contrafactual y no puede ser probado directamente.
+
+## Regresión para DID
+
+El método puede generalizarse a más periodos de tiempo . Aquí, una regresión nos permite identificar el efecto del tratamiento. Tenemos datos sobre el número de bancos en cada distrito en cada año (1929-1934). La regresión a estimar será:
+
+$$y_{dt}=\alpha+\beta T_d+\gamma POST_t + \delta_{r,DID}(T_d\times POST_t)+e_{dt}$$
+
+Aquí, $T_d$ es una dummy para los distritos tratados (distrito 6 en este caso). Les llamamos **efectos fijos individuales** y sirven para controlar diferencias entre distritos que no cambian en el tiempo.
+  
+Por otro lado $POST_t$ es una dummy para los periodos post tratamiento (1931 en adelante). Al término $T_d\times POST_t$ se le conoce como el **término de interacción**, que es una dummy igual a 1 para los distritos tratados en los años post intervención.
+
+Finalmente, $\delta_{r,DID}$ es el estimador de DID del efecto del tratamiento.
+
+
+Implementamos esto con un modelo lineal, donde **treatment** y **post** son variables indicadoras:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F}
+
+summary(lm(banks ~ treatment + post+ treatment*post,
+               data=banks))
+
+```
+
+Obtendríamos lo mismo usando un estimador *within* para datos en panel. Por ejemplo, con la librería *plm*:
+
+
+```{r echo=T, include=T, eval=T, message=F, warning=F}
+summary(plm(formula = banks ~ treatment*post,
+            data = banks,
+            model = "within",
+            index = c("distrito","year")))
+```
+Cuando tenemos muchas unidades y muchos periodos, es más eficiente trabajar con estimadores de panel.
+
+## Ejemplo 2x2 usando regresión
+
+Noten que si solo usamos dos años, obtenemos exactamente lo que obtendríamos haciendo las diferencias *a mano*:
+
+$$\delta_{DiD}=(Y_{6,1931}-Y_{6,1931})-(Y_{8,1930}-Y_{8,1930})=19$$
+
+```{r echo=T, include=T, eval=T, message=F, warning=F}
+summary(lm(banks ~ treatment + post+ treatment*post,
+               data=filter(banks,year==1930 | year==1931)))
+
+```

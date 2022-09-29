@@ -1,0 +1,207 @@
+---
+title: "Diferencia en diferencias"
+summary: " "
+weight: 1
+type: book
+toc: false
+---
+
+
+
+<div id="corridas-bancarias-en-la-gran-depresión" class="section level2">
+<h2>Corridas bancarias en la Gran Depresión</h2>
+<p>Angrist &amp; Pischke (2014) describen lo sucedido con el sector bancario en Mississippi durante la Gran Depresión. En EUA, la FED tiene 12 bancos regionales y cada uno tiene autonomía para tomar ciertas decisiones de política monetaria. En particular, Mississippi tiene una parte del estado bajo el mando del distrito 6 (Atlanta) y la otra mitad en el distrito 8 (San Luis).</p>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:unnamed-chunk-1"></span>
+<img src="banks_map.png" alt="Fuente: Richardson &amp; Troost (2009)" width="75%" />
+<p class="caption">
+Figure 1: Fuente: Richardson &amp; Troost (2009)
+</p>
+</div>
+<p>Como respuesta a las corridas bancarias que caracterizaron la crisis de 1929, los bancos comerciales en Mississippi se vieron expuestos a dos políticas distintas.</p>
+<p><span class="math display">\[
+T=
+\begin{cases}
+1\quad\quad \text{proveer liquidez adicional (distrito 6)} \\
+0\quad\quad \text{dar igual o menos liquidez (distrito 8)} \\
+\end{cases}
+\]</span></p>
+<p>Si estamos interesados en la cantidad de bancos que sobrevivieron y decir algo sobre qué política es más efectiva, ¿qué podemos hacer?</p>
+<p>Una primera respuesta sería contar la diferencia después de la crisis:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Distrito 8</th>
+<th align="center">Distrito 6</th>
+<th align="center">Diferencia</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><span class="math inline">\(T=0\)</span></td>
+<td align="center"><span class="math inline">\(T=1\)</span></td>
+<td align="center"></td>
+</tr>
+<tr class="even">
+<td align="center">132 bancos</td>
+<td align="center">121 bancos</td>
+<td align="center">11 bancos</td>
+</tr>
+</tbody>
+</table>
+<p>Pareciera que la política de proveer liquidez, <em>easy money</em>, <strong>causó</strong> que quebraran más bancos Sin embargo, esta comparación claramente ignora las condiciones iniciales.</p>
+</div>
+<div id="geometría-de-did" class="section level2">
+<h2>Geometría de DID</h2>
+<p>Gráficamente observamos:</p>
+<pre class="r"><code>banks&lt;-read_csv(&quot;./banks_mm.csv&quot;,
+                       locale = locale(encoding = &quot;latin1&quot;))
+
+banks &lt;- banks %&gt;%
+  filter(month(date) == 7L,
+         mday(date) == 1L) %&gt;%
+  mutate(year = year(date)) %&gt;%
+  select(year,
+         matches(&quot;bi[ob][68]&quot;)) %&gt;% 
+  select(year,bib6,bib8) %&gt;% 
+  gather(distrito,banks,bib6:bib8) %&gt;% 
+  mutate(treatment=ifelse(distrito==&quot;bib6&quot;,1,0)) %&gt;% 
+  mutate(post=ifelse(year&gt;=1931,1,0))
+
+banks %&gt;% 
+  mutate(banks=ifelse(year==1930 | year==1931,banks,NA)) %&gt;% 
+  filter(year &lt;= 1932) %&gt;% 
+  ggplot(aes(x=year, y=banks, color=distrito)) +
+  geom_line(size=2) +
+  scale_y_continuous(limits=c(100,180))</code></pre>
+<p><img src="/notas/diferencia_en_diferencias_files/figure-html/unnamed-chunk-2-1.png" width="90%" style="display: block; margin: auto;" /></p>
+<p>Del distrito 8 (no tratado) podemos obtener la pendiente:</p>
+<p><span class="math display">\[m_{NT}=\frac{Y_{8,post}-Y_{8,pre}}{X_{8,post}-X_{8,pre}}=\frac{132-165}{1931-1930}=-33\]</span></p>
+<p>Y entonces, podemos encontrar cuál hubiera sido el número de bancos en el distrio 6 (tratado) si hubiera seguido la pendiente del distrito 8:</p>
+<p><span class="math display">\[m_T=\frac{\tilde{Y}_{6,post}-Y_{6,pre}}{X_{6,post}-X_{6,pre}}=\frac{\tilde{Y}_{6,post}-135}{1931-1930}=-33\]</span></p>
+<p>Por tanto, <span class="math inline">\(\tilde{Y}_{6,post}=102\)</span> es el número de bancos que el distrito 6 hubiera tenido si hubiera seguido una tendencia paralela a la del distrito 8.</p>
+<p>Podemos contruir el contrafactual para el distrito 6 observando la pendiente del distrito 8</p>
+<pre class="r"><code>banks_contrafactual &lt;- banks %&gt;%
+    mutate(banks=ifelse(year==1930 | year==1931,banks,NA)) %&gt;% 
+  filter(year &lt;= 1932) %&gt;% 
+  mutate(tipo=&quot;observado&quot;)
+  
+d6_contrafactual &lt;- banks_contrafactual %&gt;% 
+  filter(distrito==&quot;bib6&quot;) %&gt;% 
+  mutate(banks=ifelse(year==1931,102,banks),
+         tipo=&quot;contrafactual&quot;)
+
+banks_contrafactual &lt;- rbind(banks_contrafactual,d6_contrafactual)
+
+banks_contrafactual %&gt;% 
+  ggplot(aes(x=year, y=banks, color=distrito, linetype=tipo))+
+  geom_line(size=2) +
+  scale_linetype_manual(values=c(&quot;dashed&quot;, &quot;solid&quot;)) +
+  scale_y_continuous(limits=c(100,180))+
+  geom_brace(aes(c(1931.1,1931.3), c(121,102), label=&quot;Efecto del\ntratamiento&quot;), inherit.data=F, labelsize=3, rotate = 90)</code></pre>
+<p><img src="/notas/diferencia_en_diferencias_files/figure-html/unnamed-chunk-3-1.png" width="100%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="diferencia-en-diferencias-en-el-caso-2-x-2" class="section level2">
+<h2>Diferencia en diferencias en el caso 2 x 2</h2>
+<p>Podemos dar así una primera definición de lo que es la diferencia en diferencias del número de bancos que sobrevivieron a la Gran Depresión en Mississippi</p>
+<p><span class="math display">\[
+\begin{aligned}
+\delta_{DID}&amp;=(Y_{6,post}-Y_{6,pre})-(Y_{8,post}-Y_{8,pre}) \\
+&amp;=(Y_{6,1931}-Y_{6,1931})-(Y_{8,1930}-Y_{8,1930}) \\
+&amp;=(121-135)-(132-165) \\
+&amp;=-14+33 = 19
+\end{aligned}
+\]</span></p>
+<p>El estimador de DID toma en cuenta las diferencias inciales. En este caso, el distrito 8 ya tenía más bancos abiertos que el 6 antes de la crisis. DID construye un contrafactual para las unidades tratadas usando la pendiente de las unidades no tratadas</p>
+</div>
+<div id="tendencias-comunes" class="section level2">
+<h2>Tendencias comunes</h2>
+<p>El supuesto fundamental es el de <strong>tendencias comunes</strong>, es decir, que en ausencia del tratamiento, el grupo de tratamiento se hubiera comportado igual al grupo de control.</p>
+<p>El supuesto de tendencias comunes es un supuesto entendido en el sentido contrafactual y no puede ser probado directamente.</p>
+</div>
+<div id="regresión-para-did" class="section level2">
+<h2>Regresión para DID</h2>
+<p>El método puede generalizarse a más periodos de tiempo . Aquí, una regresión nos permite identificar el efecto del tratamiento. Tenemos datos sobre el número de bancos en cada distrito en cada año (1929-1934). La regresión a estimar será:</p>
+<p><span class="math display">\[y_{dt}=\alpha+\beta T_d+\gamma POST_t + \delta_{r,DID}(T_d\times POST_t)+e_{dt}\]</span></p>
+<p>Aquí, <span class="math inline">\(T_d\)</span> es una dummy para los distritos tratados (distrito 6 en este caso). Les llamamos <strong>efectos fijos individuales</strong> y sirven para controlar diferencias entre distritos que no cambian en el tiempo.</p>
+<p>Por otro lado <span class="math inline">\(POST_t\)</span> es una dummy para los periodos post tratamiento (1931 en adelante). Al término <span class="math inline">\(T_d\times POST_t\)</span> se le conoce como el <strong>término de interacción</strong>, que es una dummy igual a 1 para los distritos tratados en los años post intervención.</p>
+<p>Finalmente, <span class="math inline">\(\delta_{r,DID}\)</span> es el estimador de DID del efecto del tratamiento.</p>
+<p>Implementamos esto con un modelo lineal, donde <strong>treatment</strong> y <strong>post</strong> son variables indicadoras:</p>
+<pre class="r"><code>
+summary(lm(banks ~ treatment + post+ treatment*post,
+               data=banks))
+## 
+## Call:
+## lm(formula = banks ~ treatment + post + treatment * post, data = banks)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -9.000 -7.125  0.000  3.125 14.000 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)     167.000      6.190  26.980 3.83e-09 ***
+## treatment       -29.000      8.754  -3.313 0.010652 *  
+## post            -49.000      7.581  -6.464 0.000195 ***
+## treatment:post   20.500     10.721   1.912 0.092224 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 8.754 on 8 degrees of freedom
+## Multiple R-squared:  0.8906, Adjusted R-squared:  0.8496 
+## F-statistic: 21.71 on 3 and 8 DF,  p-value: 0.0003369</code></pre>
+<p>Obtendríamos lo mismo usando un estimador <em>within</em> para datos en panel. Por ejemplo, con la librería <em>plm</em>:</p>
+<pre class="r"><code>summary(plm(formula = banks ~ treatment*post,
+            data = banks,
+            model = &quot;within&quot;,
+            index = c(&quot;distrito&quot;,&quot;year&quot;)))
+## Oneway (individual) effect Within Model
+## 
+## Call:
+## plm(formula = banks ~ treatment * post, data = banks, model = &quot;within&quot;, 
+##     index = c(&quot;distrito&quot;, &quot;year&quot;))
+## 
+## Balanced Panel: n = 2, T = 6, N = 12
+## 
+## Residuals:
+##        Min.     1st Qu.      Median     3rd Qu.        Max. 
+## -9.0000e+00 -7.1250e+00 -7.5495e-15  3.1250e+00  1.4000e+01 
+## 
+## Coefficients:
+##                Estimate Std. Error t-value  Pr(&gt;|t|)    
+## post           -49.0000     7.5808 -6.4637 0.0001955 ***
+## treatment:post  20.5000    10.7209  1.9122 0.0922244 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Total Sum of Squares:    4897.3
+## Residual Sum of Squares: 613
+## R-Squared:      0.87483
+## Adj. R-Squared: 0.82789
+## F-statistic: 27.9565 on 2 and 8 DF, p-value: 0.00024547</code></pre>
+<p>Cuando tenemos muchas unidades y muchos periodos, es más eficiente trabajar con estimadores de panel.</p>
+</div>
+<div id="ejemplo-2x2-usando-regresión" class="section level2">
+<h2>Ejemplo 2x2 usando regresión</h2>
+<p>Noten que si solo usamos dos años, obtenemos exactamente lo que obtendríamos haciendo las diferencias <em>a mano</em>:</p>
+<p><span class="math display">\[\delta_{DiD}=(Y_{6,1931}-Y_{6,1931})-(Y_{8,1930}-Y_{8,1930})=19\]</span></p>
+<pre class="r"><code>summary(lm(banks ~ treatment + post+ treatment*post,
+               data=filter(banks,year==1930 | year==1931)))
+## 
+## Call:
+## lm(formula = banks ~ treatment + post + treatment * post, data = filter(banks, 
+##     year == 1930 | year == 1931))
+## 
+## Residuals:
+## ALL 4 residuals are 0: no residual degrees of freedom!
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)         165        NaN     NaN      NaN
+## treatment           -30        NaN     NaN      NaN
+## post                -33        NaN     NaN      NaN
+## treatment:post       19        NaN     NaN      NaN
+## 
+## Residual standard error: NaN on 0 degrees of freedom
+## Multiple R-squared:      1,  Adjusted R-squared:    NaN 
+## F-statistic:   NaN on 3 and 0 DF,  p-value: NA</code></pre>
+</div>
