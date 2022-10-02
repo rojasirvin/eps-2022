@@ -20,15 +20,16 @@ library(lubridate)
 library(ExPanDaR) #for describing panel data
 library(plm)
 library(ggbrace)
+library(knitr)
 ```
 
 ## Corridas bancarias en la Gran Depresión
 
 Angrist & Pischke (2014) describen lo sucedido con el sector bancario en Mississippi durante la Gran Depresión. En EUA, la FED tiene 12 bancos regionales y cada uno tiene autonomía para tomar ciertas decisiones de política monetaria. En particular, Mississippi tiene una parte del estado bajo el mando del distrito 6 (Atlanta) y la otra mitad en el distrito 8 (San Luis).
 
-```{r, echo=F, out.width="75%",fig.cap='Fuente: Richardson & Troost (2009)',fig.align='center'}
-knitr::include_graphics("./banks_map.png")
-```
+<img src="banks_map.png" alt="Fuente: Richardson & Troost (2009)">
+ 
+
 
 Como respuesta a las corridas bancarias que caracterizaron la crisis de 1929, los bancos comerciales en Mississippi se vieron expuestos a dos políticas distintas.
 
@@ -119,7 +120,7 @@ Podemos dar así una primera definición de lo que es la diferencia en diferenci
 $$
 \begin{aligned}
 \delta_{DID}&=(Y_{6,post}-Y_{6,pre})-(Y_{8,post}-Y_{8,pre}) \\
-&=(Y_{6,1931}-Y_{6,1931})-(Y_{8,1930}-Y_{8,1930}) \\
+&=(Y_{6,1931}-Y_{6,1930})-(Y_{8,1931}-Y_{8,1930}) \\
 &=(121-135)-(132-165) \\
 &=-14+33 = 19
 \end{aligned}
@@ -171,7 +172,7 @@ Cuando tenemos muchas unidades y muchos periodos, es más eficiente trabajar con
 
 Noten que si solo usamos dos años, obtenemos exactamente lo que obtendríamos haciendo las diferencias *a mano*:
 
-$$\delta_{DiD}=(Y_{6,1931}-Y_{6,1931})-(Y_{8,1930}-Y_{8,1930})=19$$
+$$\delta_{DiD}=(Y_{6,1931}-Y_{6,1930})-(Y_{8,1931}-Y_{8,1930})=19$$
 
 ```{r echo=T, include=T, eval=T, message=F, warning=F}
 summary(lm(banks ~ treatment + post+ treatment*post,
