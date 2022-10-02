@@ -22,7 +22,7 @@ Por favor, seleccione una de las lecturas marcadas con una "+" de la lista de le
 | [Lecturas de la semana 11 con "+"](https://eps-2022.netlify.app/lecturas/#semana-11)  | Diseños con discontinuidades   |  | Jueves 3 de noviembre  |
 | [Lecturas de la semana 13 con "+"](https://eps-2022.netlify.app/lecturas/#semana-13)  | Control sintético |  | Martes 15 de noviembre |
 | [Lecturas de la semana 13 con "+"](https://eps-2022.netlify.app/lecturas/#semana-13) | Control sintético |  | Martes 15 de noviembre |
-| [Lecturas de la semana 14 con "+"](https://eps-2022.netlify.app/lecturas/#semana-14) | Gerardo Juárez |  | Jueves 24 de noviembre |
+| [Lecturas de la semana 14 con "+"](https://eps-2022.netlify.app/lecturas/#semana-14) | ML e inferencia | Gerardo Juárez | Jueves 24 de noviembre |
 | [Lecturas de la semana 14 con "+"](https://eps-2022.netlify.app/lecturas/#semana-14) | ML e inferencia |  | Jueves 24 de noviembre |
 
 
