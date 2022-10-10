@@ -402,9 +402,11 @@ tiempo.</p>
 <p>Como hemos visto, hasta hace no mucho se asumía que un estimador de
 efectos fijos (TWFE) operaba igual que en la versión 2x2 del diseño de
 DID, en cuyo caso, estimaríamos la siguiente ecuación:</p>
-<p><span class="math display">\[y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK}
+<p><span class="math display">\[\begin{aligned}
+y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK}
 S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
-+\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\varepsilon_{st}\]</span></p>
++\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\varepsilon_{st}
+\end{aligned}\]</span></p>
 <p>Donde la dummy <span class="math inline">\(UNILATERAL_{st}\)</span>
 toma el valor de 1 en el estado <span class="math inline">\(s\)</span> y
 en el periodo <span class="math inline">\(t\)</span> cuando está en
@@ -444,10 +446,13 @@ summary(modelo1)</code></pre>
 era controlar por <em>tendencias específicas</em> al incorporar la
 interacción de los efectos fijos individuales con una tendencia, es
 decir, con la variable tiempo en niveles:</p>
-<p><span class="math display">\[y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK}
+<p><span class="math display">\[\begin{aligned}
+y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK}
 S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
 +\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\sum_k\theta_k(STATE_{ks}\times
-t)+\varepsilon_{st}\]</span></p>
+t)+\varepsilon_{st}
+\end{aligned}
+\]</span></p>
 <pre class="r"><code>modelo2 &lt;- felm(suicide_rate ~ unilateral | factor(st) + factor(year) + factor(st):year,
                 data = wd)
 

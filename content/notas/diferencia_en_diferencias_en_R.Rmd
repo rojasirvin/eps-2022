@@ -60,8 +60,10 @@ Es claro que estos datos corresponden a un caso en el que el tratamiento se asig
 
 Como hemos visto, hasta hace no mucho se asumía que un estimador de efectos fijos (TWFE) operaba igual que en la versión 2x2 del diseño de DID, en cuyo caso, estimaríamos la siguiente ecuación:
 
-$$y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
-+\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\varepsilon_{st}$$
+$$\begin{aligned}
+y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
++\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\varepsilon_{st}
+\end{aligned}$$
 
 
 Donde la dummy $UNILATERAL_{st}$ toma el valor de 1 en el estado $s$ y en el periodo $t$ cuando está en vigor una ley unilateral.
@@ -83,8 +85,11 @@ summary(modelo1)
 
 Una manera de *relajar* el supuesto de tendencias paralelas era controlar por *tendencias específicas* al incorporar la interacción de los efectos fijos individuales con una tendencia, es decir, con la variable tiempo en niveles:
 
-$$y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
-+\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\sum_k\theta_k(STATE_{ks}\times t)+\varepsilon_{st}$$
+$$\begin{aligned}
+y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
++\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\sum_k\theta_k(STATE_{ks}\times t)+\varepsilon_{st}
+\end{aligned}
+$$
 ```{r}
 modelo2 <- felm(suicide_rate ~ unilateral | factor(st) + factor(year) + factor(st):year,
                 data = wd)
