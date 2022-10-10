@@ -20,7 +20,7 @@ library(fixest) #incluye el estimador de SA y el correspondiente gráfico de eve
 
 # Divorcio unilateral
 
-[Script de esta sesión](/notas/diferencia_en_diferencias_en_R/lab_did.R)
+[Script de esta sesión](/notas/lab_did.R)
 
 Stevenson, B., & Wolfers, J. (2006)[^1] estudian los efectos de la introducción de leyes que permiten el divorcio *unilateral*. La librería *bacondecomp* incluye los datos usados en dicho artículo. Usaremos los datos de 1964 a 1996 para mostrar cómo impactan las leyes de *divorcio express* (**unilateral**) a la tasa de suicidios en mujeres.
 
