@@ -1,0 +1,250 @@
+---
+title: "Diferencia en diferencias en R"
+summary: " "
+weight: 1
+type: book
+toc: false
+---
+
+
+
+<div id="divorcio-unilateral" class="section level1">
+<h1>Divorcio unilateral</h1>
+<p>Stevenson, B., &amp; Wolfers, J. (2006)<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> estudian los efectos de la introducción de leyes que permiten el divorcio <em>unilateral</em>. La librería <em>bacondecomp</em> incluye los datos usados en dicho artículo. Usaremos los datos de 1964 a 1996 para mostrar cómo impactan las leyes de <em>divorcio express</em> (<strong>unilateral</strong>) a la tasa de suicidios en mujeres.</p>
+<p>Los datos que usaremos son:</p>
+<pre class="r"><code>wd &lt;- divorce %&gt;% 
+  filter(year&gt;1964 &amp; year&lt;1996 &amp; sex==2) %&gt;% 
+  mutate(suicide_rate=suicide*1000000/(stpop*fshare),
+         year=as.numeric(year))</code></pre>
+<p>La librería <a href="https://joachim-gassen.github.io/ExPanDaR/"><em>ExPanDaR</em></a>
+nos permite explorar datos de panel. Esta librería puede ser muy útil para sus proyectos.</p>
+<p>Por ejemplo, para explorar valores faltantes:</p>
+<pre class="r"><code>prepare_missing_values_graph(wd, ts_id = &quot;year&quot;)</code></pre>
+<p><img src="/notas/diferencia_en_diferencias_en_R_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>Pueden generar también una aplicación interactiva. Vean qué pasa cuando ejecutan lo siguiente en RStudio:</p>
+<pre class="r"><code>ExPanD(df = wd,
+       ts_id=&quot;year&quot;,
+       cs_id=&quot;st&quot;,
+       title = &quot;Wow, mis datos&quot;,
+       abstract = &quot;Datos tomados de Stevenson &amp; Wolfers (2006)&quot;)</code></pre>
+<p>Es claro que estos datos corresponden a un caso en el que el tratamiento se asigna de forma <em>escalonada</em> a lo largo del tiempo.</p>
+</div>
+<div id="did-hasta-antes-de-goodman-bacon" class="section level1">
+<h1>DID hasta antes de Goodman-Bacon</h1>
+<p>Como hemos visto, hasta hace no mucho se asumía que un estimador de efectos fijos (TWFE) operaba igual que en la versión 2x2 del diseño de DID, en cuyo caso, estimaríamos la siguiente ecuación:</p>
+<p><span class="math display">\[y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
++\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\varepsilon_{st}\]</span></p>
+<p>Donde la dummy <span class="math inline">\(UNILATERAL_{st}\)</span> toma el valor de 1 en el estado <span class="math inline">\(s\)</span> y en el periodo <span class="math inline">\(t\)</span> cuando está en vigor una ley unilateral.</p>
+<p>Entonces, si asumimos que todos los estados tienen tendencias paralelas, estimamos:</p>
+<pre class="r"><code>wd &lt;- divorce %&gt;% 
+  filter(year&gt;1964 &amp; year&lt;1996 &amp; sex==2) %&gt;% 
+  mutate(suicide_rate=suicide*1000000/(stpop*fshare),
+         year=as.numeric(year))
+
+#Asumiendo tendencias paralelas
+modelo1 &lt;- felm(suicide_rate ~ unilateral | factor(st) + factor(year),
+                data = wd)
+
+summary(modelo1)</code></pre>
+<pre><code>## 
+## Call:
+##    felm(formula = suicide_rate ~ unilateral | factor(st) + factor(year),      data = wd) 
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -37.809  -6.126  -0.035   5.509  55.916 
+## 
+## Coefficients:
+##            Estimate Std. Error t value Pr(&gt;|t|)  
+## unilateral   -2.824      1.108   -2.55   0.0109 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 10.8 on 1499 degrees of freedom
+## Multiple R-squared(full model): 0.6908   Adjusted R-squared: 0.674 
+## Multiple R-squared(proj model): 0.004319   Adjusted R-squared: -0.04948 
+## F-statistic(full model):41.34 on 81 and 1499 DF, p-value: &lt; 2.2e-16 
+## F-statistic(proj model): 6.502 on 1 and 1499 DF, p-value: 0.01088</code></pre>
+<p>Una manera de <em>relajar</em> el supuesto de tendencias paralelas era controlar por <em>tendencias específicas</em> al incorporar la interacción de los efectos fijos individuales con una tendencia, es decir, con la variable tiempo en niveles:</p>
+<p><span class="math display">\[y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\sum_k\theta_k(STATE_{ks}\times t)+\varepsilon_{st}\]</span></p>
+<pre class="r"><code>modelo2 &lt;- felm(suicide_rate ~ unilateral | factor(st) + factor(year) + factor(st):year,
+                data = wd)
+
+summary(modelo2)</code></pre>
+<pre><code>## 
+## Call:
+##    felm(formula = suicide_rate ~ unilateral | factor(st) + factor(year) +      factor(st):year, data = wd) 
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -35.193  -5.374  -0.096   4.585  49.639 
+## 
+## Coefficients:
+##            Estimate Std. Error t value Pr(&gt;|t|)
+## unilateral    1.236      1.244   0.994    0.321
+## 
+## Residual standard error: 9.457 on 1448 degrees of freedom
+## Multiple R-squared(full model): 0.7709   Adjusted R-squared:  0.75 
+## Multiple R-squared(proj model): 0.0006814   Adjusted R-squared: -0.09042 
+## F-statistic(full model):36.92 on 132 and 1448 DF, p-value: &lt; 2.2e-16 
+## F-statistic(proj model): 0.9874 on 1 and 1448 DF, p-value: 0.3206 
+## *** Standard errors may be too high due to more than 2 groups and exactDOF=FALSE</code></pre>
+<p>Sin importar la manera en que especificamos la regresión a estimar, no olvidemos que debemos estimar errores agrupados:</p>
+<pre class="r"><code>modelo1a &lt;- felm(suicide_rate ~ unilateral | factor(st) + factor(year) | 0 | st,
+                data = wd)
+
+summary(modelo1a)</code></pre>
+<pre><code>## 
+## Call:
+##    felm(formula = suicide_rate ~ unilateral | factor(st) + factor(year) |      0 | st, data = wd) 
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -37.809  -6.126  -0.035   5.509  55.916 
+## 
+## Coefficients:
+##            Estimate Cluster s.e. t value Pr(&gt;|t|)
+## unilateral   -2.824        2.274  -1.242     0.22
+## 
+## Residual standard error: 10.8 on 1499 degrees of freedom
+## Multiple R-squared(full model): 0.6908   Adjusted R-squared: 0.674 
+## Multiple R-squared(proj model): 0.004319   Adjusted R-squared: -0.04948 
+## F-statistic(full model, *iid*):41.34 on 81 and 1499 DF, p-value: &lt; 2.2e-16 
+## F-statistic(proj model): 1.543 on 1 and 50 DF, p-value: 0.22</code></pre>
+<pre class="r"><code>modelo2a &lt;- felm(suicide_rate ~ unilateral | factor(st) + factor(year) + factor(st):year | 0 | st,
+                data = wd)
+
+summary(modelo2a)</code></pre>
+<pre><code>## 
+## Call:
+##    felm(formula = suicide_rate ~ unilateral | factor(st) + factor(year) +      factor(st):year | 0 | st, data = wd) 
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -35.193  -5.374  -0.096   4.585  49.639 
+## 
+## Coefficients:
+##            Estimate Cluster s.e. t value Pr(&gt;|t|)
+## unilateral    1.236        2.193   0.564    0.575
+## 
+## Residual standard error: 9.457 on 1448 degrees of freedom
+## Multiple R-squared(full model): 0.7709   Adjusted R-squared:  0.75 
+## Multiple R-squared(proj model): 0.0006814   Adjusted R-squared: -0.09042 
+## F-statistic(full model, *iid*):36.92 on 132 and 1448 DF, p-value: &lt; 2.2e-16 
+## F-statistic(proj model): 0.3179 on 1 and 50 DF, p-value: 0.5754 
+## *** Standard errors may be too high due to more than 2 groups and exactDOF=FALSE</code></pre>
+</div>
+<div id="descomposición-de-goodman-bacon" class="section level1">
+<h1>Descomposición de Goodman-Bacon</h1>
+<p>La descomposición de Goodman-Bacon (2021)<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> parte el efecto estimado con el estimador de panel en una suma ponderada de todas las posibles comparaciones 2x2 en nuestro diseño. Aquí, recuperamos dichas ponderaciones:</p>
+<pre class="r"><code>df_bacon &lt;- bacon(suicide_rate ~ unilateral,
+                  data = wd,
+                  id_var = &quot;st&quot;,
+                  time_var = &quot;year&quot;)</code></pre>
+<pre><code>##                       type  weight  avg_est
+## 1 Earlier vs Later Treated 0.10544  1.70904
+## 2  Later vs Always Treated 0.39872 -6.72231
+## 3 Later vs Earlier Treated 0.27432  3.31462
+## 4     Treated vs Untreated 0.22151 -5.56686</code></pre>
+<pre class="r"><code>coef_bacon &lt;- sum(df_bacon$estimate * df_bacon$weight)
+print(paste(&quot;Weighted sum of decomposition =&quot;, round(coef_bacon, 4)))</code></pre>
+<pre><code>## [1] &quot;Weighted sum of decomposition = -2.824&quot;</code></pre>
+<pre class="r"><code>fit_tw &lt;- lm(suicide_rate ~ unilateral + factor(st) + factor(year), 
+             data = wd)
+print(paste(&quot;Two-way FE estimate =&quot;, round(fit_tw$coefficients[2], 4)))</code></pre>
+<pre><code>## [1] &quot;Two-way FE estimate = -2.824&quot;</code></pre>
+<p>Con los pesos estimados, podemos replicar la figura 6 en Goodman-Bacon (2021):</p>
+<pre class="r"><code>df_bacon %&gt;% 
+  ggplot(aes(x=weight,
+             y=estimate,
+             color=type)) +
+  geom_point() +
+  geom_hline(yintercept = round(fit_tw$coefficients[2], 4))</code></pre>
+<p><img src="/notas/diferencia_en_diferencias_en_R_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+<div id="estimador-de-sun-y-abraham-2020" class="section level1">
+<h1>Estimador de Sun y Abraham (2020)</h1>
+<p>A partir de la descomposición de Goodman-Bacon, la literatura de DID se ha encargado de desarrollar estimadores que tengan propiedades deseables en el contexto de tratamientos escalonados y heterogéneos. Esta literatura es amplia y muy viva.</p>
+<p>Una de estas propuestas es el estimador de Sun y Abraham (2020)<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>.</p>
+<p>Definimos <em>periodos_desde_t</em> como el número de periodos desde el tratamiento (negativo antes del tratamiento):</p>
+<pre class="r"><code>wd &lt;- wd %&gt;% 
+  mutate(periodos_desde_t = year-divyear)</code></pre>
+<p>La función <em>sunab</em> hace el trabajo:</p>
+<pre class="r"><code>modeloSA &lt;-  feols(suicide_rate ~ sunab(divyear, periodos_desde_t) | st + year,
+                   data = wd,
+                   vcov = ~st)
+
+summary(modeloSA)</code></pre>
+<pre><code>## OLS estimation, Dep. Var.: suicide_rate
+## Observations: 1,580 
+## Fixed-effects: st: 51,  year: 31
+## Standard-errors: Clustered (st) 
+##                         Estimate Std. Error   t value   Pr(&gt;|t|)    
+## periodos_desde_t::-20 -10.663445    4.72185 -2.258320 2.8321e-02 *  
+## periodos_desde_t::-19  13.857885    4.85840  2.852355 6.2945e-03 ** 
+## periodos_desde_t::-18   5.677232    4.26677  1.330569 1.8937e-01    
+## periodos_desde_t::-17   4.097420    3.37557  1.213847 2.3051e-01    
+## periodos_desde_t::-16   8.115661    3.29142  2.465701 1.7150e-02 *  
+## periodos_desde_t::-15  11.241617    3.14695  3.572225 7.9432e-04 ***
+## periodos_desde_t::-14  12.213173    3.26990  3.735035 4.8191e-04 ***
+## periodos_desde_t::-13  11.971642    2.49972  4.789198 1.5328e-05 ***
+## periodos_desde_t::-12  -0.078732   15.26070 -0.005159 9.9590e-01    
+## periodos_desde_t::-11  -6.380758    9.68603 -0.658759 5.1307e-01    
+## periodos_desde_t::-10   1.247085    8.79044  0.141868 8.8775e-01    
+## periodos_desde_t::-9   -4.479254    4.68837 -0.955396 3.4397e-01    
+## periodos_desde_t::-8   -2.326133    5.26142 -0.442111 6.6032e-01    
+## periodos_desde_t::-7   -2.617671    4.85507 -0.539162 5.9217e-01    
+## periodos_desde_t::-6   -1.127235    3.81705 -0.295316 7.6898e-01    
+## periodos_desde_t::-5   -4.359393    3.33702 -1.306371 1.9740e-01    
+## periodos_desde_t::-4   -1.411851    2.97471 -0.474618 6.3713e-01    
+## periodos_desde_t::-3   -2.089115    3.16265 -0.660558 5.1193e-01    
+## periodos_desde_t::-2   -2.065683    2.73175 -0.756175 4.5309e-01    
+## periodos_desde_t::0    -2.506276    2.80925 -0.892150 3.7659e-01    
+## periodos_desde_t::1    -2.716946    2.92421 -0.929120 3.5729e-01    
+## periodos_desde_t::2    -5.617731    4.29786 -1.307098 1.9716e-01    
+## periodos_desde_t::3    -4.028384    3.00834 -1.339071 1.8660e-01    
+## periodos_desde_t::4    -5.912147    3.28913 -1.797483 7.8299e-02 .  
+## periodos_desde_t::5    -6.155564    2.77573 -2.217635 3.1153e-02 *  
+## periodos_desde_t::6    -6.568141    3.79553 -1.730494 8.9710e-02 .  
+## periodos_desde_t::7    -9.007719    3.77607 -2.385473 2.0887e-02 *  
+## periodos_desde_t::8   -10.362469    3.34905 -3.094155 3.2282e-03 ** 
+## periodos_desde_t::9    -7.645259    3.38859 -2.256174 2.8464e-02 *  
+## periodos_desde_t::10  -10.610922    3.76772 -2.816274 6.9360e-03 ** 
+## periodos_desde_t::11  -11.812141    3.77425 -3.129665 2.9195e-03 ** 
+## periodos_desde_t::12   -8.859620    4.25257 -2.083359 4.2351e-02 *  
+## periodos_desde_t::13  -10.219571    4.11278 -2.484835 1.6353e-02 *  
+## periodos_desde_t::14  -10.492735    4.36057 -2.406277 1.9854e-02 *  
+## periodos_desde_t::15  -12.042415    4.63073 -2.600544 1.2207e-02 *  
+## periodos_desde_t::16   -9.117511    4.68542 -1.945933 5.7294e-02 .  
+## periodos_desde_t::17  -10.551906    5.02320 -2.100635 4.0737e-02 *  
+## periodos_desde_t::18  -13.095367    4.42974 -2.956236 4.7421e-03 ** 
+## periodos_desde_t::19  -12.765757    3.78465 -3.373033 1.4425e-03 ** 
+## periodos_desde_t::20  -11.932802    4.63717 -2.573295 1.3087e-02 *  
+## periodos_desde_t::21  -13.768065    4.56510 -3.015939 4.0196e-03 ** 
+## periodos_desde_t::22  -14.391258    4.44866 -3.234968 2.1592e-03 ** 
+## periodos_desde_t::23  -16.349332    6.63290 -2.464885 1.7184e-02 *  
+## periodos_desde_t::24  -19.418434    6.61372 -2.936085 5.0121e-03 ** 
+## periodos_desde_t::25  -28.753388   13.76818 -2.088395 4.1875e-02 *  
+## periodos_desde_t::26   -8.424320   13.84992 -0.608258 5.4577e-01    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## RMSE: 9.14789     Adj. R2: 0.67575 
+##                 Within R2: 0.246697</code></pre>
+<p>Tenemos una colección de coeficientes estimados con su correspondiente intervalo de confianza que podemos graficar usando <em>iplot</em>:</p>
+<pre><code>iplot(modeloSA)</code></pre>
+<p>Le podemos dar el formato que queramos:</p>
+<pre class="r"><code>modeloSA %&gt;% 
+  iplot(main = &quot;fixest::sunab&quot;,
+    xlab = &quot;Periodos desde el tratamiento&quot;,
+    ref.line = 1)</code></pre>
+<p><img src="/notas/diferencia_en_diferencias_en_R_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>Otro estimador que ha recibido atención recientemente es el propuesto por Callaway &amp; Sant’Anna (2021), que utiliza un <em>propensity score</em> para pesar comparaciones 2x2.</p>
+</div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p>Bargaining in the shadow of the law: Divorce laws and family distress. <em>The Quarterly Journal of Economics</em>, 121(1), 267-288.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>Goodman-Bacon, A. (2021). Difference-in-differences with variation in treatment timing. <em>Journal of Econometrics</em>, 225(2), 254-277.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>Sun, L., &amp; Abraham, S. (2021). Estimating dynamic treatment effects in event studies with heterogeneous treatment effects. <em>Journal of Econometrics</em>, 225(2), 175-199.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>

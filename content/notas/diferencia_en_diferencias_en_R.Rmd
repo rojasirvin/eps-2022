@@ -1,0 +1,198 @@
+---
+title: "Diferencia en diferencias en R"
+summary: " "
+weight: 1
+type: book
+toc: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+
+library(tidyverse)
+library(janitor)
+library(clubSandwich)
+library(ExPanDaR) #for describing panel data
+library(bacondecomp)
+library(lfe) #linear fixed effects
+library(fixest) #incluye el estimador de SA y el correspondiente gráfico de evento
+```
+
+# Divorcio unilateral
+
+[Script de esta sesión](./diferencia_en_diferencias_en_R.R)
+
+Stevenson, B., & Wolfers, J. (2006)[^1] estudian los efectos de la introducción de leyes que permiten el divorcio *unilateral*. La librería *bacondecomp* incluye los datos usados en dicho artículo. Usaremos los datos de 1964 a 1996 para mostrar cómo impactan las leyes de *divorcio express* (**unilateral**) a la tasa de suicidios en mujeres.
+
+Los datos que usaremos son:
+
+```{r}
+wd <- divorce %>% 
+  filter(year>1964 & year<1996 & sex==2) %>% 
+  mutate(suicide_rate=suicide*1000000/(stpop*fshare),
+         year=as.numeric(year))
+
+```
+
+La librería [*ExPanDaR*](https://joachim-gassen.github.io/ExPanDaR/)
+ nos permite explorar datos de panel. Esta librería puede ser muy útil para sus proyectos.
+
+Por ejemplo, para explorar valores faltantes:
+
+```{r}
+prepare_missing_values_graph(wd, ts_id = "year")
+```
+
+Pueden generar también una aplicación interactiva. Vean qué pasa cuando ejecutan lo siguiente en RStudio:
+
+```{r eval=FALSE}
+ExPanD(df = wd,
+       ts_id="year",
+       cs_id="st",
+       title = "Wow, mis datos",
+       abstract = "Datos tomados de Stevenson & Wolfers (2006)")
+```
+
+Es claro que estos datos corresponden a un caso en el que el tratamiento se asigna de forma *escalonada* a lo largo del tiempo.
+
+
+# DID hasta antes de Goodman-Bacon
+
+Como hemos visto, hasta hace no mucho se asumía que un estimador de efectos fijos (TWFE) operaba igual que en la versión 2x2 del diseño de DID, en cuyo caso, estimaríamos la siguiente ecuación:
+
+$$y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
++\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\varepsilon_{st}$$
+
+
+Donde la dummy $UNILATERAL_{st}$ toma el valor de 1 en el estado $s$ y en el periodo $t$ cuando está en vigor una ley unilateral.
+
+Entonces, si asumimos que todos los estados tienen tendencias paralelas, estimamos:
+
+```{r}
+wd <- divorce %>% 
+  filter(year>1964 & year<1996 & sex==2) %>% 
+  mutate(suicide_rate=suicide*1000000/(stpop*fshare),
+         year=as.numeric(year))
+
+#Asumiendo tendencias paralelas
+modelo1 <- felm(suicide_rate ~ unilateral | factor(st) + factor(year),
+                data = wd)
+
+summary(modelo1)
+```
+
+Una manera de *relajar* el supuesto de tendencias paralelas era controlar por *tendencias específicas* al incorporar la interacción de los efectos fijos individuales con una tendencia, es decir, con la variable tiempo en niveles:
+
+$$y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
++\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\sum_k\theta_k(STATE_{ks}\times t)+\varepsilon_{st}$$
+```{r}
+modelo2 <- felm(suicide_rate ~ unilateral | factor(st) + factor(year) + factor(st):year,
+                data = wd)
+
+summary(modelo2)
+
+```
+
+Sin importar la manera en que especificamos la regresión a estimar, no olvidemos que debemos estimar errores agrupados:
+
+```{r}
+modelo1a <- felm(suicide_rate ~ unilateral | factor(st) + factor(year) | 0 | st,
+                data = wd)
+
+summary(modelo1a)
+
+modelo2a <- felm(suicide_rate ~ unilateral | factor(st) + factor(year) + factor(st):year | 0 | st,
+                data = wd)
+
+summary(modelo2a)
+```
+
+
+# Descomposición de Goodman-Bacon
+
+La descomposición de Goodman-Bacon (2021)[^2] parte el efecto estimado con el estimador de panel en una suma ponderada de todas las posibles comparaciones 2x2 en nuestro diseño. Aquí, recuperamos dichas ponderaciones:
+
+```{r}
+df_bacon <- bacon(suicide_rate ~ unilateral,
+                  data = wd,
+                  id_var = "st",
+                  time_var = "year")
+
+coef_bacon <- sum(df_bacon$estimate * df_bacon$weight)
+print(paste("Weighted sum of decomposition =", round(coef_bacon, 4)))
+
+
+
+fit_tw <- lm(suicide_rate ~ unilateral + factor(st) + factor(year), 
+             data = wd)
+print(paste("Two-way FE estimate =", round(fit_tw$coefficients[2], 4)))
+
+```
+
+
+Con los pesos estimados, podemos replicar la figura 6 en Goodman-Bacon (2021):
+
+```{r}
+df_bacon %>% 
+  ggplot(aes(x=weight,
+             y=estimate,
+             color=type)) +
+  geom_point() +
+  geom_hline(yintercept = round(fit_tw$coefficients[2], 4))
+```
+
+
+# Estimador de Sun y Abraham (2020)
+
+A partir de la descomposición de Goodman-Bacon, la literatura de DID se ha encargado de desarrollar estimadores que tengan propiedades deseables en el contexto de tratamientos escalonados y heterogéneos. Esta literatura es amplia y muy viva.
+
+Una de estas propuestas es el estimador de Sun y Abraham (2020)[^3].
+
+Definimos *periodos_desde_t* como el número de periodos desde el tratamiento (negativo antes del tratamiento):
+
+```{r}
+wd <- wd %>% 
+  mutate(periodos_desde_t = year-divyear)
+
+```
+
+La función *sunab* hace el trabajo:
+
+
+```{r}
+modeloSA <-  feols(suicide_rate ~ sunab(divyear, periodos_desde_t) | st + year,
+                   data = wd,
+                   vcov = ~st)
+
+summary(modeloSA)
+```
+
+Tenemos una colección de coeficientes estimados con su correspondiente intervalo de confianza que podemos graficar usando *iplot*:
+
+```{}
+iplot(modeloSA)
+```
+
+Le podemos dar el formato que queramos:
+
+```{r}
+modeloSA %>% 
+  iplot(main = "fixest::sunab",
+    xlab = "Periodos desde el tratamiento",
+    ref.line = 1)
+```
+
+Otro estimador que ha recibido atención recientemente es el propuesto por Callaway & Sant'Anna (2021), que utiliza un *propensity score* para pesar comparaciones 2x2.
+
+
+[^1]: Bargaining in the shadow of the law: Divorce laws and family distress. *The Quarterly Journal of Economics*, 121(1), 267-288.
+
+[^2]: Goodman-Bacon, A. (2021). Difference-in-differences with variation in treatment timing. *Journal of Econometrics*, 225(2), 254-277.
+
+[^3]: Sun, L., & Abraham, S. (2021). Estimating dynamic treatment effects in event studies with heterogeneous treatment effects. *Journal of Econometrics*, 225(2), 175-199.
+
+[^4]: Callaway, B., & Sant’Anna, P. H. (2021). Difference-in-differences with multiple time periods. *Journal of Econometrics*, 225(2), 200-230.
+
+
+
+
