@@ -58,12 +58,12 @@ summary(modelo2)
 
 #Recordemos agrupar los errores
 modelo1a <- felm(suicide_rate ~ unilateral | factor(st) + factor(year) | 0 | st,
-                data = wd)
+                 data = wd)
 
 summary(modelo1a)
 
 modelo2a <- felm(suicide_rate ~ unilateral | factor(st) + factor(year) + factor(st):year | 0 | st,
-                data = wd)
+                 data = wd)
 
 summary(modelo2a)
 
@@ -114,5 +114,5 @@ iplot(modeloSA)
 
 modeloSA %>% 
   iplot(main = "fixest::sunab",
-    xlab = "Periodos desde el tratamiento",
-    ref.line = 1)
+        xlab = "Periodos desde el tratamiento",
+        ref.line = 1)
