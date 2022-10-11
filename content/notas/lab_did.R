@@ -116,3 +116,10 @@ modeloSA %>%
   iplot(main = "fixest::sunab",
         xlab = "Periodos desde el tratamiento",
         ref.line = 1)
+
+
+#Efecto de tratamiento
+summary(modeloSA, agg = "ATT")
+
+#Agregado por cohortes
+summary(modeloSA, agg = "cohort")
