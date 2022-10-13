@@ -99,7 +99,8 @@ df_bacon %>%
 #Definimos: periodos_desde_t: periodos desde el tratamiento (negativo antes del tratamiento)
 
 wd <- wd %>% 
-  mutate(periodos_desde_t = year-divyear)
+  mutate(periodos_desde_t = year-divyear) 
+  
 
 modeloSA <-  feols(suicide_rate ~ sunab(divyear, periodos_desde_t) | st + year,
                    data = wd,
