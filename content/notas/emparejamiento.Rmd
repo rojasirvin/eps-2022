@@ -179,14 +179,14 @@ Observemos lo que ocurre con la distribución de edades en ambos grupos:
 
 Para los tratados:
 
-```{r echo=F, fig.height=4}
+```{r grafica_tratados, echo=F, fig.height=4}
 ggplot(training_example, aes(x=age_treat)) +
   stat_bin(bins = 10, na.rm = TRUE)
 ```
 
 Mientras que para los no tratados:
 
-```{r echo=F, fig.height=4}
+```{r grafica_notratados, echo=F, fig.height=4}
 ggplot(training_example, aes(x=age_control)) +
   geom_histogram(bins = 10, na.rm = TRUE)
 ```
