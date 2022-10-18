@@ -1,0 +1,167 @@
+---
+title: "Métodos de emparejamiento"
+summary: " "
+weight: 1
+type: book
+toc: false
+---
+
+
+
+<div id="sesgo-de-selección" class="section level2">
+<h2>Sesgo de selección</h2>
+<p>Las razones que deteriminan la asignación del tratamiento pueden también determinar el valor de <span class="math inline">\(Y\)</span>. Entonces, una comparación observacional nos da el efecto del tratamiento más el sesgo de selección:</p>
+<p><span class="math display">\[
+\begin{aligned}
+E(y_i|D_i=1)-E(y_i|D_i=0)=&amp;\overbrace{ E(y_{1i}|D_i=1)-E(y_{0i}|D_i=1)}^{\text{Efecto promedio en los tratados}}+\\&amp; \underbrace{E(y_{0i}|D_i=1)-E(y_{oi}|D_i=0)}_{\text{Sesgo de selección}}
+\end{aligned}
+\]</span></p>
+<p>Una forma de eliminar el sesgo de selección es mediante la asignación aleatoria del tratamiento, sin embargo, esto no siempre es posible por lo que recurrimos a supuestos para eliminar el sesgo de selección.</p>
+</div>
+<div id="supuesto-de-independencia" class="section level2">
+<h2>Supuesto de independencia</h2>
+<p>El <em>supuesto de independencia</em> condicional dice que al <em>controlar</em> por una serie de características <span class="math inline">\(X_i\)</span>, el tratamiento es <em>como</em> si fuera aleatorio:</p>
+<p><span class="math display">\[
+E(Y(1)|D=1,X)=E(Y(1)|D=0,X)
+\]</span></p>
+<p><span class="math display">\[
+E(Y(0)|D=1,X)=E(Y(0)|D=0,X)
+\]</span></p>
+<p>Esto es, los valores esperados de <span class="math inline">\(Y(1)\)</span> y <span class="math inline">\(Y(0)\)</span> son iguales cuando nos fijamos en cada valor de <span class="math inline">\(X\)</span>.</p>
+</div>
+<div id="matching-exacto" class="section level2">
+<h2>Matching exacto</h2>
+<p>Un estimador de matching exacto consiste en <em>emparejar</em> individuos tratados y no tratados para cada valor específico de las <span class="math inline">\(X\)</span> y luego tomar el promedio ponderado de las diferencias.</p>
+<p>Tenemos datos observacionales de individuos que recibieron y no recibieron un tratamiento y tenemos una serie de características discretizadas en <span class="math inline">\(X_i\)</span>.</p>
+<p>Asumimos que controlando por las características <span class="math inline">\(X_i\)</span> podemos obtener diferencias causales y luego hacemos un promedio de dichas diferencias.</p>
+</div>
+<div id="ejemplo-programa-hipotético-de-empleo" class="section level2">
+<h2>Ejemplo: programa hipotético de empleo</h2>
+<p>Usemos <a href="https://mixtape.scunning.com/matching-and-subclassification.html?panelset=r-code">el ejemplo</a> de MT (The Mixtape):</p>
+<pre class="r"><code>read_data &lt;- function(df)
+{
+  full_path &lt;- paste(&quot;https://raw.github.com/scunning1975/mixtape/master/&quot;, 
+                     df, sep = &quot;&quot;)
+  df &lt;- read_dta(full_path)
+  return(df)
+}
+
+training_example &lt;- read_data(&quot;training_example.dta&quot;) %&gt;% 
+  slice(1:20)
+
+data.treat &lt;- training_example %&gt;% 
+  select(unit_treat, age_treat, earnings_treat) %&gt;% 
+  slice(1:10) %&gt;% 
+  mutate(earnings_treat=as.numeric(earnings_treat))
+
+data.control &lt;- training_example %&gt;% 
+  select(unit_control, age_control, earnings_control)
+
+data.matched &lt;- training_example %&gt;% 
+  select(unit_matched, age_matched, earnings_matched) %&gt;% 
+  slice(1:10)</code></pre>
+<p>Los individuos tratados:</p>
+<pre><code>## # A tibble: 10 × 3
+##    unit_treat age_treat earnings_treat
+##         &lt;dbl&gt;     &lt;dbl&gt;          &lt;dbl&gt;
+##  1          1        18           9500
+##  2          2        29          12250
+##  3          3        24          11000
+##  4          4        27          11750
+##  5          5        33          13250
+##  6          6        22          10500
+##  7          7        19           9750
+##  8          8        20          10000
+##  9          9        21          10250
+## 10         10        30          12500</code></pre>
+<p>Mientras que los no tratados:</p>
+<pre><code>## # A tibble: 20 × 3
+##    unit_control age_control earnings_control
+##           &lt;dbl&gt;       &lt;dbl&gt;            &lt;dbl&gt;
+##  1            1          20             8500
+##  2            2          27            10075
+##  3            3          21             8725
+##  4            4          39            12775
+##  5            5          38            12550
+##  6            6          29            10525
+##  7            7          39            12775
+##  8            8          33            11425
+##  9            9          24             9400
+## 10           10          30            10750
+## 11           11          33            11425
+## 12           12          36            12100
+## 13           13          22             8950
+## 14           14          18             8050
+## 15           15          43            13675
+## 16           16          39            12775
+## 17           17          19             8275
+## 18           18          30             9000
+## 19           19          51            15475
+## 20           20          48            14800</code></pre>
+</div>
+<div id="comparación-observacional" class="section level2">
+<h2>Comparación observacional</h2>
+<p>Si hiciéramos diferencias simples obtendríamos:</p>
+<pre class="r"><code>mean(data.treat$earnings_treat)</code></pre>
+<pre><code>## [1] 11075</code></pre>
+<pre class="r"><code>mean(data.control$earnings_control)</code></pre>
+<pre><code>## [1] 11101.25</code></pre>
+<pre class="r"><code>#Diferencia
+mean(data.treat$earnings_treat)- mean(data.control$earnings_control)</code></pre>
+<pre><code>## [1] -26.25</code></pre>
+<p>Parece que en el grupo de control ganan más (efecto de tratamiento negativo).</p>
+<p>El principal problema con esta diferencia es que sabemos que los ingresos crecen con la edad. Pero notemos que la muestra de no tratados tiene mayor edad promedio:</p>
+<pre class="r"><code>mean(data.treat$age_treat)</code></pre>
+<pre><code>## [1] 24.3</code></pre>
+<pre class="r"><code>mean(data.control$age_control)</code></pre>
+<pre><code>## [1] 31.95</code></pre>
+<pre class="r"><code>#Diferencia
+mean(data.treat$age_treat)- mean(data.control$age_control)</code></pre>
+<pre><code>## [1] -7.65</code></pre>
+<p>Es decir, estaríamos <em>confundido</em> el efecto de la edad.</p>
+</div>
+<div id="muestra-emparejada" class="section level2">
+<h2>Muestra emparejada</h2>
+<p>Construyamos la muestra apareada: para cada individuo en el grupo tratado, buscaremos uno en el de control que tenga la misma edad. Cuando le encontramos un individuo no tratado al tratado con la misma edad decimos que esa pareja hizo <em>match</em>.</p>
+<p>Por ejemplo, la primera unidad tratada, con 18 años y un ingreso de 9500 estaría emparejada con la unidad 14 del grupo de control, que tiene también 18 años y un ingreso de 9500. Para el individuo 18 construimos su ingreso contrafactual.</p>
+<p>Cuando hay varias unidades en el grupo de control que pueden ser empatadas con la de tratamiento, podemos construir el ingreso contrafactual calulando el promedio.Del grupo de control, los individuos 10 y 18 tienen 30 años, con ingresos 10750 y 9000, por lo que usamos el promedio (9875) para crear el contrafactual.</p>
+<p>La muestra emparejada o contrafactual será:</p>
+<pre><code>## # A tibble: 10 × 3
+##    unit_matched age_matched earnings_matched
+##           &lt;dbl&gt;       &lt;dbl&gt;            &lt;dbl&gt;
+##  1            1          18             8050
+##  2            2          29            10525
+##  3            3          24             9400
+##  4            4          27            10075
+##  5            5          33            11425
+##  6            6          22             8950
+##  7            7          19             8275
+##  8            8          20             8500
+##  9            9          21             8725
+## 10           10          30             9875</code></pre>
+<p>Noten que la edad es la misma entre los tratados y la muestra apareada:</p>
+<pre class="r"><code>mean(data.treat$age_treat)</code></pre>
+<pre><code>## [1] 24.3</code></pre>
+<pre class="r"><code>mean(data.matched$age_matched)</code></pre>
+<pre><code>## [1] 24.3</code></pre>
+<p>En este caso, decimos que la edad <em>está balanceada</em>.</p>
+<p>Y entonces podemos calcular el efecto de tratamiento como la diferencia de ingresos entre los tratados y los no tratados en la muestra emparejada:</p>
+<pre class="r"><code>#Diferencia
+mean(data.treat$earnings_treat)- mean(data.matched$earnings_matched)</code></pre>
+<pre><code>## [1] 1695</code></pre>
+<p>En este caso, encontramos un efecto positivo del programa de 1695 unidades monetarias.</p>
+</div>
+<div id="estimador-de-matching-exacto" class="section level2">
+<h2>Estimador de matching exacto</h2>
+<p>Lo anterior nos permite definir el <strong>estimador de matching exacto del TOT</strong> como:</p>
+<p><span class="math display">\[\hat{\delta}_{TOT}=\frac{1}{N_T}\sum_{D_i=1}\left(Y_i-\left(\frac{1}{M}\sum_{m=1}^{M}Y_{jm(i)}\right)\right)\]</span></p>
+</div>
+<div id="importancia-del-soporte-común" class="section level2">
+<h2>Importancia del soporte común</h2>
+<p>Observemos lo que ocurre con la distribución de edades en ambos grupos:</p>
+<p>Para los tratados:</p>
+<p><img src="figures/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Mientras que para los no tratados:</p>
+<p><img src="figures/unnamed-chunk-10-1.png" width="672" /></p>
+<p>El supuesto de traslape débil para identificar el TOT significa que para cada unidad tratada, hay al menos un no tratado. De otra forma, no podemos hacer la comparación.</p>
+</div>
