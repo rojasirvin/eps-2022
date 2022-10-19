@@ -8,8 +8,8 @@ toc: false
 
 
 
-<div id="divorcio-unilateral" class="section level1">
-<h1>Divorcio unilateral</h1>
+<div id="divorcio-unilateral" class="section level2">
+<h2>Divorcio unilateral</h2>
 <p><a href="/notas/lab_did.R">Script de esta sesión</a></p>
 <p>Stevenson, B., &amp; Wolfers, J. (2006)<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> estudian los efectos de la introducción de leyes que permiten el divorcio <em>unilateral</em>. La librería <em>bacondecomp</em> incluye los datos usados en dicho artículo. Usaremos los datos de 1964 a 1996 para mostrar cómo impactan las leyes de <em>divorcio express</em> (<strong>unilateral</strong>) a la tasa de suicidios en mujeres.</p>
 <p>Los datos que usaremos son:</p>
@@ -30,8 +30,8 @@ nos permite explorar datos de panel. Esta librería puede ser muy útil para sus
        abstract = &quot;Datos tomados de Stevenson &amp; Wolfers (2006)&quot;)</code></pre>
 <p>Es claro que estos datos corresponden a un caso en el que el tratamiento se asigna de forma <em>escalonada</em> a lo largo del tiempo.</p>
 </div>
-<div id="did-hasta-antes-de-goodman-bacon" class="section level1">
-<h1>DID hasta antes de Goodman-Bacon</h1>
+<div id="did-hasta-antes-de-goodman-bacon" class="section level2">
+<h2>DID hasta antes de Goodman-Bacon</h2>
 <p>Como hemos visto, hasta hace no mucho se asumía que un estimador de efectos fijos (TWFE) operaba igual que en la versión 2x2 del diseño de DID, en cuyo caso, estimaríamos la siguiente ecuación:</p>
 <p><span class="math display">\[\begin{aligned}
 y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
@@ -69,7 +69,8 @@ summary(modelo1)</code></pre>
 ## F-statistic(full model):41.34 on 81 and 1499 DF, p-value: &lt; 2.2e-16 
 ## F-statistic(proj model): 6.502 on 1 and 1499 DF, p-value: 0.01088</code></pre>
 <p>Una manera de <em>relajar</em> el supuesto de tendencias paralelas era controlar por <em>tendencias específicas</em> al incorporar la interacción de los efectos fijos individuales con una tendencia, es decir, con la variable tiempo en niveles:</p>
-<p><span class="math display">\[\begin{aligned}
+<p><span class="math display">\[
+\begin{aligned}
 y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
 +\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\sum_k\theta_k(STATE_{ks}\times t)+\varepsilon_{st}
 \end{aligned}
@@ -141,8 +142,8 @@ summary(modelo2a)</code></pre>
 ## F-statistic(proj model): 0.3179 on 1 and 50 DF, p-value: 0.5754 
 ## *** Standard errors may be too high due to more than 2 groups and exactDOF=FALSE</code></pre>
 </div>
-<div id="descomposición-de-goodman-bacon" class="section level1">
-<h1>Descomposición de Goodman-Bacon</h1>
+<div id="descomposición-de-goodman-bacon" class="section level2">
+<h2>Descomposición de Goodman-Bacon</h2>
 <p>La descomposición de Goodman-Bacon (2021)<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> parte el efecto estimado con el estimador de panel en una suma ponderada de todas las posibles comparaciones 2x2 en nuestro diseño. Aquí, recuperamos dichas ponderaciones:</p>
 <pre class="r"><code>df_bacon &lt;- bacon(suicide_rate ~ unilateral,
                   data = wd,
@@ -169,8 +170,8 @@ print(paste(&quot;Two-way FE estimate =&quot;, round(fit_tw$coefficients[2], 4))
   geom_hline(yintercept = round(fit_tw$coefficients[2], 4))</code></pre>
 <p><img src="/notas/diferencia_en_diferencias_en_R_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 </div>
-<div id="estimador-de-sun-y-abraham-2020" class="section level1">
-<h1>Estimador de Sun y Abraham (2020)</h1>
+<div id="estimador-de-sun-y-abraham-2020" class="section level2">
+<h2>Estimador de Sun y Abraham (2020)</h2>
 <p>A partir de la descomposición de Goodman-Bacon, la literatura de DID se ha encargado de desarrollar estimadores que tengan propiedades deseables en el contexto de tratamientos escalonados y heterogéneos. Esta literatura es amplia y muy viva.</p>
 <p>Una de estas propuestas es el estimador de Sun y Abraham (2020)<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>.</p>
 <p>Definimos <em>periodos_desde_t</em> como el número de periodos desde el tratamiento (negativo antes del tratamiento):</p>
@@ -238,13 +239,14 @@ summary(modeloSA)</code></pre>
 ## RMSE: 9.14789     Adj. R2: 0.67575 
 ##                 Within R2: 0.246697</code></pre>
 <p>Tenemos una colección de coeficientes estimados con su correspondiente intervalo de confianza que podemos graficar usando <em>iplot</em>:</p>
-<pre><code>iplot(modeloSA)</code></pre>
+<pre class="r"><code>iplot(modeloSA)</code></pre>
+<p><img src="/notas/diferencia_en_diferencias_en_R_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>Le podemos dar el formato que queramos:</p>
 <pre class="r"><code>modeloSA %&gt;% 
   iplot(main = &quot;fixest::sunab&quot;,
     xlab = &quot;Periodos desde el tratamiento&quot;,
     ref.line = 1)</code></pre>
-<p><img src="/notas/diferencia_en_diferencias_en_R_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><img src="/notas/diferencia_en_diferencias_en_R_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 <p>Otro estimador que ha recibido atención recientemente es el propuesto por Callaway &amp; Sant’Anna (2021), que utiliza un <em>propensity score</em> para pesar comparaciones 2x2.</p>
 </div>
 <div class="footnotes footnotes-end-of-document">

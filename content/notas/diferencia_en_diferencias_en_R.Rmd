@@ -18,7 +18,7 @@ library(lfe) #linear fixed effects
 library(fixest) #incluye el estimador de SA y el correspondiente gráfico de evento
 ```
 
-# Divorcio unilateral
+## Divorcio unilateral
 
 [Script de esta sesión](/notas/lab_did.R)
 
@@ -56,7 +56,7 @@ ExPanD(df = wd,
 Es claro que estos datos corresponden a un caso en el que el tratamiento se asigna de forma *escalonada* a lo largo del tiempo.
 
 
-# DID hasta antes de Goodman-Bacon
+## DID hasta antes de Goodman-Bacon
 
 Como hemos visto, hasta hace no mucho se asumía que un estimador de efectos fijos (TWFE) operaba igual que en la versión 2x2 del diseño de DID, en cuyo caso, estimaríamos la siguiente ecuación:
 
@@ -85,17 +85,18 @@ summary(modelo1)
 
 Una manera de *relajar* el supuesto de tendencias paralelas era controlar por *tendencias específicas* al incorporar la interacción de los efectos fijos individuales con una tendencia, es decir, con la variable tiempo en niveles:
 
-$$\begin{aligned}
+$$
+\begin{aligned}
 y_{st}=\alpha+\delta_{DID}UNILATERAL_{st}+\beta_{AK} S_{AK}+\ldots+\beta_{WY}S_{WY}+\\
 +\gamma_{1967}A_{1967}+\ldots+\gamma_{1989}A_{1989}+\sum_k\theta_k(STATE_{ks}\times t)+\varepsilon_{st}
 \end{aligned}
 $$
+
 ```{r}
 modelo2 <- felm(suicide_rate ~ unilateral | factor(st) + factor(year) + factor(st):year,
                 data = wd)
 
 summary(modelo2)
-
 ```
 
 Sin importar la manera en que especificamos la regresión a estimar, no olvidemos que debemos estimar errores agrupados:
@@ -113,7 +114,7 @@ summary(modelo2a)
 ```
 
 
-# Descomposición de Goodman-Bacon
+## Descomposición de Goodman-Bacon
 
 La descomposición de Goodman-Bacon (2021)[^2] parte el efecto estimado con el estimador de panel en una suma ponderada de todas las posibles comparaciones 2x2 en nuestro diseño. Aquí, recuperamos dichas ponderaciones:
 
@@ -147,7 +148,7 @@ df_bacon %>%
 ```
 
 
-# Estimador de Sun y Abraham (2020)
+## Estimador de Sun y Abraham (2020)
 
 A partir de la descomposición de Goodman-Bacon, la literatura de DID se ha encargado de desarrollar estimadores que tengan propiedades deseables en el contexto de tratamientos escalonados y heterogéneos. Esta literatura es amplia y muy viva.
 
@@ -174,7 +175,7 @@ summary(modeloSA)
 
 Tenemos una colección de coeficientes estimados con su correspondiente intervalo de confianza que podemos graficar usando *iplot*:
 
-```{}
+```{r}
 iplot(modeloSA)
 ```
 
