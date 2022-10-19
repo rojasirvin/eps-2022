@@ -11,7 +11,13 @@ toc: false
 <div id="corridas-bancarias-en-la-gran-depresión" class="section level2">
 <h2>Corridas bancarias en la Gran Depresión</h2>
 <p>Angrist &amp; Pischke (2014) describen lo sucedido con el sector bancario en Mississippi durante la Gran Depresión. En EUA, la FED tiene 12 bancos regionales y cada uno tiene autonomía para tomar ciertas decisiones de política monetaria. En particular, Mississippi tiene una parte del estado bajo el mando del distrito 6 (Atlanta) y la otra mitad en el distrito 8 (San Luis).</p>
-<p><img src="banks_map.png" alt="Fuente: Richardson & Troost (2009)"></p>
+<pre class="r"><code>knitr::include_graphics(&quot;banks_map.png&quot;)</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:unnamed-chunk-1"></span>
+<img src="banks_map.png" alt="Fuente: Richardson &amp; Troost (2009)" width="75%" />
+<p class="caption">
+Figure 1: Fuente: Richardson &amp; Troost (2009)
+</p>
+</div>
 <p>Como respuesta a las corridas bancarias que caracterizaron la crisis de 1929, los bancos comerciales en Mississippi se vieron expuestos a dos políticas distintas.</p>
 <p><span class="math display">\[
 T=
@@ -68,7 +74,7 @@ banks %&gt;%
   ggplot(aes(x=year, y=banks, color=distrito)) +
   geom_line(size=2) +
   scale_y_continuous(limits=c(100,180))</code></pre>
-<p><img src="/notas/diferencia_en_diferencias_files/figure-html/unnamed-chunk-1-1.png" width="90%" style="display: block; margin: auto;" /></p>
+<p><img src="/notas/diferencia_en_diferencias_files/figure-html/unnamed-chunk-2-1.png" width="90%" style="display: block; margin: auto;" /></p>
 <p>Del distrito 8 (no tratado) podemos obtener la pendiente:</p>
 <p><span class="math display">\[m_{NT}=\frac{Y_{8,post}-Y_{8,pre}}{X_{8,post}-X_{8,pre}}=\frac{132-165}{1931-1930}=-33\]</span></p>
 <p>Y entonces, podemos encontrar cuál hubiera sido el número de bancos en el distrio 6 (tratado) si hubiera seguido la pendiente del distrito 8:</p>
@@ -93,7 +99,7 @@ banks_contrafactual %&gt;%
   scale_linetype_manual(values=c(&quot;dashed&quot;, &quot;solid&quot;)) +
   scale_y_continuous(limits=c(100,180))+
   geom_brace(aes(c(1931.1,1931.3), c(121,102), label=&quot;Efecto del\ntratamiento&quot;), inherit.data=F, labelsize=3, rotate = 90)</code></pre>
-<p><img src="/notas/diferencia_en_diferencias_files/figure-html/unnamed-chunk-2-1.png" width="100%" style="display: block; margin: auto;" /></p>
+<p><img src="/notas/diferencia_en_diferencias_files/figure-html/unnamed-chunk-3-1.png" width="100%" style="display: block; margin: auto;" /></p>
 </div>
 <div id="diferencia-en-diferencias-en-el-caso-2-x-2" class="section level2">
 <h2>Diferencia en diferencias en el caso 2 x 2</h2>

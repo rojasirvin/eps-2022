@@ -27,8 +27,9 @@ library(knitr)
 
 Angrist & Pischke (2014) describen lo sucedido con el sector bancario en Mississippi durante la Gran Depresión. En EUA, la FED tiene 12 bancos regionales y cada uno tiene autonomía para tomar ciertas decisiones de política monetaria. En particular, Mississippi tiene una parte del estado bajo el mando del distrito 6 (Atlanta) y la otra mitad en el distrito 8 (San Luis).
 
-<img src="banks_map.png" alt="Fuente: Richardson & Troost (2009)">
- 
+```{r, out.width="75%",fig.cap='Fuente: Richardson & Troost (2009)',fig.align='center'}
+knitr::include_graphics("banks_map.png")
+``` 
 
 
 Como respuesta a las corridas bancarias que caracterizaron la crisis de 1929, los bancos comerciales en Mississippi se vieron expuestos a dos políticas distintas.
