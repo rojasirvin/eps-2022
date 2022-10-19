@@ -7,7 +7,7 @@ toc: false
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, fig.path = "figures/")
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
 
 library(tidyverse)
 library(janitor)
@@ -27,8 +27,9 @@ library(knitr)
 
 Angrist & Pischke (2014) describen lo sucedido con el sector bancario en Mississippi durante la Gran Depresión. En EUA, la FED tiene 12 bancos regionales y cada uno tiene autonomía para tomar ciertas decisiones de política monetaria. En particular, Mississippi tiene una parte del estado bajo el mando del distrito 6 (Atlanta) y la otra mitad en el distrito 8 (San Luis).
 
-```{r, out.width="75%",fig.cap='Fuente: Richardson & Troost (2009)',fig.align='center'}
-knitr::include_graphics("figures/banks_map.png")
+```{r}
+getwd()
+knitr::include_graphics("banks_map.png")
 ``` 
 
 
@@ -57,7 +58,7 @@ Pareciera que la política de proveer liquidez, *easy money*, **causó** que que
 
 Gráficamente observamos:
 
-```{r, echo=T, eval=T, message=F, warning=F, out.width="90%", fig.align='center'}
+```{r echo=T, eval=T, message=F, warning=F, out.width="90%", fig.align='center'}
 banks<-read_csv("./banks_mm.csv",
                        locale = locale(encoding = "latin1"))
 
