@@ -6,9 +6,8 @@ type: book
 toc: false
 ---
 
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, fig.path = "figures/")
+knitr::opts_chunk$set(echo = FALSE)
 
 library(tidyverse)
 library(janitor)
