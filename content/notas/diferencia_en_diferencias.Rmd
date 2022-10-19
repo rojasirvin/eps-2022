@@ -29,7 +29,7 @@ Angrist & Pischke (2014) describen lo sucedido con el sector bancario en Mississ
 
 ```{r}
 getwd()
-knitr::include_graphics("banks_map.png")
+knitr::include_graphics("./banks_map.png")
 ``` 
 
 
