@@ -12,6 +12,18 @@ library(janitor)
 knitr::opts_chunk$set(collapse = TRUE)
 ```
 
+## Instrucciones
+
+Las tareas deben entregarse de manera individual, pero se recomienda ampliamente colaborar en grupos de estudio. Para evitar confusiones, escriban en su tarea con quiénes colaboraron. Las tareas deberán entregarse en Teams antes de la fecha y hora señalada. No se aceptarán tareas fuera de tiempo. Por favor, **no comprima los archivos** en carpetas comprimidas. Las tareas deberán contener dos archivos:
+
+Un primer documento de respuestas donde se incluyan las respuestas a las preguntas teóricas y conceptuales. Este documento debe estar en formato pdf y debe ser generado usando un software de procesamiento de textos científicos, por ejemplo, usando los leguajes LaTeX o Markdown. En este documento también se deben incluir las respuestas a preguntas sobre conclusiones que se desprenden de las secciones prácticas. Por ejemplo, si una pregunta pide obtener la media de la variable x en cierta base de datos, entonces el documento de respuestas debe incluir la pregunta y respuesta correspondiente: “la media de la variable x es 32.6”. En este documento también deberán incluirse las tablas y gráficas que se soliciten.
+
+Un segundo archivo deberá contener el código replicable usado para generar los resultados de la sección práctica. El código debe también crear las tablas y gráficas solicitadas. Los archivos de código se verificarán para comprobar su replicabilidad.
+
+## Fecha de entrega
+
+Viernes 11 de noviembres a las 20:00.
+
 ## Archivos
 
 [ehec_data.csv](/tareas/tarea_3/ehec_data.csv)
