@@ -1,6 +1,6 @@
 ---
 title: "Tarea 3"
-summary: "Martes 11 de noviembre a las 20:00"
+summary: "Viernes 11 de noviembre a las 20:00"
 weight: 1
 type: book
 toc: false
@@ -11,3 +11,71 @@ library(tidyverse)
 library(janitor)
 knitr::opts_chunk$set(collapse = TRUE)
 ```
+
+## Archivos
+
+[ehec_data.csv](/tareas/tarea_3/ehec_data.csv)
+
+[datos_jcf_analisis.csv](/tareas/tarea_3/datos_jcf_analisis.csv)
+
+[salud_ecuador.csv](/tareas/tarea_3/salud_ecuador.csv)
+
+
+## Pregunta 1
+
+Los datos en *ehec_data.csv* son datos de panel a nivel estado para los Estados Unidos de 2008 a 2019. A partir de 2014 se llevó a cabo un proceso de expansión de un programa de ayuda para subsidiar el costo de los servicios de salud de personas de bajos ingresos, *Medicaid Expansion*. La columna **yexp2** indica el año en que cada estado es tratado con la expansión del programa, **treated** es un indicador de si el estado $i$ es tratado en el año $t$, mientras que **rel_year** indica el número de años desde la expansión. Si *yexp2==Inf*, entonces el estado no ha sido tratado para 2019. Se busca estimar el efecto de la expansión del programa en el porcentaje de la población asegurada que es de bajos ingresos, sin hijos, y de entre 25 y 64 años de edad, **dins**.
+
+a. [5 puntos] ¿Por qué decimos que esta es una aplicación de la estimación de efectos de tratamiento con adopción escalonada?
+
+a. [5 puntos] Como punto de partida, estime el efecto del tratamiento sobre **dins** usando efectos fijos (TWFE). Tome en cuenta la agrupación de los errores. Interprete sus resultados.
+
+a. [5 puntos] Realice la descomposición de Goodman-Bacon (2021). Construya un gráfico donde muestre en el eje $x$ el peso otorgado a cada comparación 2x2 y en el eje $y$ el efecto estimado correspondiente a cada comparación. Interprete el gráfico obtenido.
+
+a. [5 puntos] Implemente el estimador de Sun & Abraham (2021) para estimar los efectos del tratamiento específicos para cada cohorte, considerando la agrupación de erores al nivel adecuado. Luego, use *iplot* para graficar los coeficientes estimados para cada valor de **real_year**. Interprete el gráfico obtenido.
+
+a. [5 puntos] Reporte los resultados agregados obtenidos a partir del estimador de Sun & Abraham (2021). Realice la agregación para el efecto del tratamiento en los tratados (ATT) y para el efecto del tratamiento por cohorte. ¿Cómo se comparan estos efectos con el estimado por efectos fijos (TWFE)?
+
+
+## Pregunta 2
+
+El año pasado se presentaron los resultados de [una evaluación](https://www.gob.mx/cms/uploads/attachment/file/669952/Estudio_EL_EFECTO_DEL_PROGRAMA_JCF_DURANTE_LA_PANDEMIA.pdf) del impacto del programa Jóvenes Construyendo el Futuro (JCF), realizada usando métodos de matching. Las tablas 1 y 2 del reporte muestran el ATE estimado en el ingreso trimestral entre los jóvenes que no asisten a la escuela y no están empleados y el ATE en la probabilidad de encontrar un trabajo entre los jóvenes en general, respectivamente. En este ejercicio extenderemos los resultados encontrados.
+
+Los datos en *datos_jcf_analisis.csv* están listos para analizarse. El propensity score (PS) usado en la evaluación usa los siguientes regresores $X$: **mujer** (dummy de sexo), **indigena** (dummy de pertenencia a una etnia), **rural** (dummy del ámbito rural), **escoacum** (años de escolaridad), **casadounion** (dummy para casados o en unión libre), **jefehog** (dummy para jefes del hogar), **haymenores** (dummy para la presencia de menores de edad en el hogar), **proggob** (dummy para beneficiarios de programas de gobierno), y **tot_integ** (número de miembros del hogar), así como dummies de estado, **cve_ent**.
+
+a. [5 puntos] Considere la comparación para el ingreso trimestral, **ingtot_tri**, entre tratados y no tratados. Los beneficiarios tienen *jcf2==1* y los jóvenes que no asisten a la escuela y no están empleados tienen *jcf2==0*. Muestra qué tan similares o qué tan diferentes son los individuos en ambos grupos en términos de las $X$.
+
+a. [5 puntos] Estime el TOT (TT o ATT) del programa en el ingreso trimestral, **ingtot_tri** usando el algoritmo de *vecino más cercano*. Para estimar el impacto en el ingreso trimestral se comparan a los beneficiarios de JCF con los jóvenes que no asisten a la escuela y no están empleados. Los beneficiarios tienen *jcf2==1* y los jóvenes que no asisten a la escuela y no están empleados tienen *jcf2==0*. Realice la inferencia estadística usando el método de simulación de King, Tomz y Wittenberg (2000). ¿De qué tamaño es el TOT estimado y es este efecto estadísticamente significativo?
+
+a. [5 puntos] En el matching de la parte b., evalúe qué tan bueno es el procedimiento en balancear las características observadas una vez realizado el matching. Cree un *love plot* y realice pruebas formales para contrastar las diferencias en características observables antes y después del matching.
+
+a. [5 puntos] Para la probabilidad de encontrar empleo, **encontro**, se comparan a los beneficiarios de JCF con los jóvenes en general. Los beneficiarios tienen *jcf==1*, mientras que el resto de los jóvenes tienen *jcf==0*. Realice la estimación del TOT y la inferencia, de manera análoga a lo realizado en la parte b.
+
+a. [5 puntos] Estime ahora el TOT en el ingreso trimestral, como en la parte b., pero usando un caliper de 0.1 y 3 vecinos a ser emparejados. ¿Cómo cambian sus resultados respecto a los de la parte b.?
+
+
+## Pregunta 3
+
+Suponga que se convierte en asesor de la instancia gubernamental encargada de la seguridad alimentaria. Al gobierno le interesa que la seguridad alimentaria de las familias productoras de maíz para autoconsumo no se vea afectada negativamente por la presencia de cierta plaga y dará una transferencia per cápita a todos los pequeños productores de maíz cuyos cultivos se considere están afectados por dicha plaga. Para determinar qué hogares reciben la transferencia se decide usar un índice de prevalencia de la plaga y se selecciona un umbral por arriba del cual está demostrado que los rendimientos del cultivo del maíz se ven seriamente afectados. Esta inspección se llevará a cabo por autoridades federales y el umbral es conocido solo por estas autoridades. Cuando se determine que la prevalencia está por encima del umbral, el monto del programa será transferido de manera inmediata, electrónicamente.
+
+a. [5 puntos] ¿Qué aspectos del programa permitirían emplear un diseño de regresión discontinua para evaluar la efectividad de este sobre la seguridad alimentaria y cómo mostraría su validez empíricamente?
+
+a. [5 puntos] ¿Cómo emplearía el diseño de este programa para evaluar su efectividad con un modelo de regresión discontinua nítida? Elabore una gráfica donde explique una situación en la que el programa muestra ser efectivo. Describa cómo usaría una regresión para hacer inferencia respecto a la efectividad del programa.
+
+a. [5 puntos] ¿Qué factores podrían invalidar el uso de este método para evaluar el programa?
+
+a. Suponga que otro de los asesores juzga como *demasiado paternalista* la transferencia y propone que, en su lugar, se otorgue un cupón válido para canjearse por bultos de un plaguicida. Asumiendo que en una encuesta posterior usted podría conocer la cantidad precisa de plaguicida aplicado, ¿cómo emplearía un diseño de regresión discontinua difusa para evaluar el efecto del uso del plaguicida sobre la seguridad alimentaria? En particular, describa:
+    i. [5 puntos] ¿Cómo estimaría la forma reducida? ¿Cuál es el coeficiente relevante y cuál es su interpretación?
+    i. [5 puntos] ¿Cómo estimaría la primera y la segunda etapa? ¿Cuáles son los coeficientes relevantes y cuál es su interpretación? 
+    i. [5 puntos] ¿Cuáles son los supuestos necesarios para estimar este modelo usando variables instrumentales?
+
+## Pregunta 4
+
+Los datos del archivo *salud_ecuador.csv* contienen información de una encuesta en hogares realizada en Ecuador. Un programa del gobierno otorgó un seguro de salud para cubrir a hogares de trabajadores informales y pobres, típicamente excluidos de los servicios de salud. Para ello, se uso un índice de ingreso (IFH), expresado en soles, para determinar la elegibilidad. Aquellos hogares con un **ifh** menor o igual a 55 soles son considerados pobres. Se desea estimar el efecto del programa en la probabilidad de recibir algún tipo de asistencia médica en un hospital o con un doctor, **hospinter**, y en el gasto en salud del hogar, **gastosalud2**.
+
+a. [5 puntos] Genere una gráfica donde muestre evidencia de una discontinuidad en la variable **curative**, que indica si el hogar efectivamente recibió algún tipo de atención médica, para aquellos hogares que recibieron los beneficios del programa. Debe usar solo a los trabajadores informales, *formal==0*, y cuyo consumo de agua y electricidad no es considerado alto, *high==0*.
+
+a. [5 puntos] Estime la versión más básica de un modelo de regresión discontinua para el efecto del programa sobre **hospinter** y **gastosalud2**. Reporte el coeficiente estimado del efecto del tratamiento y su significancia estadística. Use una ventana de 20 puntos en el IFH antes y después del corte de elegibilidad. Interprete sus resultados.
+
+a. [5 puntos] Estime la misma especificaciones que en la parte b., pero ahora con una ventana de 10 puntos en el IFH. Interprete sus resultados.
+
+a. [5 puntos] Regrese a una ventana de 20 puntos como en la parte b., pero ahora permita un coeficiente distinto para el IFH antes y después del corte, y un polinomio de orden 2 para la variable de asignación. Interprete sus resultados.
