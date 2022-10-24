@@ -82,12 +82,12 @@ a. Suponga que otro de los asesores juzga como *demasiado paternalista* la trans
 
 ## Pregunta 4
 
-Los datos del archivo *salud_ecuador.csv* contienen información de una encuesta en hogares realizada en Ecuador. Un programa del gobierno otorgó un seguro de salud para cubrir a hogares de trabajadores informales y pobres, típicamente excluidos de los servicios de salud. Para ello, se uso un índice de ingreso (IFH), expresado en soles, para determinar la elegibilidad. Aquellos hogares con un **ifh** menor o igual a 55 soles son considerados pobres. Se desea estimar el efecto del programa en la probabilidad de recibir algún tipo de asistencia médica en un hospital o con un doctor, **hospinter**, y en el gasto en salud del hogar, **gastosalud2**.
+Los datos del archivo *salud_ecuador.csv* contienen información de una encuesta en hogares realizada en Ecuador. Un programa del gobierno otorgó un seguro de salud para cubrir a hogares de trabajadores informales y pobres, típicamente excluidos de los servicios de salud. Para ello, se uso un índice de ingreso (IFH), expresado en soles, para determinar la elegibilidad. Aquellos hogares con un IFH menor o igual a 55 soles son considerados pobres. Se desea estimar el efecto del programa en la probabilidad de recibir algún tipo de asistencia médica en un hospital o con un doctor, **hospinter**, y en el gasto en salud del hogar, **gastosalud2**.
 
 a. [5 puntos] Genere una gráfica donde muestre evidencia de una discontinuidad en la variable **curative**, que indica si el hogar efectivamente recibió algún tipo de atención médica, para aquellos hogares que recibieron los beneficios del programa. Debe usar solo a los trabajadores informales, *formal==0*, y cuyo consumo de agua y electricidad no es considerado alto, *high==0*.
 
-a. [5 puntos] Estime la versión más básica de un modelo de regresión discontinua para el efecto del programa sobre **hospinter** y **gastosalud2**. Reporte el coeficiente estimado del efecto del tratamiento y su significancia estadística. Use una ventana de 20 puntos en el IFH antes y después del corte de elegibilidad. Interprete sus resultados.
+a. [5 puntos] Estime la versión más básica de un modelo de regresión discontinua para el efecto del programa sobre **hospinter** y **gastosalud2**. Reporte el coeficiente estimado del efecto del tratamiento y su significancia estadística. Use una ventana de 20 soles en el IFH antes y después del corte de elegibilidad. Interprete sus resultados.
 
-a. [5 puntos] Estime la misma especificaciones que en la parte b., pero ahora con una ventana de 10 puntos en el IFH. Interprete sus resultados.
+a. [5 puntos] Estime la misma especificaciones que en la parte b., pero ahora con una ventana de 10 soles en el IFH. Interprete sus resultados.
 
-a. [5 puntos] Regrese a una ventana de 20 puntos como en la parte b., pero ahora permita un coeficiente distinto para el IFH antes y después del corte, y un polinomio de orden 2 para la variable de asignación. Interprete sus resultados.
+a. [5 puntos] Regrese a una ventana de 20 soles como en la parte b., pero ahora permita un coeficiente distinto para el IFH antes y después del corte, y un polinomio de orden 2 para la variable de asignación. Interprete sus resultados.
