@@ -18,9 +18,9 @@ library(Zelig)
 library(cobalt)
 ```
 
-[cattaneo_smoking.csv](/content/notas/cattaneo_smoking.csv)
+[cattaneo_smoking.csv](/notas/cattaneo_smoking.csv)
 
-[lab_psm.R](/content/notas/lab_psm.R)
+[lab_psm.R](/notas/lab_psm.R)
 
 
 ## Paquetes
