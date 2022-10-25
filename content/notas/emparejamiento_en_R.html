@@ -14,10 +14,7 @@ toc: false
 <p><a href="/notas/lab_psm.R">lab_psm.R</a></p>
 <div id="paquetes" class="section level2">
 <h2>Paquetes</h2>
-<p>Usaremos tres paquetes nuevos. El primero es <em>MatchIt</em> y el segundo es <em>cobalt</em>, que pueden descargar como cualquier otro paquete desde CRAN.</p>
-<p>El otro paquete es <em>Zelig</em>. Este era un <a href="http://docs.zeligproject.org/index.html">gran paquete</a>, pero últimamente ha tenido problemas de actualización y ha sido bajado del repositorio CRAN. Para poder usarlo, hay que bajarlo de GitHub, ejecutando lo siguiente:</p>
-<pre class="r"><code>devtools::install_github(&#39;IQSS/Zelig&#39;)</code></pre>
-<p>Antes de ello, asegúrense de que tienen actualizado el paquete <em>rlang</em> en su versión más reciente, 1.0.6. Si no, actualicen este paquete primero.</p>
+<p>Usaremos dos paquetes nuevos: <em>MatchIt</em> y <em>cobalt</em>, que pueden descargar como cualquier otro paquete desde CRAN.</p>
 </div>
 <div id="datos-no-experimentales-de-una-muestra-de-mujeres" class="section level2">
 <h2>Datos no experimentales de una muestra de mujeres</h2>
@@ -48,7 +45,7 @@ set.seed(1021)</code></pre>
                     notes = &quot;Fuente: Cattaneo (2009)&quot;)</code></pre>
 <table style="NAborder-bottom: 0; width: auto !important; margin-left: auto; margin-right: auto;" class="table">
 <caption>
-<span id="tab:unnamed-chunk-3">Table 1: </span>Pruebas de balance
+<span id="tab:unnamed-chunk-2">Table 1: </span>Pruebas de balance
 </caption>
 <thead>
 <tr>
@@ -289,12 +286,12 @@ print(ps)</code></pre>
 <h2>Verificación del balance</h2>
 <p>Gráfico de nube:</p>
 <pre class="r"><code>plot(m.out, type = &quot;jitter&quot;)</code></pre>
-<p><img src="/notas/emparejamiento_en_R_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="/notas/emparejamiento_en_R_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <pre><code>## [1] &quot;To identify the units, use first mouse button; to stop, use second.&quot;</code></pre>
 <pre><code>## integer(0)</code></pre>
 <p>Histograma:</p>
 <pre class="r"><code>plot(m.out, type = &quot;hist&quot;)</code></pre>
-<p><img src="/notas/emparejamiento_en_R_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="/notas/emparejamiento_en_R_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p>Podemos guardar un objeto con la muestra emparejada usando <em>match.data</em> y observar quién hace match con quién:</p>
 <pre class="r"><code>m.data &lt;- match.data(m.out)
 
@@ -317,95 +314,57 @@ head(m.out$match.matrix)</code></pre>
 <p>Usando la librería <em>cobalt</em> podemos construir un <em>love plot</em> que representa gráficamente las diferencias antes y después del emparejamiento</p>
 <pre class="r"><code>love.plot(bal.tab(m.out),
           threshold = .1)</code></pre>
-<p><img src="/notas/emparejamiento_en_R_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="/notas/emparejamiento_en_R_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 </div>
 <div id="efecto-de-tratamiento" class="section level2">
 <h2>Efecto de tratamiento</h2>
-<p>Existen muchas maneras de explotar la muestra emparejada. Aquí veremos la más sencilla. Simplemente consideremos a la muestra emparejada como si viniera de un experimento.</p>
-<p>La función <em>zelig</em> incluye gran variedad de modelos usados rutinariamente. Uno de ellos es <em>ls</em>, el modelo lineal:</p>
-<pre class="r"><code>z.out &lt;- zelig(bweight~smoke,
-               data = m.data,
-               model = &quot;ls&quot;)</code></pre>
-<pre><code>## How to cite this model in Zelig:
-##   R Core Team. 2007.
-##   ls: Least Squares Regression for Continuous Dependent Variables
-##   in Christine Choirat, Christopher Gandrud, James Honaker, Kosuke Imai, Gary King, and Olivia Lau,
-##   &quot;Zelig: Everyone&#39;s Statistical Software,&quot; https://zeligproject.org/</code></pre>
-<pre class="r"><code>z.out</code></pre>
-<pre><code>## Model: 
-## 
-## Call:
-## z5$zelig(formula = bweight ~ smoke, data = m.data)
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -2740.66  -330.66    41.95   381.95  1880.34 
-## 
-## Coefficients:
-##             Estimate Std. Error t value Pr(&gt;|t|)
-## (Intercept)  3332.05      20.37 163.588  &lt; 2e-16
-## smoke        -194.39      28.81  -6.749 2.03e-11
-## 
-## Residual standard error: 598.7 on 1726 degrees of freedom
-## Multiple R-squared:  0.02571,    Adjusted R-squared:  0.02514 
-## F-statistic: 45.54 on 1 and 1726 DF,  p-value: 2.033e-11
-## 
-## Next step: Use &#39;setx&#39; method</code></pre>
-<p>Que es lo mismo que lo que obtenemos con <em>lm</em>. Sin embargo, como veremos en seguida, <em>zelig</em> nos ayuda a hacer simulaciones con los coeficientes estimados:</p>
-<pre class="r"><code>summary(lm(bweight ~ smoke,
-           data = m.data))</code></pre>
+<p>Existen muchas maneras de explotar la muestra emparejada. Aquí veremos la más sencilla. Simplemente consideremos a la muestra emparejada como si viniera de un experimento. Sin embargo, debemos poner especial atención a la forma de hacer inferencia pues no debemos ignorar que el PS es estimado.</p>
+<p>Dependiendo de si el emparejamiento ocurre con o sin reemplazo, y de la naturaleza de la variable dependiente, se recomiendan distintas maneras de estimar el efecto del tratamiento y hacer inferencia. Una buena guía está en la documentación de <a href="https://kosukeimai.github.io/MatchIt/articles/estimating-effects.html">MatchIt</a>.</p>
+<p>Por ejemplo, cuando se realiza el emparejamiento sin reemplazo, <a href="https://www.tandfonline.com/doi/full/10.1080/01621459.2020.1840383?casa_token=7VdQFPydVtIAAAAA%3A3VRshT4TmqjnyzS2Nz2EBmFi54NlHDIWdtD-mDdAdPHuv51BhbXh1qYOwsRo8yH_WhA1UoUbvP0Kqg">Abadie &amp; Spiess (2019)</a> muestran que podemos estimar los errores estándar simplemente agrupando a nivel de pareja (o grupo) emparejado (<strong>subclass</strong> es una columna que enumera a las parejas o grupos emparejados y es construida automáticamente por <em>matchit</em>).</p>
+<pre class="r"><code>tt1 &lt;- lm(bweight ~ smoke,
+          data = m.data,
+          weights = weights)
+
+#Errores agrupados a nivel subclass
+coeftest(tt1,
+         vcov. = vcovCL,
+         cluster = ~subclass)</code></pre>
 <pre><code>## 
-## Call:
-## lm(formula = bweight ~ smoke, data = m.data)
+## t test of coefficients:
 ## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -2740.66  -330.66    41.95   381.95  1880.34 
-## 
-## Coefficients:
-##             Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept)  3332.05      20.37 163.588  &lt; 2e-16 ***
-## smoke        -194.39      28.81  -6.749 2.03e-11 ***
+##             Estimate Std. Error  t value  Pr(&gt;|t|)    
+## (Intercept) 3332.054     21.585 154.3697 &lt; 2.2e-16 ***
+## smoke       -194.395     28.431  -6.8373 1.116e-11 ***
 ## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 598.7 on 1726 degrees of freedom
-## Multiple R-squared:  0.02571,    Adjusted R-squared:  0.02514 
-## F-statistic: 45.54 on 1 and 1726 DF,  p-value: 2.033e-11</code></pre>
-</div>
-<div id="inferencia" class="section level2">
-<h2>Inferencia</h2>
-<p>En el contexto de matching tenemos que tomar en cuenta que el PS no es observado sino estimado. Bootstrap no funciona muy bien porque es complicado incorporar todas las decisiones y no linealidades involucradas en el proceso. Una alternativa es hacer inferencia con simulaciones, basadas en <a href="https://gking.harvard.edu/files/gking/files/making.pdf">King, Tomz y Wittenberg (2000)</a>.</p>
-<p>En términos prácticos, creamos dos objetos con las dos situaciones que queremos simular, a partir de los resultados de la estimación principal:</p>
-<pre class="r"><code>x.out &lt;- setx(z.out, smoke=0)
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Algunos autores incluyen los covariables en su estimación:</p>
+<pre class="r"><code>tt2 &lt;- lm(bweight ~ smoke + married + firstbaby + medu + nprenatal + foreign + mhisp + fage,
+          data = m.data,
+          weights = weights)
 
-x1.out &lt;- setx1(z.out, smoke=1)
-
-#Corremos la simulación
-sim.out &lt;- sim(z.out, x=x.out, x1=x1.out)
-
-summary(sim.out)</code></pre>
+#Errores agrupados a nivel subclass
+coeftest(tt2,
+         vcov. = vcovCL,
+         cluster = ~subclass)</code></pre>
 <pre><code>## 
-##  sim x :
-##  -----
-## ev
-##       mean       sd      50%     2.5%    97.5%
-## 1 3332.761 20.07186 3333.668 3293.038 3369.488
-## pv
-##          mean       sd      50%     2.5%    97.5%
-## [1,] 3335.514 593.5736 3332.568 2181.144 4489.018
+## t test of coefficients:
 ## 
-##  sim x1 :
-##  -----
-## ev
-##       mean       sd      50%     2.5%    97.5%
-## 1 3137.599 21.12745 3137.598 3096.062 3178.739
-## pv
-##          mean       sd      50%     2.5%    97.5%
-## [1,] 3097.479 599.4254 3091.903 1809.471 4339.655
-## fd
-##        mean       sd       50%      2.5%     97.5%
-## 1 -195.1622 29.10726 -195.8494 -253.6676 -137.2439</code></pre>
-<p>Las técnicas basadas en el PS actualmente no son usadas extensivamente en economía para hacer inferencia directamente. El PSM es usado más en disciplinas como la bioestadística, para corregir posibles desbalances en las muestras.</p>
+##               Estimate Std. Error t value  Pr(&gt;|t|)    
+## (Intercept) 2956.12820   75.62858 39.0874 &lt; 2.2e-16 ***
+## smoke       -195.89513   28.27493 -6.9282 6.003e-12 ***
+## married      107.92923   30.43543  3.5462 0.0004013 ***
+## firstbaby    -54.86645   29.63670 -1.8513 0.0642977 .  
+## medu           1.70500    5.37644  0.3171 0.7511879    
+## nprenatal     32.45314    4.46216  7.2730 5.319e-13 ***
+## foreign        9.34224  107.13207  0.0872 0.9305203    
+## mhisp        120.09494   84.84348  1.4155 0.1571066    
+## fage           0.14779    1.43275  0.1032 0.9178528    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Cuando el emparejamiento es con reemplazo, las unidades no tratadas son emparejadas varias veces (aparecen repetidas en la muestra emparejada), lo cual debe ser considerado para estimar los efectos del tratamiento y hacer inferencia. Por ejemplo, se puede usar <em>bootstrap</em> para obtener el error estándar del efecto del tratamiento cuando la variable de impacto es continua.</p>
+</div>
+<div id="conclusión" class="section level2">
+<h2>Conclusión</h2>
+<p>Las técnicas basadas en el PS no son usadas extensivamente en economía para hacer inferencia directamente. El PSM es usado más en disciplinas como la bioestadística, para corregir posibles desbalances en las muestras.</p>
 <p>Actualmente, el PS ha tomado relevancia como herramienta auxiliar, por ejemplo, para los métodos doblemente robustos, para agregar comparaciones de diferencia en diferencias con adopción escalonada, y en métodos de aprendizaje computacional</p>
 </div>
