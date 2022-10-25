@@ -95,7 +95,7 @@ m.out <- matchit(formula=ps,
 
 El resumen del procedimiento da bastante información sobre el pareamiento:
 
-```{r echo=T, include=T, eval=T, message=F, warning=F, results=F}
+```{r echo=T, include=T, eval=T, message=F, warning=F, results=T}
 summary(m.out)
 ```
 

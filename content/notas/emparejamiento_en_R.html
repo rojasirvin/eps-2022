@@ -281,6 +281,58 @@ print(ps)</code></pre>
                  data = data.smoking)</code></pre>
 <p>El resumen del procedimiento da bastante información sobre el pareamiento:</p>
 <pre class="r"><code>summary(m.out)</code></pre>
+<pre><code>## 
+## Call:
+## matchit(formula = ps, data = data.smoking, method = &quot;nearest&quot;, 
+##     distance = &quot;logit&quot;, replace = FALSE, ratio = 1)
+## 
+## Summary of Balance for All Data:
+##           Means Treated Means Control Std. Mean Diff. Var. Ratio eCDF Mean
+## distance         0.2568        0.1700          0.6673     1.4475    0.2002
+## married          0.4734        0.7515         -0.5569          .    0.2781
+## firstbaby        0.3715        0.4531         -0.1689          .    0.0816
+## medu            11.6389       12.9299         -0.5955     0.7316    0.0717
+## nprenatal        9.8623       10.9629         -0.2616     1.4301    0.0376
+## foreign          0.0255        0.0598         -0.2181          .    0.0344
+## mhisp            0.0243        0.0363         -0.0776          .    0.0120
+## fage            24.7431       27.8444         -0.2782     1.6070    0.0468
+##           eCDF Max
+## distance    0.3329
+## married     0.2781
+## firstbaby   0.0816
+## medu        0.2549
+## nprenatal   0.1259
+## foreign     0.0344
+## mhisp       0.0120
+## fage        0.1377
+## 
+## 
+## Summary of Balance for Matched Data:
+##           Means Treated Means Control Std. Mean Diff. Var. Ratio eCDF Mean
+## distance         0.2568        0.2564          0.0033     1.0110    0.0005
+## married          0.4734        0.4769         -0.0070          .    0.0035
+## firstbaby        0.3715        0.3981         -0.0551          .    0.0266
+## medu            11.6389       11.6019          0.0171     0.7064    0.0161
+## nprenatal        9.8623        9.8588          0.0008     1.1543    0.0059
+## foreign          0.0255        0.0174          0.0514          .    0.0081
+## mhisp            0.0243        0.0231          0.0075          .    0.0012
+## fage            24.7431       24.5799          0.0146     1.0787    0.0124
+##           eCDF Max Std. Pair Dist.
+## distance    0.0093          0.0046
+## married     0.0035          0.2202
+## firstbaby   0.0266          0.4575
+## medu        0.0417          0.5168
+## nprenatal   0.0185          0.7039
+## foreign     0.0081          0.2425
+## mhisp       0.0012          0.2781
+## fage        0.0556          0.6457
+## 
+## Sample Sizes:
+##           Control Treated
+## All          3778     864
+## Matched       864     864
+## Unmatched    2914       0
+## Discarded       0       0</code></pre>
 </div>
 <div id="verificación-del-balance" class="section level2">
 <h2>Verificación del balance</h2>
