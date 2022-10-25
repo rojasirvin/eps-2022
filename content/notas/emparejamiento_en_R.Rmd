@@ -1,0 +1,192 @@
+---
+title: "Métodos de emparejamiento en R"
+summary: " "
+weight: 1
+type: book
+toc: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+
+library(tidyverse)
+library(janitor)
+library(clubSandwich)
+library(modelsummary)
+library(MatchIt)
+library(Zelig)
+library(cobalt)
+```
+
+[cattaneo_smoking.csv](/content/notas/cattaneo_smoking.csv)
+
+[lab_psm.R](/content/notas/lab_psm.R)
+
+
+## Paquetes
+
+Usaremos tres paquetes nuevos. El primero es *MatchIt* y el segundo es *cobalt*, que pueden descargar como cualquier otro paquete desde CRAN.
+
+El otro paquete es *Zelig*. Este era un [gran paquete](http://docs.zeligproject.org/index.html), pero últimamente ha tenido problemas de actualización y ha sido bajado del repositorio CRAN. Para poder usarlo, hay que bajarlo de GitHub, ejecutando lo siguiente:
+
+```{r echo=T, eval=F}
+devtools::install_github('IQSS/Zelig')
+```
+
+Antes de ello, asegúrense de que tienen actualizado el paquete *rlang* en su versión más reciente, 1.0.6. Si no, actualicen este paquete primero.
+
+## Datos no experimentales de una muestra de mujeres
+ 
+Los datos en *cattaneo_smoking.csv* (Cattaneo, 2010) son de una muestra de mujeres que incluye un indicador de si la madre fumó durante el embarazo. El propósito es evaluar el efecto de fumar sobre el peso de los bebés al nacer. Se incluyen una serie de covariables que usaremos para modelar el *propensity score*.
+
+
+## *matchit* para realizar los emparejamientos
+
+La función que usaremos para hacer los emparejamientos es *matchit* de la librería *MatchIt*. Antes de hacer los emparejamientos, construimos la dummy de tratamiento, **smoke**, una dummy para mujeres casadas, **married**, y una dummy para si el caso en cuestión es el primer bebé. **firstbaby**:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F}
+data.smoking<-read_csv(
+  "./cattaneo_smoking.csv",
+  locale = locale(encoding = "latin1")) %>% 
+  clean_names() %>% 
+  mutate(smoke=ifelse(mbsmoke=="smoker",1,0)) %>% 
+  mutate(married=ifelse(mmarried=="married",1,0)) %>% 
+  mutate(firstbaby=ifelse(fbaby=="Yes",1,0))
+
+#Asegurarse que no hay NA, matchit no acepta NA
+data.smoking <- data.smoking[complete.cases(data.smoking), ]
+
+#Una semilla para todo el trabajo
+set.seed(1021)
+```
+
+Notemos que, si solo comparamos a las mujeres que fuman con las que no fuman, estamos comparando personas muy diferentes:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F}
+datasummary_balance(~smoke,
+                    fmt = "%.2f",
+                    data = select(data.smoking, smoke, married, firstbaby, medu, nprenatal, foreign, mhisp, fage),
+                    dinm_statistic = "p.value",
+                    title = "Pruebas de balance",
+                    notes = "Fuente: Cattaneo (2009)")
+
+```
+
+
+## Estimación del PS
+
+Una manera de hacer más eficiente el uso de las *fórmulas* es usando *as.formula*:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F}
+binaria <- "smoke"
+variables <- c("married", "firstbaby", "medu", "nprenatal", "foreign", "mhisp", "fage")
+
+ps <- as.formula(paste(binaria,
+                         paste(variables,
+                               collapse ="+"),
+                         sep= " ~ "))
+print(ps)
+```
+
+Usamos *matchit* para estimar el PS y realizar los emparejamientos con el algoritmo que indiquemos:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F}
+m.out <- matchit(formula=ps,
+                 method = "nearest",
+                 ratio = 1,
+                 distance= "logit",
+                 replace = FALSE,
+                 data = data.smoking)
+```
+
+El resumen del procedimiento da bastante información sobre el pareamiento:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F, results=F}
+summary(m.out)
+```
+
+
+## Verificación del balance
+
+Gráfico de nube:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F}
+plot(m.out, type = "jitter")
+```
+
+Histograma:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F}
+plot(m.out, type = "hist")
+```
+
+Podemos guardar un objeto con la muestra emparejada usando *match.data* y observar quién hace match con quién:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F}
+m.data <- match.data(m.out)
+
+head(m.out$match.matrix)
+```
+
+Una propuesta para determinar si el emparejamiento fue exitoso es observar las diferencias promedio estandarizadas (SMD) entre los grupos tratados y no tratados, antes y después del emparejamiento. 
+
+$$SMD_X=\frac{\bar{X}_T-\bar{X}_{NT}}{\sqrt{S^2_T+S^2_{NT}}}$$
+    
+También vale la pena no perder de vista la razón de varianzas (VR). Se espera que este ratio no sea muy distinto de 1 después de hacer el emparejamiento:
+    
+$$VR=\frac{S^2_T}{S^2_{NT}}$$
+
+Como regla de dedo, una diferencia de 0.1 o menos en el SMD se considera un buen balance. Por ejemplo, la escolaridad de la madre tenía un SDM de -0.5955 en la muestra en bruto, pero con el emparejamiento el SDM se vuelve de solo 0.0171.
+
+## *Loveplot*
+
+Usando la librería *cobalt* podemos construir un *love plot* que representa gráficamente las diferencias antes y después del emparejamiento
+
+```{r echo=T, eval=T}
+love.plot(bal.tab(m.out),
+          threshold = .1)
+```
+
+
+## Efecto de tratamiento
+
+Existen muchas maneras de explotar la muestra emparejada. Aquí veremos la más sencilla. Simplemente consideremos a la muestra emparejada como si viniera de un experimento.
+
+La función *zelig* incluye gran variedad de modelos usados rutinariamente. Uno de ellos es *ls*, el modelo lineal:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F, results=T}
+z.out <- zelig(bweight~smoke,
+               data = m.data,
+               model = "ls")
+
+z.out
+```
+
+Que es lo mismo que lo que obtenemos con *lm*. Sin embargo, como veremos en seguida, *zelig* nos ayuda a hacer simulaciones con los coeficientes estimados:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F, results=T}
+summary(lm(bweight ~ smoke,
+           data = m.data))
+```
+
+
+## Inferencia
+
+En el contexto de matching tenemos que tomar en cuenta que el PS no es observado sino estimado. Bootstrap no funciona muy bien porque es complicado incorporar todas las decisiones y no linealidades involucradas en el proceso. Una alternativa es hacer inferencia con simulaciones, basadas en [King, Tomz y Wittenberg (2000)](https://gking.harvard.edu/files/gking/files/making.pdf).
+
+En términos prácticos, creamos dos objetos con las dos situaciones que queremos simular, a partir de los resultados de la estimación principal:
+
+```{r echo=T, include=T, eval=T, message=F, warning=F, results=T}
+x.out <- setx(z.out, smoke=0)
+
+x1.out <- setx1(z.out, smoke=1)
+
+#Corremos la simulación
+sim.out <- sim(z.out, x=x.out, x1=x1.out)
+
+summary(sim.out)
+```
+
+Las técnicas basadas en el PS actualmente no son usadas extensivamente en economía para hacer inferencia directamente. El PSM es usado más en disciplinas como la bioestadística, para corregir posibles desbalances en las muestras.
+
+Actualmente, el PS ha tomado relevancia como herramienta auxiliar, por ejemplo, para los métodos doblemente robustos, para agregar comparaciones de diferencia en diferencias con adopción escalonada, y en métodos de aprendizaje computacional

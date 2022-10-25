@@ -1,0 +1,411 @@
+---
+title: "Métodos de emparejamiento en R"
+summary: " "
+weight: 1
+type: book
+toc: false
+---
+
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+
+
+<p><a href="/content/notas/cattaneo_smoking.csv">cattaneo_smoking.csv</a></p>
+<p><a href="/content/notas/lab_psm.R">lab_psm.R</a></p>
+<div id="paquetes" class="section level2">
+<h2>Paquetes</h2>
+<p>Usaremos tres paquetes nuevos. El primero es <em>MatchIt</em> y el segundo es <em>cobalt</em>, que pueden descargar como cualquier otro paquete desde CRAN.</p>
+<p>El otro paquete es <em>Zelig</em>. Este era un <a href="http://docs.zeligproject.org/index.html">gran paquete</a>, pero últimamente ha tenido problemas de actualización y ha sido bajado del repositorio CRAN. Para poder usarlo, hay que bajarlo de GitHub, ejecutando lo siguiente:</p>
+<pre class="r"><code>devtools::install_github(&#39;IQSS/Zelig&#39;)</code></pre>
+<p>Antes de ello, asegúrense de que tienen actualizado el paquete <em>rlang</em> en su versión más reciente, 1.0.6. Si no, actualicen este paquete primero.</p>
+</div>
+<div id="datos-no-experimentales-de-una-muestra-de-mujeres" class="section level2">
+<h2>Datos no experimentales de una muestra de mujeres</h2>
+<p>Los datos en <em>cattaneo_smoking.csv</em> (Cattaneo, 2010) son de una muestra de mujeres que incluye un indicador de si la madre fumó durante el embarazo. El propósito es evaluar el efecto de fumar sobre el peso de los bebés al nacer. Se incluyen una serie de covariables que usaremos para modelar el <em>propensity score</em>.</p>
+</div>
+<div id="matchit-para-realizar-los-emparejamientos" class="section level2">
+<h2><em>matchit</em> para realizar los emparejamientos</h2>
+<p>La función que usaremos para hacer los emparejamientos es <em>matchit</em> de la librería <em>MatchIt</em>. Antes de hacer los emparejamientos, construimos la dummy de tratamiento, <strong>smoke</strong>, una dummy para mujeres casadas, <strong>married</strong>, y una dummy para si el caso en cuestión es el primer bebé. <strong>firstbaby</strong>:</p>
+<pre class="r"><code>data.smoking&lt;-read_csv(
+  &quot;./cattaneo_smoking.csv&quot;,
+  locale = locale(encoding = &quot;latin1&quot;)) %&gt;% 
+  clean_names() %&gt;% 
+  mutate(smoke=ifelse(mbsmoke==&quot;smoker&quot;,1,0)) %&gt;% 
+  mutate(married=ifelse(mmarried==&quot;married&quot;,1,0)) %&gt;% 
+  mutate(firstbaby=ifelse(fbaby==&quot;Yes&quot;,1,0))
+
+#Asegurarse que no hay NA, matchit no acepta NA
+data.smoking &lt;- data.smoking[complete.cases(data.smoking), ]
+
+#Una semilla para todo el trabajo
+set.seed(1021)</code></pre>
+<p>Notemos que, si solo comparamos a las mujeres que fuman con las que no fuman, estamos comparando personas muy diferentes:</p>
+<pre class="r"><code>datasummary_balance(~smoke,
+                    fmt = &quot;%.2f&quot;,
+                    data = select(data.smoking, smoke, married, firstbaby, medu, nprenatal, foreign, mhisp, fage),
+                    dinm_statistic = &quot;p.value&quot;,
+                    title = &quot;Pruebas de balance&quot;,
+                    notes = &quot;Fuente: Cattaneo (2009)&quot;)</code></pre>
+<table style="NAborder-bottom: 0; width: auto !important; margin-left: auto; margin-right: auto;" class="table">
+<caption>
+<span id="tab:unnamed-chunk-3">Table 1: </span>Pruebas de balance
+</caption>
+<thead>
+<tr>
+<th style="empty-cells: hide;border-bottom:hidden;" colspan="1">
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+0
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+1
+</div>
+</th>
+<th style="empty-cells: hide;border-bottom:hidden;" colspan="2">
+</th>
+</tr>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Mean
+</th>
+<th style="text-align:right;">
+Std. Dev.
+</th>
+<th style="text-align:right;">
+Mean
+</th>
+<th style="text-align:right;">
+Std. Dev.
+</th>
+<th style="text-align:right;">
+Diff. in Means
+</th>
+<th style="text-align:right;">
+p
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+married
+</td>
+<td style="text-align:right;">
+0.75
+</td>
+<td style="text-align:right;">
+0.43
+</td>
+<td style="text-align:right;">
+0.47
+</td>
+<td style="text-align:right;">
+0.50
+</td>
+<td style="text-align:right;">
+-0.28
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+firstbaby
+</td>
+<td style="text-align:right;">
+0.45
+</td>
+<td style="text-align:right;">
+0.50
+</td>
+<td style="text-align:right;">
+0.37
+</td>
+<td style="text-align:right;">
+0.48
+</td>
+<td style="text-align:right;">
+-0.08
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+medu
+</td>
+<td style="text-align:right;">
+12.93
+</td>
+<td style="text-align:right;">
+2.53
+</td>
+<td style="text-align:right;">
+11.64
+</td>
+<td style="text-align:right;">
+2.17
+</td>
+<td style="text-align:right;">
+-1.29
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+nprenatal
+</td>
+<td style="text-align:right;">
+10.96
+</td>
+<td style="text-align:right;">
+3.52
+</td>
+<td style="text-align:right;">
+9.86
+</td>
+<td style="text-align:right;">
+4.21
+</td>
+<td style="text-align:right;">
+-1.10
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+foreign
+</td>
+<td style="text-align:right;">
+0.06
+</td>
+<td style="text-align:right;">
+0.24
+</td>
+<td style="text-align:right;">
+0.03
+</td>
+<td style="text-align:right;">
+0.16
+</td>
+<td style="text-align:right;">
+-0.03
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mhisp
+</td>
+<td style="text-align:right;">
+0.04
+</td>
+<td style="text-align:right;">
+0.19
+</td>
+<td style="text-align:right;">
+0.02
+</td>
+<td style="text-align:right;">
+0.15
+</td>
+<td style="text-align:right;">
+-0.01
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+fage
+</td>
+<td style="text-align:right;">
+27.84
+</td>
+<td style="text-align:right;">
+8.79
+</td>
+<td style="text-align:right;">
+24.74
+</td>
+<td style="text-align:right;">
+11.15
+</td>
+<td style="text-align:right;">
+-3.10
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+</tr>
+</tbody>
+<tfoot>
+<tr>
+<td style="padding: 0; " colspan="100%">
+<sup></sup> Fuente: Cattaneo (2009)
+</td>
+</tr>
+</tfoot>
+</table>
+</div>
+<div id="estimación-del-ps" class="section level2">
+<h2>Estimación del PS</h2>
+<p>Una manera de hacer más eficiente el uso de las <em>fórmulas</em> es usando <em>as.formula</em>:</p>
+<pre class="r"><code>binaria &lt;- &quot;smoke&quot;
+variables &lt;- c(&quot;married&quot;, &quot;firstbaby&quot;, &quot;medu&quot;, &quot;nprenatal&quot;, &quot;foreign&quot;, &quot;mhisp&quot;, &quot;fage&quot;)
+
+ps &lt;- as.formula(paste(binaria,
+                         paste(variables,
+                               collapse =&quot;+&quot;),
+                         sep= &quot; ~ &quot;))
+print(ps)</code></pre>
+<pre><code>## smoke ~ married + firstbaby + medu + nprenatal + foreign + mhisp + 
+##     fage</code></pre>
+<p>Usamos <em>matchit</em> para estimar el PS y realizar los emparejamientos con el algoritmo que indiquemos:</p>
+<pre class="r"><code>m.out &lt;- matchit(formula=ps,
+                 method = &quot;nearest&quot;,
+                 ratio = 1,
+                 distance= &quot;logit&quot;,
+                 replace = FALSE,
+                 data = data.smoking)</code></pre>
+<p>El resumen del procedimiento da bastante información sobre el pareamiento:</p>
+<pre class="r"><code>summary(m.out)</code></pre>
+</div>
+<div id="verificación-del-balance" class="section level2">
+<h2>Verificación del balance</h2>
+<p>Gráfico de nube:</p>
+<pre class="r"><code>plot(m.out, type = &quot;jitter&quot;)</code></pre>
+<p><img src="/notas/emparejamiento_en_R_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre><code>## [1] &quot;To identify the units, use first mouse button; to stop, use second.&quot;</code></pre>
+<pre><code>## integer(0)</code></pre>
+<p>Histograma:</p>
+<pre class="r"><code>plot(m.out, type = &quot;hist&quot;)</code></pre>
+<p><img src="/notas/emparejamiento_en_R_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>Podemos guardar un objeto con la muestra emparejada usando <em>match.data</em> y observar quién hace match con quién:</p>
+<pre class="r"><code>m.data &lt;- match.data(m.out)
+
+head(m.out$match.matrix)</code></pre>
+<pre><code>##    [,1]  
+## 11 &quot;4130&quot;
+## 20 &quot;2234&quot;
+## 25 &quot;1740&quot;
+## 43 &quot;2857&quot;
+## 47 &quot;305&quot; 
+## 49 &quot;1442&quot;</code></pre>
+<p>Una propuesta para determinar si el emparejamiento fue exitoso es observar las diferencias promedio estandarizadas (SMD) entre los grupos tratados y no tratados, antes y después del emparejamiento.</p>
+<p><span class="math display">\[SMD_X=\frac{\bar{X}_T-\bar{X}_{NT}}{\sqrt{S^2_T+S^2_{NT}}}\]</span></p>
+<p>También vale la pena no perder de vista la razón de varianzas (VR). Se espera que este ratio no sea muy distinto de 1 después de hacer el emparejamiento:</p>
+<p><span class="math display">\[VR=\frac{S^2_T}{S^2_{NT}}\]</span></p>
+<p>Como regla de dedo, una diferencia de 0.1 o menos en el SMD se considera un buen balance. Por ejemplo, la escolaridad de la madre tenía un SDM de -0.5955 en la muestra en bruto, pero con el emparejamiento el SDM se vuelve de solo 0.0171.</p>
+</div>
+<div id="loveplot" class="section level2">
+<h2><em>Loveplot</em></h2>
+<p>Usando la librería <em>cobalt</em> podemos construir un <em>love plot</em> que representa gráficamente las diferencias antes y después del emparejamiento</p>
+<pre class="r"><code>love.plot(bal.tab(m.out),
+          threshold = .1)</code></pre>
+<p><img src="/notas/emparejamiento_en_R_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+</div>
+<div id="efecto-de-tratamiento" class="section level2">
+<h2>Efecto de tratamiento</h2>
+<p>Existen muchas maneras de explotar la muestra emparejada. Aquí veremos la más sencilla. Simplemente consideremos a la muestra emparejada como si viniera de un experimento.</p>
+<p>La función <em>zelig</em> incluye gran variedad de modelos usados rutinariamente. Uno de ellos es <em>ls</em>, el modelo lineal:</p>
+<pre class="r"><code>z.out &lt;- zelig(bweight~smoke,
+               data = m.data,
+               model = &quot;ls&quot;)</code></pre>
+<pre><code>## How to cite this model in Zelig:
+##   R Core Team. 2007.
+##   ls: Least Squares Regression for Continuous Dependent Variables
+##   in Christine Choirat, Christopher Gandrud, James Honaker, Kosuke Imai, Gary King, and Olivia Lau,
+##   &quot;Zelig: Everyone&#39;s Statistical Software,&quot; https://zeligproject.org/</code></pre>
+<pre class="r"><code>z.out</code></pre>
+<pre><code>## Model: 
+## 
+## Call:
+## z5$zelig(formula = bweight ~ smoke, data = m.data)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -2740.66  -330.66    41.95   381.95  1880.34 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)  3332.05      20.37 163.588  &lt; 2e-16
+## smoke        -194.39      28.81  -6.749 2.03e-11
+## 
+## Residual standard error: 598.7 on 1726 degrees of freedom
+## Multiple R-squared:  0.02571,    Adjusted R-squared:  0.02514 
+## F-statistic: 45.54 on 1 and 1726 DF,  p-value: 2.033e-11
+## 
+## Next step: Use &#39;setx&#39; method</code></pre>
+<p>Que es lo mismo que lo que obtenemos con <em>lm</em>. Sin embargo, como veremos en seguida, <em>zelig</em> nos ayuda a hacer simulaciones con los coeficientes estimados:</p>
+<pre class="r"><code>summary(lm(bweight ~ smoke,
+           data = m.data))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = bweight ~ smoke, data = m.data)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -2740.66  -330.66    41.95   381.95  1880.34 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  3332.05      20.37 163.588  &lt; 2e-16 ***
+## smoke        -194.39      28.81  -6.749 2.03e-11 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 598.7 on 1726 degrees of freedom
+## Multiple R-squared:  0.02571,    Adjusted R-squared:  0.02514 
+## F-statistic: 45.54 on 1 and 1726 DF,  p-value: 2.033e-11</code></pre>
+</div>
+<div id="inferencia" class="section level2">
+<h2>Inferencia</h2>
+<p>En el contexto de matching tenemos que tomar en cuenta que el PS no es observado sino estimado. Bootstrap no funciona muy bien porque es complicado incorporar todas las decisiones y no linealidades involucradas en el proceso. Una alternativa es hacer inferencia con simulaciones, basadas en <a href="https://gking.harvard.edu/files/gking/files/making.pdf">King, Tomz y Wittenberg (2000)</a>.</p>
+<p>En términos prácticos, creamos dos objetos con las dos situaciones que queremos simular, a partir de los resultados de la estimación principal:</p>
+<pre class="r"><code>x.out &lt;- setx(z.out, smoke=0)
+
+x1.out &lt;- setx1(z.out, smoke=1)
+
+#Corremos la simulación
+sim.out &lt;- sim(z.out, x=x.out, x1=x1.out)
+
+summary(sim.out)</code></pre>
+<pre><code>## 
+##  sim x :
+##  -----
+## ev
+##       mean       sd      50%     2.5%    97.5%
+## 1 3332.761 20.07186 3333.668 3293.038 3369.488
+## pv
+##          mean       sd      50%     2.5%    97.5%
+## [1,] 3335.514 593.5736 3332.568 2181.144 4489.018
+## 
+##  sim x1 :
+##  -----
+## ev
+##       mean       sd      50%     2.5%    97.5%
+## 1 3137.599 21.12745 3137.598 3096.062 3178.739
+## pv
+##          mean       sd      50%     2.5%    97.5%
+## [1,] 3097.479 599.4254 3091.903 1809.471 4339.655
+## fd
+##        mean       sd       50%      2.5%     97.5%
+## 1 -195.1622 29.10726 -195.8494 -253.6676 -137.2439</code></pre>
+<p>Las técnicas basadas en el PS actualmente no son usadas extensivamente en economía para hacer inferencia directamente. El PSM es usado más en disciplinas como la bioestadística, para corregir posibles desbalances en las muestras.</p>
+<p>Actualmente, el PS ha tomado relevancia como herramienta auxiliar, por ejemplo, para los métodos doblemente robustos, para agregar comparaciones de diferencia en diferencias con adopción escalonada, y en métodos de aprendizaje computacional</p>
+</div>
