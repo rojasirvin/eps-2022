@@ -18,9 +18,9 @@ Por favor, seleccione una de las lecturas marcadas con una "+" de la lista de le
 | Boruchowicz, Parker & Robbins (2022) | DID | Victor Copto | Jueves 6 de octubre |
 | García-Díaz, Sosa-Rubí, Serván-Mori & Nigenda (2018) | PSM | José Francisco Blas  | Jueves 20 de octubre |
 | Espinosa & Rubin (2015) | PSM | José Eduardo Campos  | Jueves 20 de octubre |
-| Dell (2015)  | Valeria Campuzano | Jueves 3 de noviembre  |
-| [Lecturas de la semana 11 con "+"](https://eps-2022.netlify.app/lecturas/#semana-11)  | Diseños con discontinuidades   |  | Jueves 3 de noviembre  |
-| [Lecturas de la semana 13 con "+"](https://eps-2022.netlify.app/lecturas/#semana-13)  | Control sintético |  | Martes 15 de noviembre |
+| Dell (2015)  | Diseños con discontinuidades | Valeria Campuzano | Jueves 3 de noviembre  |
+| Aguilar, Gutierrez & Seira (2021)  | Diseños con discontinuidades   | José Miguel Bustamante  | Jueves 3 de noviembre  |
+| Campos & Esquivel (2020)  | Control sintético | Luis Olvera | Martes 15 de noviembre |
 | [Lecturas de la semana 13 con "+"](https://eps-2022.netlify.app/lecturas/#semana-13) | Control sintético |  | Martes 15 de noviembre |
 | [Lecturas de la semana 14 con "+"](https://eps-2022.netlify.app/lecturas/#semana-14) | ML e inferencia | Gerardo Juárez | Jueves 24 de noviembre |
 | [Lecturas de la semana 14 con "+"](https://eps-2022.netlify.app/lecturas/#semana-14) | ML e inferencia |  | Jueves 24 de noviembre |
