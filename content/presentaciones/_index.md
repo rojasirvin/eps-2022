@@ -23,7 +23,6 @@ Por favor, seleccione una de las lecturas marcadas con una "+" de la lista de le
 | Campos & Esquivel (2020)  | Control sintético | Luis Olvera | Martes 15 de noviembre |
 | Diamond & Hainmueller (2015)  | Control sintético | Jaime Hernández | Martes 15 de noviembre |
 | Boly & Sanou (2022) | Control sintético | Mario Pérez | Martes 15 de noviembre |
-
 | Baiardi & Naghi (2021) | ML e inferencia | Gerardo Juárez | Jueves 24 de noviembre |
 | Baiardi & Naghi (2021) | ML e inferencia | Ilse Chico  | Jueves 24 de noviembre |
 
