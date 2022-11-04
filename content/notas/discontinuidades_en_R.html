@@ -1,0 +1,740 @@
+---
+title: "Diseños con discontinuidades en R"
+summary: " "
+weight: 1
+type: book
+toc: false
+---
+
+
+
+<style type="text/css">
+.huge .remark-code { /*Change made here*/
+  font-size: 200% !important;
+}
+.tiny .remark-code { /*Change made here*/
+  font-size: 60% !important;
+}
+</style>
+<div id="el-efecto-seguidor" class="section level2">
+<h2>El <em>efecto seguidor</em></h2>
+<p>En esta aplicación estudiaremos el <em>efecto seguidor</em> o <em>runner-up effect</em>. <a href="https://www.journals.uchicago.edu/doi/abs/10.1086/686746">Anagol &amp; Fujiwara (2016)</a> estudian el efecto de ser etiquetado como el <em>seguidor</em> en elecciones municipales sobre la probabilidad de ser contentender y de ser electo en la siguiente elección.</p>
+<p>Los segundos y tercer lugares pueden acabar muy cerca el uno del otro en una elección, pero el segundo lugar recibe la etiqueta de <em>seguidor</em>, lo que genera un salto en la probabilidad de volver a contender y ganar.</p>
+<p>Usamos regresión discontinua cuando el estado de tratamiento depende del valor que tome una variable de selección con respecto a un corte. El corte puede ser una regla explícita o una discontinuidad generada por un experimento natural, como en este caso. Este tipo de estudios se conoce como <em>diseño de elecciones cerradas</em> y es muy popular en los diseños con discontinuidades.</p>
+<p>En esta aplicación la variable de selección es la distancia entre el segundo y tercer lugar en las elecciones municipales en Brasil.</p>
+</div>
+<div id="datos-de-elecciones-en-brasil" class="section level2">
+<h2>Datos de elecciones en Brasil</h2>
+<p>Tenemos datos de elecciones municipales en Brasil. Para cada municipio y cada año tenemos dos filas, una para el partido en segundo lugar y otra para el tercer lugar:</p>
+<pre class="r"><code>data.brasil&lt;-read_csv(
+  &quot;./brazil_runner_up.csv&quot;,
+  locale = locale(encoding = &quot;latin1&quot;))</code></pre>
+<p>La variable <strong>run</strong> es la distancia con respecto al oponente. Esta variable es positiva para los segundos lugares y negativa para los terceros lugares. Esto define un umbral <span class="math inline">\(x_0=0\)</span>. <strong>cand_ran_again</strong> es una indicadora de si el candidato volvió a competir en la siguiente elección y <strong>cand_winner</strong> de si el candidato ganó en la siguiente elección:</p>
+<p>Un resumen de los datos usando <em>tbl_summary</em> de <em>gtsummary</em>:</p>
+<pre class="r"><code>data.brasil %&gt;%
+  select(run, cand_ran_again, cand_winner) %&gt;% 
+  tbl_summary(statistic = list(all_continuous() ~ &quot;{mean} ({sd})&quot;,
+                               all_categorical() ~ &quot;{n} / {N} ({p}%)&quot;),
+              digits = all_continuous() ~ 2,
+              label = run ~ &quot;Diferencia de votos&quot;,
+              missing_text = &quot;(Missing)&quot;)</code></pre>
+<div id="fvywdvmyah" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#fvywdvmyah .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#fvywdvmyah .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#fvywdvmyah .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#fvywdvmyah .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#fvywdvmyah .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fvywdvmyah .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#fvywdvmyah .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#fvywdvmyah .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#fvywdvmyah .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#fvywdvmyah .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#fvywdvmyah .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#fvywdvmyah .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#fvywdvmyah .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#fvywdvmyah .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#fvywdvmyah .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#fvywdvmyah .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#fvywdvmyah .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fvywdvmyah .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#fvywdvmyah .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#fvywdvmyah .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fvywdvmyah .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#fvywdvmyah .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#fvywdvmyah .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fvywdvmyah .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fvywdvmyah .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#fvywdvmyah .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#fvywdvmyah .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fvywdvmyah .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#fvywdvmyah .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fvywdvmyah .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#fvywdvmyah .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fvywdvmyah .gt_left {
+  text-align: left;
+}
+
+#fvywdvmyah .gt_center {
+  text-align: center;
+}
+
+#fvywdvmyah .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#fvywdvmyah .gt_font_normal {
+  font-weight: normal;
+}
+
+#fvywdvmyah .gt_font_bold {
+  font-weight: bold;
+}
+
+#fvywdvmyah .gt_font_italic {
+  font-style: italic;
+}
+
+#fvywdvmyah .gt_super {
+  font-size: 65%;
+}
+
+#fvywdvmyah .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#fvywdvmyah .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#fvywdvmyah .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#fvywdvmyah .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#fvywdvmyah .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#fvywdvmyah .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#fvywdvmyah .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>N = 25,254</strong><sup class="gt_footnote_marks">1</sup></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">Diferencia de votos</td>
+<td class="gt_row gt_center">0.00 (28.23)</td></tr>
+    <tr><td class="gt_row gt_left">cand_ran_again</td>
+<td class="gt_row gt_center">5,525 / 20,608 (27%)</td></tr>
+    <tr><td class="gt_row gt_left">    (Missing)</td>
+<td class="gt_row gt_center">4,646</td></tr>
+    <tr><td class="gt_row gt_left">cand_winner</td>
+<td class="gt_row gt_center">2,400 / 20,608 (12%)</td></tr>
+    <tr><td class="gt_row gt_left">    (Missing)</td>
+<td class="gt_row gt_center">4,646</td></tr>
+  </tbody>
+  
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="2"><sup class="gt_footnote_marks">1</sup> Mean (SD); n / N (%)</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+</div>
+<div id="gráficos-de-discontinuidades" class="section level2">
+<h2>Gráficos de discontinuidades</h2>
+<p>La variable <strong>bin_run</strong> es la versión discrtizada de <strong>run</strong>, que es la distancia en puntos entre el segundo y el tercer lugar. <strong>bin_run</strong> coloca dicha variable en ventanas de puntos enteros. <strong>bin_cand_ran_again</strong> es la probabilidad de volver a competir para los candidatos en cada <em>bin</em>.</p>
+<p>Podemos observar un salto en la probabilidad de volver a ser candidato para los segundos lugares:</p>
+<pre class="r"><code>data.brasil %&gt;% 
+  ggplot(aes(x=bin_run,y=bin_cand_ran_again))+
+  geom_point()+
+  geom_vline(xintercept=0, linetype=&quot;dashed&quot;, color = &quot;red&quot;, size=1)</code></pre>
+<p><img src="figures/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Cuando hablamos de <em>ajustar polionomios locales</em> lo que queremos decir es ajustar curvas de regresión a ambos lados de la desigualdad. Por ejemplo, si ajustáramos polinomios cuadráticos:</p>
+<p>Corremos regresiones con un polinomio cuadrado de la edad para cada lado de la discontinuidad. Noten que usamos aquí los <em>microdatos</em> y no las versiones en <em>bins</em>:</p>
+<pre class="r"><code>m1 &lt;- lm(cand_ran_again ~ run+I(run^2),
+         data=subset(data.brasil,run&gt;-48 &amp; run&lt;0))
+
+m2 &lt;- lm(cand_ran_again ~ run+I(run^2),
+         data=subset(data.brasil,run&gt;=0 &amp; run&lt;48))</code></pre>
+<p>Luego obtenemos los valores ajustados:</p>
+<pre class="r"><code>data.brasil &lt;- data.brasil %&gt;% 
+  mutate(cand_ran_again_hat_left=ifelse(run&gt;-48 &amp; run&lt;0,predict(m1,.),NA)) %&gt;% 
+  mutate(cand_ran_again_hat_right=ifelse(run&gt;=0 &amp; run&lt;48,predict(m2,.),NA))</code></pre>
+<p>Y hacemos el gráfico de puntos, sobreponiendo los valores ajustados, primero del lado izquierdo:</p>
+<pre class="r"><code>data.brasil %&gt;% 
+  ggplot(aes(x=bin_run,y=bin_cand_ran_again))+
+  geom_point()+
+  geom_vline(xintercept=0, linetype=&quot;dashed&quot;, color = &quot;red&quot;, size=1)+
+  geom_line(aes(x=run, y=cand_ran_again_hat_left))</code></pre>
+<p><img src="figures/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Y el gráfico completo:</p>
+<pre class="r"><code>#Con los dos segmentos
+data.brasil %&gt;% 
+  ggplot(aes(x=bin_run,y=bin_cand_ran_again))+
+  geom_point()+
+  geom_vline(xintercept=0, linetype=&quot;dashed&quot;, color = &quot;red&quot;, size=1)+
+  geom_line(aes(x=run, y=cand_ran_again_hat_left))+
+  geom_line(aes(x=run, y=cand_ran_again_hat_right))</code></pre>
+<p><img src="figures/unnamed-chunk-8-1.png" width="672" /></p>
+<p>Podríamos obtener un gráfico similar directamente usando las opciones de <em>ggplot</em>:</p>
+<pre class="r"><code>data.brasil %&gt;% 
+  ggplot(aes(x=bin_run,y=bin_cand_ran_again))+
+  geom_point()+
+  geom_smooth(data = filter(data.brasil, run&gt;-48 &amp; run&lt;0),
+              method = &quot;lm&quot;,
+              formula = y ~ poly(x, 2))+
+  geom_smooth(data = filter(data.brasil, run&gt;=0 &amp; run&lt;48),
+              method = &quot;lm&quot;,
+              formula = y ~ poly(x, 2))</code></pre>
+<p><img src="figures/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Con esto podemos explorar otras formas en que <em>smooth</em> describe los datos. Por ejemplo, usando un <em>locally estimated scatterplot smoother</em>, <em>LOESS</em> o <em>regresión polinómica con pesos locales</em>.</p>
+<pre class="r"><code>data.brasil %&gt;% 
+  ggplot(aes(x=bin_run,y=bin_cand_ran_again))+
+  geom_point()+
+  geom_smooth(data = filter(data.brasil, run&gt;-48 &amp; run&lt;0),
+              method = &quot;loess&quot;) +
+  geom_smooth(data = filter(data.brasil, run&gt;=0 &amp; run&lt;48),
+              method = &quot;loess&quot;)</code></pre>
+<p><img src="figures/unnamed-chunk-10-1.png" width="672" />
+En esencia, esto es lo que hace <em>LOESS</em>:</p>
+<p>Consideremos un punto <span class="math inline">\(x^0\)</span> en donde queremos estimar la curva suave. Luego, consideremos los puntos más cercanos a la izquierda y a la derecha de <span class="math inline">\(x^0\)</span>, definidos por un parámetro llamado <em>span</em>, <em>q</em>. Con dicho subconjunto de puntos, estimamos una <em>mini</em> regresión lineal por mínimos cuadrados ponderados (posiblemente con un polinomio cuadrático), dando más peso a las observaciones más cercanas a <span class="math inline">\(x_0\)</span> y menos peso a las más lejanas dentro del subconjunto de puntos. Con los parámetros estimados de la <em>mini</em> regresión, obtenemos el valor ajustado <span class="math inline">\(\hat{y}^0\)</span>. El proceso se repite para los <span class="math inline">\(n\)</span> puntos en los datos. Es decir, la línea azul es la colección de los <span class="math inline">\(\hat{y}\)</span> ajustados usando tantas <em>mini</em> regresiones valores distintos de <strong>bin_run</strong>.</p>
+<p>Finalmente, podemos hacer un gráfico similar para la probabilidad de ganar, incluyendo mucho más detalle al gráfico para que se parezca mucho al del artículo publicado:</p>
+<pre class="r"><code>w1 &lt;- lm(bin_cand_winner ~ run+I(run^2), data=subset(data.brasil,run&gt;-48 &amp; run&lt;0))
+w2 &lt;- lm(bin_cand_winner ~ run+I(run^2), data=subset(data.brasil,run&gt;=0 &amp; run&lt;48))
+
+data.brasil &lt;- data.brasil %&gt;% 
+  mutate(cand_win_hat_left=ifelse(run&gt;-48 &amp; run&lt;0,predict(w1,.),NA)) %&gt;% 
+  mutate(cand_win_hat_right=ifelse(run&gt;=0 &amp; run&lt;48,predict(w2,.),NA))
+
+data.brasil %&gt;%
+  filter(bin_cand_ran_again&lt;.55 , bin_cand_winner &lt;.55) %&gt;% 
+      ggplot()+
+      geom_point(aes(x=bin_run,y=bin_cand_ran_again),shape=17,fill=&quot;black&quot;)+
+      geom_point(aes(x=bin_run,y=bin_cand_winner))+
+  geom_line(aes(x=run, y=cand_win_hat_left))+
+  geom_line(aes(x=run, y=cand_win_hat_right))+
+  geom_line(aes(x=run, y=cand_ran_again_hat_left))+
+  geom_line(aes(x=run, y=cand_ran_again_hat_right))+
+  geom_vline(xintercept=0, color = &quot;black&quot;, size=1)+
+  xlab(&quot;Vote Share Difference Between 2nd and 3rd; t (%)&quot;)+
+  ylab(&quot;&quot;)+
+  scale_x_continuous(breaks = c(-50,0,50))+
+  scale_y_continuous(breaks=seq(0, 0.5, 0.05))</code></pre>
+<p><img src="figures/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+<div id="análisis-paramétrico" class="section level2">
+<h2>Análisis paramétrico</h2>
+<p>La forma más sencilla de estimar el efecto del tratamiento paramétricamente es:</p>
+<p><span class="math display">\[y_{ict}=\beta \mathcal{I}(x_{ict}&gt;0)+f(x_{ict})+\varepsilon_{ict}\]</span></p>
+<p>Antes, hagamos un pequeño arreglo multiplicando las variables de participación en porcentajes entre 0 y 100:</p>
+<pre class="r"><code>perc.vars &lt;- c( &quot;cand_ran_again&quot;, &quot;cand_winner&quot;, &quot;cand_ran_lag&quot;, &quot;cand_winner_lag&quot;, &quot;cand_maj_party&quot;, &quot;party_winner&quot;, &quot;party_ran_again&quot;)
+
+data.brasil[perc.vars] &lt;- lapply(data.brasil[perc.vars],
+  function(x) x*100)</code></pre>
+<p>Definimos el <em>corte</em>, en este caso 0:</p>
+<pre class="r"><code>data.brasil &lt;- data.brasil %&gt;% 
+  mutate(D=ifelse(run&gt;0,1,0))</code></pre>
+<p>Para replicar los resultados del artículo, debemos usar efectos fijos municipales. Antes ya habíamos usado la función <em>felm</em>. La sintaxis de la fórmula es:</p>
+<pre class="r"><code>y ~ x1 x2 | EFECTOS FIJOS | INSTRUMENTOS | CLUSTER</code></pre>
+<p>En nuestro caso:</p>
+<pre class="r"><code>summary(rd1 &lt;- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=data.brasil))</code></pre>
+<pre><code>## 
+## Call:
+##    felm(formula = cand_winner ~ D + run | 0 | 0 | id_munic, data = data.brasil) 
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -24.570 -18.516  -6.227  -1.137  99.909 
+## 
+## Coefficients:
+##             Estimate Cluster s.e. t value Pr(&gt;|t|)    
+## (Intercept)  7.92092      0.48313  16.395  &lt; 2e-16 ***
+## D            7.45009      0.93695   7.951 1.94e-15 ***
+## run          0.18546      0.01596  11.619  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 30.9 on 20605 degrees of freedom
+##   (4646 observations deleted due to missingness)
+## Multiple R-squared(full model): 0.07226   Adjusted R-squared: 0.07217 
+## Multiple R-squared(proj model): 0.07226   Adjusted R-squared: 0.07217 
+## F-statistic(full model, *iid*):802.4 on 2 and 20605 DF, p-value: &lt; 2.2e-16 
+## F-statistic(proj model): 792.7 on 2 and 4470 DF, p-value: &lt; 2.2e-16</code></pre>
+<p>Podemos especificar el cuadrado de <strong>run</strong>:</p>
+<pre class="r"><code>summary(rd2 &lt;- felm(cand_winner ~ D + run+I(run^2) |0 | 0 | id_munic, data=data.brasil))</code></pre>
+<pre><code>## 
+## Call:
+##    felm(formula = cand_winner ~ D + run + I(run^2) | 0 | 0 | id_munic,      data = data.brasil) 
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -24.731 -18.468  -6.159  -1.190  99.814 
+## 
+## Coefficients:
+##              Estimate Cluster s.e. t value Pr(&gt;|t|)    
+## (Intercept) 7.845e+00    4.415e-01  17.769  &lt; 2e-16 ***
+## D           7.450e+00    9.370e-01   7.951 1.94e-15 ***
+## run         1.855e-01    1.596e-02  11.619  &lt; 2e-16 ***
+## I(run^2)    9.613e-05    3.043e-04   0.316    0.752    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 30.9 on 20604 degrees of freedom
+##   (4646 observations deleted due to missingness)
+## Multiple R-squared(full model): 0.07226   Adjusted R-squared: 0.07213 
+## Multiple R-squared(proj model): 0.07226   Adjusted R-squared: 0.07213 
+## F-statistic(full model, *iid*):  535 on 3 and 20604 DF, p-value: &lt; 2.2e-16 
+## F-statistic(proj model): 747.2 on 3 and 4470 DF, p-value: &lt; 2.2e-16</code></pre>
+<p>Especificando un coeficiente para <em>run</em> antes y despues del corte o una combinación de lo que hemos hecho hasta ahora:</p>
+<pre class="r"><code>summary(rd3 &lt;- felm(cand_winner ~ D  + run + run*D |0 | 0 | id_munic,
+                    data=data.brasil))</code></pre>
+<pre><code>## 
+## Call:
+##    felm(formula = cand_winner ~ D + run + run * D | 0 | 0 | id_munic,      data = data.brasil) 
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -24.039 -18.664  -6.538  -0.877 100.286 
+## 
+## Coefficients:
+##             Estimate Cluster s.e. t value Pr(&gt;|t|)    
+## (Intercept)  8.42173      0.47705  17.654  &lt; 2e-16 ***
+## D            7.45009      0.93697   7.951 1.94e-15 ***
+## run          0.20626      0.01346  15.323  &lt; 2e-16 ***
+## D:run       -0.04160      0.02962  -1.404     0.16    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 30.9 on 20604 degrees of freedom
+##   (4646 observations deleted due to missingness)
+## Multiple R-squared(full model): 0.07235   Adjusted R-squared: 0.07221 
+## Multiple R-squared(proj model): 0.07235   Adjusted R-squared: 0.07221 
+## F-statistic(full model, *iid*):535.6 on 3 and 20604 DF, p-value: &lt; 2.2e-16 
+## F-statistic(proj model): 766.2 on 3 and 4470 DF, p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>summary(rd4 &lt;- felm(cand_winner ~ D  + run + I(run^2) + run*D + I(run^2)*D |0 | 0 | id_munic,
+                    data=data.brasil))</code></pre>
+<pre><code>## 
+## Call:
+##    felm(formula = cand_winner ~ D + run + I(run^2) + run * D + I(run^2) *      D | 0 | 0 | id_munic, data = data.brasil) 
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -29.878 -17.805  -6.550  -0.677  99.733 
+## 
+## Coefficients:
+##              Estimate Cluster s.e. t value Pr(&gt;|t|)    
+## (Intercept)  9.930217     0.744556  13.337  &lt; 2e-16 ***
+## D           10.459607     1.395080   7.497 6.77e-14 ***
+## run          0.409143     0.060671   6.744 1.59e-11 ***
+## I(run^2)     0.004270     0.001079   3.956 7.64e-05 ***
+## D:run       -0.852119     0.120779  -7.055 1.78e-12 ***
+## D:I(run^2)   0.008518     0.002668   3.193  0.00141 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 30.86 on 20602 degrees of freedom
+##   (4646 observations deleted due to missingness)
+## Multiple R-squared(full model): 0.07501   Adjusted R-squared: 0.07479 
+## Multiple R-squared(proj model): 0.07501   Adjusted R-squared: 0.07479 
+## F-statistic(full model, *iid*):334.2 on 5 and 20602 DF, p-value: &lt; 2.2e-16 
+## F-statistic(proj model): 519.5 on 5 and 4470 DF, p-value: &lt; 2.2e-16</code></pre>
+<ul>
+<li>Para un resumen de los resultados puedo usar <em>stargazer</em></li>
+</ul>
+<pre class="r"><code>stargazer(rd1, rd2, rd3, rd4,
+          title=&quot;Comparación de especificaciones de RD&quot;, type=&quot;text&quot;, 
+          df=FALSE, digits=2)</code></pre>
+<p>Vemos las consecuencias de elegir un ancho de ventana más pequeño: el resultado con un ancho de ventana con la muestra completa es de un efecto de 10.46 (error estándar de 1.40). Con un ancho de ventana de alrededor de 6 puntos porcentuales entre el primer y segundo lugar el error es de 2.54.</p>
+</div>
+<div id="rdrobust" class="section level2">
+<h2><em>rdrobust</em></h2>
+<p>Existe toda una literatura para analizar el <em>trade-off</em> entre sesgo y varianza en la elección del ancho de ventana. Por ejemplo, <a href="https://rdpackages.github.io/references/Calonico-Cattaneo-Titiunik_2015_R.pdf">Calonic, Cattaneo &amp; Titiunik, (2015)</a> proponen distintas formas de implementar algoritmos para estimar la discontinudad de la regresión con procedimientos totalmente dependiente de los datos (<em>data driven</em>).</p>
+<div id="rdplot" class="section level3">
+<h3><em>rdplot</em></h3>
+<p>Una de las funciones más útiles de <em>rdrobust</em> es crear el gráfico de la discontinuidad, usando un polinomio de orden 4 por defecto:</p>
+<pre class="r"><code>rdres &lt;- rdplot(y = data.brasil$cand_winner, x = data.brasil$run, title = &quot;Efecto seguidor&quot;,
+        y.label = &quot;Probabilidad de ganar en t+1&quot;,
+        x.label = &quot;Distancia con respecto al 3er lugar en t&quot;)</code></pre>
+<p>También podemos ver detalles de cómo se realiza la estimación y la selección del número de <em>bins</em></p>
+<pre class="r"><code>summary(rdres)</code></pre>
+</div>
+<div id="rdbwselect" class="section level3">
+<h3><em>rdbwselect</em></h3>
+<p>Otra función es <em>rdbwselect</em>, que permite la estimación del ancho de banda óptimo. Hay un <em>trade-off</em> entre sesgo y varianza en la selección del ancho de banda. Entre más grande sea la ventana, tenemos más observaciones y nuestros estimadores serán más precisos. Pero al mismo tiempo, entre más grande sea la ventana, más grande será el sesgo en la estimación de la pendiente de la línea de regresión al incluir observaciones cada vez más disimiles. Esta teoría esta formalizada en <a href="https://watermark.silverchair.com/rdr043.pdf?token=AQECAHi208BE49Ooan9kkhW_Ercy7Dm3ZL_9Cf3qfKAc485ysgAAAvwwggL4BgkqhkiG9w0BBwagggLpMIIC5QIBADCCAt4GCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMNLn6ofuEpZYIbPhSAgEQgIICr_9ZaTO9ZtUyeddqejFel2IauNOEoeJKXH5QDHk3IgFt03mG523iBXeq4wIS5CBcK1W7AjY4H3-kJb6r2H09xeES5zsTEXnhxrKoyFmOnWDjj679CIRFcQkZIzasP83tUkwZM0LVPjiVeJAC-HZiR3D1h75wwgwK1od1oycJIc2wZRxcgr4QeUhWtpe6JO34YqiDPOYN7sMSqfVdwXJS53-EXnr0qCQM9PFY5T8cxeDDGhEXhG0DVs3lTwzHDZEbbX8-7EkLeBMaic7aqNaQgiQuc9DaLM1m23p9cpW0JeaiLLvdKm13hHLP3csRaf_TVKFCGGADjweQYGu49CTdNhnDbFyh0W0eVDirPndKSM-2REG7Y-6AZCeCbYl3TmfBLpIXDjN3pPAzLJmbWbik6vrvv9n6if_1eT2CjD3wMRxY01jFHYRZaXlttxTOWS3uBkNo0hNtHZLdvgw6tXH6yA38TPXfG4RIA3JfKtDOGL-9Ph7P02tSvjF2YSjGmoBo9IRjyhgL_7Ur_saa4_z2NWx-FCOmDVGSL2cxG1Nkam58oF7R0aochpxm1VUp1LYizL3UzuhpG_KpRJ1zSQGGXyCpV5gc8HZQ8p-nhnY5wtUSZ5qgILv6sDsccldEJ90LbmSz5fdlPo7X45pYT60oid5aDJql3noGb_UW2KwAXgVxqMSfCTvCAj4TgQna3LtcWWbye0whzQzC1C7Ctu0NuEMt9_0rD-YXnJj69HV-lz7dPKgIEur0IhW_Nq9hPg_EfiWnm8HbUIAiH0OujoTGB2mR-wYYOp_GwXLoCc0ABqX36IdUQIDdgw8rSE0hIAhtD2nMKnwdDzGGKATehLPFR-3tlTWnWGrHiPJVfsFHIiSS5jkRqH349-9nIiRdRDSYiqibOiXHsSP5TUTpi8iAig">Imbens y Kalyanaraman (2012)</a>.</p>
+<p>En la <em>antiguedad</em>, es decir, cuando revisé y repliqué por primera vez este artículo, la función <em>rdbwselect</em> en Stata permitía recuperar el ancho de banda óptimo aquí reportado (12.57):</p>
+<pre><code>## Call: rdbwselect
+## 
+## Number of Obs.                20608
+## BW type                         All
+## Kernel                      Uniform
+## VCE method                       NN
+## 
+## Number of Obs.                10304        10304
+## Order est. (p)                    1            1
+## Order bias  (q)                   2            2
+## Unique Obs.                   10292        10292
+## 
+## =======================================================
+##                   BW est. (h)    BW bias (b)
+##             Left of c Right of c  Left of c Right of c
+## =======================================================
+##      mserd    11.398     11.398     19.626     19.626
+##     msetwo    17.883     10.568     31.155     18.697
+##     msesum    13.231     13.231     22.733     22.733
+##   msecomb1    11.398     11.398     19.626     19.626
+##   msecomb2    13.231     11.398     22.733     19.626
+##      cerrd     7.232      7.232     19.626     19.626
+##     certwo    11.347      6.705     31.155     18.697
+##     cersum     8.395      8.395     22.733     22.733
+##   cercomb1     7.232      7.232     19.626     19.626
+##   cercomb2     8.395      7.232     22.733     19.626
+## =======================================================</code></pre>
+<p>Noten que si especificamos el ancho de ventana reportado de 12.57, obtenemos el resultado preferido por los autores en el artículo:</p>
+<pre class="r"><code>rd5 &lt;- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=subset(data.brasil,bw&lt;12.57))
+rd6 &lt;- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=subset(data.brasil,bw&lt;12.57/2))
+rd7 &lt;- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=subset(data.brasil,bw&lt;12.57*2))
+
+tab2 &lt;- stargazer(rd5, rd6, rd7,
+          title=&quot;Comparación de especificaciones de RD (2)&quot;, type=&quot;text&quot;, 
+          df=FALSE, digits=2)</code></pre>
+</div>
+</div>
+<div id="más-materiales" class="section level2">
+<h2>Más materiales</h2>
+<p>Consideren revisar el tutorial que Matias Catteneo dio <a href="https://www.chamberlainseminar.org/past-seminars/autumn-2020#h.41tsl12q6tcb">en el Chamberlain Seminar</a>:</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/rKH88HK0S-o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+</iframe>
+<p>El tutorial está en Stata, pero las ideas son fácilmente trasladadas a cualquier software.</p>
+</div>
