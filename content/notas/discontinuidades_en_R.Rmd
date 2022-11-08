@@ -31,7 +31,7 @@ xfun::pkg_load2(c('base64enc', 'htmltools', 'mime'))
   font-size: 60% !important;
 }
 ```
-## Paquetes
+## Paquetes y archivos
 
 Usaremos paquetes que ya hemos usado antes:
 
@@ -44,6 +44,10 @@ Además, usarmos algunos paquetes nuevos específicos para diseños con disconti
 - *rdd* con opciones más restringidas de selectores de anchos de banda
 - *causaldata* son los datos incluidos en [*The Effect*](https://theeffectbook.net/index.html) y que nos servirán para una aplicación de diseños difusos
 
+
+Datos: [brazil_runner_up.csv](/notas/brazil_runner_up.csv)
+
+Script: [lab_discontinuidades.R](/notas/lab_discontinuidades.R)
 
 
 ## El *efecto seguidor*
@@ -221,7 +225,7 @@ data.brasil <- data.brasil %>%
 Para replicar los resultados del artículo, debemos usar efectos fijos municipales. Antes ya habíamos usado la función *felm*. La sintaxis de la fórmula es:
 
 ```{r echo=T, include=T, eval=F, message=F, warning=F}
-y ~ x1 x2 | EFECTOS FIJOS | INSTRUMENTOS | CLUSTER
+felm(y ~ x1 + x2 | EFECTOS FIJOS | INSTRUMENTOS | CLUSTER
 ```
 
 En nuestro caso:
@@ -252,7 +256,8 @@ Vemos un resumen de los resultados usando *stargazer*:
 
 ```{r echo=T, include=T, results=F, eval=T, message=F, warning=F}
 stargazer(rd1, rd2, rd3, rd4,
-          title="Comparación de especificaciones de RD", type="text", 
+          title="Comparación de especificaciones de RD",
+          type="text", 
           df=FALSE, digits=2)
 ```
 
@@ -315,8 +320,9 @@ rd5 <- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=subset(data.brasil,bw
 rd6 <- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=subset(data.brasil,bw<12.57/2))
 rd7 <- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=subset(data.brasil,bw<12.57*2))
 
-tab2 <- stargazer(rd5, rd6, rd7,
-          title="Comparación de especificaciones de RD (2)", type="text", 
+stargazer(rd5, rd6, rd7,
+          title="Comparación de especificaciones de RD (2)",
+          type="text", 
           df=FALSE, digits=2)
 ```
 
@@ -344,11 +350,66 @@ summary(rdrobust(y = data.brasil$cand_winner,
                  cluster=data.brasil$id_munic)) 
 ```
 
+## Diseño difuso
+
+Estudiemos ahora un diseño difuso. Los datos en *mortgages*, incluidos en el paquete *causaldata*, tienen información de personas mayores de Estados Unidos que indican si tienen una casa o no. Las personas que fueron a la Segunda Guerra Mundial o a la Guerra de Korea tuvieron acceso a hipotecas con condiciones preferenciales.
+
+La discontinuidad viene del hecho de que solo las personas de hasta cierta edad máxima eran elegibles para servir en el ejército (aunque algunos más grandes de dicha edad lograron de todas maneras serviri). Entonces **vet_wwko** toma el valor de 1 para los veteranos, mientras que **qob_minus_kw** indica la distancia en trimestres al corte de elegibilidad. Así, **D** será 1 para los elegibles a servir en el ejército y 0 para los no elegibles.
+
+Queremos estimar el efecto de ser veterano (**vet_wwko**) en la probabilidad de tener una casa (**home_ownership**), usando el indicador de elegibilidad (**D**) como instrumento.
+
+Sabemos que podemos ver este problema como uno en dos etapas:
+
+```{r echo=T, include=T, eval=T, results=F, message=F, warning=F}
+vet <- causaldata::mortgages
+
+#Indicadora de estar por encima del corte de 
+vet <- vet %>%
+  mutate(D = ifelse(qob_minus_kw <= 0, 1, 0)) %>% 
+  filter(abs(qob_minus_kw) < 12)
+
+#Primera etapa
+summary(pe <- lm(vet_wwko ~ D + qob_minus_kw,
+           data = vet))$coef[1:3,]
+
+vet <- vet %>% 
+  mutate(vet_wwko_hat = predict(pe))
+
+#Modelo estructural
+summary(se <- lm(home_ownership ~ vet_wwko_hat + qob_minus_kw,
+           data = vet))$coef[1:3,]
+
+```
+
+Recordemos que siempre usamos estimadores de variables instrumentales:
+
+
+```{r echo=T, include=T, eval=T, results=F, message=F, warning=F}
+#Recordemos cómo usar felm:
+#felm(y ~ x1 + x2 | EFECTOS FIJOS | INSTRUMENTOS | CLUSTER
+
+summary(felm(home_ownership ~ qob_minus_kw |
+               0 |
+               (vet_wwko ~ D),
+             data = vet))
+```
+Afortunadamente, también podemos implementar el diseño difuso usando las funciones de *rdrobust*, poniendo cuidado a todo lo que aprendimos con los diseños nítidos:
+
+
+```{r echo=T, include=T, eval=T, results=F, message=F, warning=F}
+summary(rdrobust(y = vet$home_ownership,
+                 x = vet$qob_minus_kw,
+                 fuzzy = vet$vet_wwko,
+                 c = 0,
+                 p = 1,
+                 h = 12,
+                 kernel = 'uniform'))
+```
+
 
 ## Más materiales
 
 Consideren revisar el tutorial que Matias Catteneo dio [en el Chamberlain Seminar](https://www.chamberlainseminar.org/past-seminars/autumn-2020#h.41tsl12q6tcb):
-
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/rKH88HK0S-o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 

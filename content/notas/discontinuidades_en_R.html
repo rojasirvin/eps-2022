@@ -16,8 +16,8 @@ toc: false
   font-size: 60% !important;
 }
 </style>
-<div id="paquetes" class="section level2">
-<h2>Paquetes</h2>
+<div id="paquetes-y-archivos" class="section level2">
+<h2>Paquetes y archivos</h2>
 <p>Usaremos paquetes que ya hemos usado antes:</p>
 <ul>
 <li><em>gtsummary</em> para hacer tablas descriptivas</li>
@@ -29,6 +29,8 @@ toc: false
 <li><em>rdd</em> con opciones más restringidas de selectores de anchos de banda</li>
 <li><em>causaldata</em> son los datos incluidos en <a href="https://theeffectbook.net/index.html"><em>The Effect</em></a> y que nos servirán para una aplicación de diseños difusos</li>
 </ul>
+<p>Datos: <a href="/notas/brazil_runner_up.csv">brazil_runner_up.csv</a></p>
+<p>Script: <a href="/notas/lab_discontinuidades.R">lab_discontinuidades.R</a></p>
 </div>
 <div id="el-efecto-seguidor" class="section level2">
 <h2>El <em>efecto seguidor</em></h2>
@@ -52,12 +54,12 @@ toc: false
               digits = all_continuous() ~ 2,
               label = run ~ &quot;Diferencia de votos&quot;,
               missing_text = &quot;(Missing)&quot;)</code></pre>
-<div id="xdfutbkipy" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="widgawqtci" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#xdfutbkipy .gt_table {
+#widgawqtci .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -82,7 +84,7 @@ toc: false
   border-left-color: #D3D3D3;
 }
 
-#xdfutbkipy .gt_heading {
+#widgawqtci .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -94,7 +96,7 @@ toc: false
   border-right-color: #D3D3D3;
 }
 
-#xdfutbkipy .gt_title {
+#widgawqtci .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -106,7 +108,7 @@ toc: false
   border-bottom-width: 0;
 }
 
-#xdfutbkipy .gt_subtitle {
+#widgawqtci .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -118,13 +120,13 @@ toc: false
   border-top-width: 0;
 }
 
-#xdfutbkipy .gt_bottom_border {
+#widgawqtci .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#xdfutbkipy .gt_col_headings {
+#widgawqtci .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -139,7 +141,7 @@ toc: false
   border-right-color: #D3D3D3;
 }
 
-#xdfutbkipy .gt_col_heading {
+#widgawqtci .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -159,7 +161,7 @@ toc: false
   overflow-x: hidden;
 }
 
-#xdfutbkipy .gt_column_spanner_outer {
+#widgawqtci .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -171,15 +173,15 @@ toc: false
   padding-right: 4px;
 }
 
-#xdfutbkipy .gt_column_spanner_outer:first-child {
+#widgawqtci .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#xdfutbkipy .gt_column_spanner_outer:last-child {
+#widgawqtci .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#xdfutbkipy .gt_column_spanner {
+#widgawqtci .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -191,7 +193,7 @@ toc: false
   width: 100%;
 }
 
-#xdfutbkipy .gt_group_heading {
+#widgawqtci .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -216,7 +218,7 @@ toc: false
   vertical-align: middle;
 }
 
-#xdfutbkipy .gt_empty_group_heading {
+#widgawqtci .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -231,15 +233,15 @@ toc: false
   vertical-align: middle;
 }
 
-#xdfutbkipy .gt_from_md > :first-child {
+#widgawqtci .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#xdfutbkipy .gt_from_md > :last-child {
+#widgawqtci .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#xdfutbkipy .gt_row {
+#widgawqtci .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -258,7 +260,7 @@ toc: false
   overflow-x: hidden;
 }
 
-#xdfutbkipy .gt_stub {
+#widgawqtci .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -271,7 +273,7 @@ toc: false
   padding-right: 5px;
 }
 
-#xdfutbkipy .gt_stub_row_group {
+#widgawqtci .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -285,11 +287,11 @@ toc: false
   vertical-align: top;
 }
 
-#xdfutbkipy .gt_row_group_first td {
+#widgawqtci .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#xdfutbkipy .gt_summary_row {
+#widgawqtci .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -299,16 +301,16 @@ toc: false
   padding-right: 5px;
 }
 
-#xdfutbkipy .gt_first_summary_row {
+#widgawqtci .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#xdfutbkipy .gt_first_summary_row.thick {
+#widgawqtci .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#xdfutbkipy .gt_last_summary_row {
+#widgawqtci .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -318,7 +320,7 @@ toc: false
   border-bottom-color: #D3D3D3;
 }
 
-#xdfutbkipy .gt_grand_summary_row {
+#widgawqtci .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -328,7 +330,7 @@ toc: false
   padding-right: 5px;
 }
 
-#xdfutbkipy .gt_first_grand_summary_row {
+#widgawqtci .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -338,11 +340,11 @@ toc: false
   border-top-color: #D3D3D3;
 }
 
-#xdfutbkipy .gt_striped {
+#widgawqtci .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#xdfutbkipy .gt_table_body {
+#widgawqtci .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -351,7 +353,7 @@ toc: false
   border-bottom-color: #D3D3D3;
 }
 
-#xdfutbkipy .gt_footnotes {
+#widgawqtci .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -365,7 +367,7 @@ toc: false
   border-right-color: #D3D3D3;
 }
 
-#xdfutbkipy .gt_footnote {
+#widgawqtci .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -374,7 +376,7 @@ toc: false
   padding-right: 5px;
 }
 
-#xdfutbkipy .gt_sourcenotes {
+#widgawqtci .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -388,7 +390,7 @@ toc: false
   border-right-color: #D3D3D3;
 }
 
-#xdfutbkipy .gt_sourcenote {
+#widgawqtci .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -396,64 +398,64 @@ toc: false
   padding-right: 5px;
 }
 
-#xdfutbkipy .gt_left {
+#widgawqtci .gt_left {
   text-align: left;
 }
 
-#xdfutbkipy .gt_center {
+#widgawqtci .gt_center {
   text-align: center;
 }
 
-#xdfutbkipy .gt_right {
+#widgawqtci .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#xdfutbkipy .gt_font_normal {
+#widgawqtci .gt_font_normal {
   font-weight: normal;
 }
 
-#xdfutbkipy .gt_font_bold {
+#widgawqtci .gt_font_bold {
   font-weight: bold;
 }
 
-#xdfutbkipy .gt_font_italic {
+#widgawqtci .gt_font_italic {
   font-style: italic;
 }
 
-#xdfutbkipy .gt_super {
+#widgawqtci .gt_super {
   font-size: 65%;
 }
 
-#xdfutbkipy .gt_footnote_marks {
+#widgawqtci .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#xdfutbkipy .gt_asterisk {
+#widgawqtci .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#xdfutbkipy .gt_indent_1 {
+#widgawqtci .gt_indent_1 {
   text-indent: 5px;
 }
 
-#xdfutbkipy .gt_indent_2 {
+#widgawqtci .gt_indent_2 {
   text-indent: 10px;
 }
 
-#xdfutbkipy .gt_indent_3 {
+#widgawqtci .gt_indent_3 {
   text-indent: 15px;
 }
 
-#xdfutbkipy .gt_indent_4 {
+#widgawqtci .gt_indent_4 {
   text-indent: 20px;
 }
 
-#xdfutbkipy .gt_indent_5 {
+#widgawqtci .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -581,7 +583,7 @@ data.brasil[perc.vars] &lt;- lapply(data.brasil[perc.vars],
 <pre class="r"><code>data.brasil &lt;- data.brasil %&gt;% 
   mutate(D=ifelse(run&gt;0,1,0))</code></pre>
 <p>Para replicar los resultados del artículo, debemos usar efectos fijos municipales. Antes ya habíamos usado la función <em>felm</em>. La sintaxis de la fórmula es:</p>
-<pre class="r"><code>y ~ x1 x2 | EFECTOS FIJOS | INSTRUMENTOS | CLUSTER</code></pre>
+<pre class="r"><code>felm(y ~ x1 + x2 | EFECTOS FIJOS | INSTRUMENTOS | CLUSTER</code></pre>
 <p>En nuestro caso:</p>
 <pre class="r"><code>summary(rd1 &lt;- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=data.brasil))</code></pre>
 <pre><code>## 
@@ -686,7 +688,8 @@ data.brasil[perc.vars] &lt;- lapply(data.brasil[perc.vars],
 ## F-statistic(proj model): 519.5 on 5 and 4470 DF, p-value: &lt; 2.2e-16</code></pre>
 <p>Vemos un resumen de los resultados usando <em>stargazer</em>:</p>
 <pre class="r"><code>stargazer(rd1, rd2, rd3, rd4,
-          title=&quot;Comparación de especificaciones de RD&quot;, type=&quot;text&quot;, 
+          title=&quot;Comparación de especificaciones de RD&quot;,
+          type=&quot;text&quot;, 
           df=FALSE, digits=2)</code></pre>
 <p>Vemos las consecuencias de elegir un ancho de ventana más pequeño: el resultado con un ancho de ventana con la muestra completa es de un efecto de 10.46 (error estándar de 1.40). Con un ancho de ventana de alrededor de 6 puntos porcentuales entre el primer y segundo lugar el error es de 2.54.</p>
 </div>
@@ -745,8 +748,9 @@ data.brasil[perc.vars] &lt;- lapply(data.brasil[perc.vars],
 rd6 &lt;- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=subset(data.brasil,bw&lt;12.57/2))
 rd7 &lt;- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=subset(data.brasil,bw&lt;12.57*2))
 
-tab2 &lt;- stargazer(rd5, rd6, rd7,
-          title=&quot;Comparación de especificaciones de RD (2)&quot;, type=&quot;text&quot;, 
+stargazer(rd5, rd6, rd7,
+          title=&quot;Comparación de especificaciones de RD (2)&quot;,
+          type=&quot;text&quot;, 
           df=FALSE, digits=2)</code></pre>
 </div>
 <div id="rdrobust-1" class="section level3">
@@ -788,6 +792,46 @@ tab2 &lt;- stargazer(rd5, rd6, rd7,
 ##         Robust         -         -     2.531     0.011     [1.445 , 11.368]    
 ## =============================================================================</code></pre>
 </div>
+</div>
+<div id="diseño-difuso" class="section level2">
+<h2>Diseño difuso</h2>
+<p>Estudiemos ahora un diseño difuso. Los datos en <em>mortgages</em>, incluidos en el paquete <em>causaldata</em>, tienen información de personas mayores de Estados Unidos que indican si tienen una casa o no. Las personas que fueron a la Segunda Guerra Mundial o a la Guerra de Korea tuvieron acceso a hipotecas con condiciones preferenciales.</p>
+<p>La discontinuidad viene del hecho de que solo las personas de hasta cierta edad máxima eran elegibles para servir en el ejército (aunque algunos más grandes de dicha edad lograron de todas maneras serviri). Entonces <strong>vet_wwko</strong> toma el valor de 1 para los veteranos, mientras que <strong>qob_minus_kw</strong> indica la distancia en trimestres al corte de elegibilidad. Así, <strong>D</strong> será 1 para los elegibles a servir en el ejército y 0 para los no elegibles.</p>
+<p>Queremos estimar el efecto de ser veterano (<strong>vet_wwko</strong>) en la probabilidad de tener una casa (<strong>home_ownership</strong>), usando el indicador de elegibilidad (<strong>D</strong>) como instrumento.</p>
+<p>Sabemos que podemos ver este problema como uno en dos etapas:</p>
+<pre class="r"><code>vet &lt;- causaldata::mortgages
+
+#Indicadora de estar por encima del corte de 
+vet &lt;- vet %&gt;%
+  mutate(D = ifelse(qob_minus_kw &lt;= 0, 1, 0)) %&gt;% 
+  filter(abs(qob_minus_kw) &lt; 12)
+
+#Primera etapa
+summary(pe &lt;- lm(vet_wwko ~ D + qob_minus_kw,
+           data = vet))$coef[1:3,]
+
+vet &lt;- vet %&gt;% 
+  mutate(vet_wwko_hat = predict(pe))
+
+#Modelo estructural
+summary(se &lt;- lm(home_ownership ~ vet_wwko_hat + qob_minus_kw,
+           data = vet))$coef[1:3,]</code></pre>
+<p>Recordemos que siempre usamos estimadores de variables instrumentales:</p>
+<pre class="r"><code>#Recordemos cómo usar felm:
+#felm(y ~ x1 + x2 | EFECTOS FIJOS | INSTRUMENTOS | CLUSTER
+
+summary(felm(home_ownership ~ qob_minus_kw |
+               0 |
+               (vet_wwko ~ D),
+             data = vet))</code></pre>
+<p>Afortunadamente, también podemos implementar el diseño difuso usando las funciones de <em>rdrobust</em>, poniendo cuidado a todo lo que aprendimos con los diseños nítidos:</p>
+<pre class="r"><code>summary(rdrobust(y = vet$home_ownership,
+                 x = vet$qob_minus_kw,
+                 fuzzy = vet$vet_wwko,
+                 c = 0,
+                 p = 1,
+                 h = 12,
+                 kernel = &#39;uniform&#39;))</code></pre>
 </div>
 <div id="más-materiales" class="section level2">
 <h2>Más materiales</h2>
