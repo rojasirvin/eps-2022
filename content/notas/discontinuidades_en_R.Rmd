@@ -7,7 +7,7 @@ toc: false
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, fig.path = "figures/")
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
 
 library(tidyverse)
 library(janitor)
@@ -36,7 +36,7 @@ xfun::pkg_load2(c('base64enc', 'htmltools', 'mime'))
 Usaremos paquetes que ya hemos usado antes:
 
 - *gtsummary* para hacer tablas descriptivas
-- *lfe** para estimar modelos con efectos fijos, variables instrumentales y errores agrupados
+- *lfe* para estimar modelos con efectos fijos, variables instrumentales y errores agrupados
 
 Además, usarmos algunos paquetes nuevos específicos para diseños con discontinuidades:
 
@@ -335,7 +335,7 @@ summary(rdrobust(y = data.brasil$cand_winner,
 
 Si en *rdrobust* introducimos *h=12.57* y un kernel uniforme, obtenemos lo que se reporta en el artículo:
 
-```{r echo=T, include=T, eval=T, results=F, message=F, warning=F}
+```{r echo=T, include=T, eval=T, message=F, warning=F}
 summary(rdrobust(y = data.brasil$cand_winner,
                  x = data.brasil$run,
                  p = 1, #default p = 1
