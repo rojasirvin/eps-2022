@@ -18,6 +18,7 @@ library(stargazer)
 library(rdrobust)
 library(gtsummary)
 library(lfe)
+library(rdd)
 
 xfun::pkg_load2(c('base64enc', 'htmltools', 'mime'))
 ```
@@ -30,6 +31,20 @@ xfun::pkg_load2(c('base64enc', 'htmltools', 'mime'))
   font-size: 60% !important;
 }
 ```
+## Paquetes
+
+Usaremos paquetes que ya hemos usado antes:
+
+- *gtsummary* para hacer tablas descriptivas
+- *lfe** para estimar modelos con efectos fijos, variables instrumentales y errores agrupados
+
+Además, usarmos algunos paquetes nuevos específicos para diseños con discontinuidades:
+
+- *rdrobust* con muchas aplicaciones, como gráficos y selectores de anchos de banda
+- *rdd* con opciones más restringidas de selectores de anchos de banda
+- *causaldata* son los datos incluidos en [*The Effect*](https://theeffectbook.net/index.html) y que nos servirán para una aplicación de diseños difusos
+
+
 
 ## El *efecto seguidor*
  
@@ -233,7 +248,7 @@ summary(rd4 <- felm(cand_winner ~ D  + run + I(run^2) + run*D + I(run^2)*D |0 | 
 
 
 
-- Para un resumen de los resultados puedo usar *stargazer*
+Vemos un resumen de los resultados usando *stargazer*:
 
 ```{r echo=T, include=T, results=F, eval=T, message=F, warning=F}
 stargazer(rd1, rd2, rd3, rd4,
@@ -249,34 +264,50 @@ Existe toda una literatura para analizar el *trade-off* entre sesgo y varianza e
 
 ### *rdplot*
 
-Una de las funciones más útiles de *rdrobust* es crear el gráfico de la discontinuidad, usando un polinomio de orden 4 por defecto:
+Una de las funciones más útiles de *rdrobust* es crear el gráfico de la discontinuidad, usando un polinomio de orden $p$ y seleccionando de manera óptima el número de *bins* a graficar:
 
 ```{r echo=T, include=T, results=F, eval=F, message=F, warning=F}
-rdres <- rdplot(y = data.brasil$cand_winner, x = data.brasil$run, title = "Efecto seguidor",
-        y.label = "Probabilidad de ganar en t+1",
-        x.label = "Distancia con respecto al 3er lugar en t")
+rdres <- rdplot(y = data.brasil$cand_winner,
+                x = data.brasil$run,
+                p = 2, #default p = 4
+                binselect = 'esmv',
+                title = "Efecto seguidor",
+                y.label = "Probabilidad de ganar en t+1",
+                x.label = "Distancia con respecto al 3er lugar en t")
 ```
-También podemos ver detalles de cómo se realiza la estimación y la selección del número de *bins*
+También podemos ver detalles de cómo se realiza la estimación y la selección del número de *bins*:
 
 ```{r echo=T, include=T, results=F, eval=F, message=F, warning=F}
 summary(rdres)
 ```
+¿Cómo se seleccionan óptimamente la cantidad de *bins*? Existen muchas maneras, pero expliquemos la que se utiliza por defecto. La idea es seleccionar el número de *bins* de tal forma que la muestra en *bins* tenga una varianza similar a la variabilidad que existe en los datos bruto. La opción *esmv* equivale a *mimicking variance evenly-spaced method using spacings estimators*.
+
+
 
 
 ### *rdbwselect*
 
-Otra función es *rdbwselect*, que permite la estimación del ancho de banda óptimo. Hay un *trade-off* entre sesgo y varianza en la selección del ancho de banda. Entre más grande sea la ventana, tenemos más observaciones y nuestros estimadores serán más precisos. Pero al mismo tiempo, entre más grande sea la ventana, más grande será el sesgo en la estimación de la pendiente de la línea de regresión al incluir observaciones cada vez más disimiles. Esta teoría esta formalizada en [Imbens y Kalyanaraman (2012)](https://watermark.silverchair.com/rdr043.pdf?token=AQECAHi208BE49Ooan9kkhW_Ercy7Dm3ZL_9Cf3qfKAc485ysgAAAvwwggL4BgkqhkiG9w0BBwagggLpMIIC5QIBADCCAt4GCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMNLn6ofuEpZYIbPhSAgEQgIICr_9ZaTO9ZtUyeddqejFel2IauNOEoeJKXH5QDHk3IgFt03mG523iBXeq4wIS5CBcK1W7AjY4H3-kJb6r2H09xeES5zsTEXnhxrKoyFmOnWDjj679CIRFcQkZIzasP83tUkwZM0LVPjiVeJAC-HZiR3D1h75wwgwK1od1oycJIc2wZRxcgr4QeUhWtpe6JO34YqiDPOYN7sMSqfVdwXJS53-EXnr0qCQM9PFY5T8cxeDDGhEXhG0DVs3lTwzHDZEbbX8-7EkLeBMaic7aqNaQgiQuc9DaLM1m23p9cpW0JeaiLLvdKm13hHLP3csRaf_TVKFCGGADjweQYGu49CTdNhnDbFyh0W0eVDirPndKSM-2REG7Y-6AZCeCbYl3TmfBLpIXDjN3pPAzLJmbWbik6vrvv9n6if_1eT2CjD3wMRxY01jFHYRZaXlttxTOWS3uBkNo0hNtHZLdvgw6tXH6yA38TPXfG4RIA3JfKtDOGL-9Ph7P02tSvjF2YSjGmoBo9IRjyhgL_7Ur_saa4_z2NWx-FCOmDVGSL2cxG1Nkam58oF7R0aochpxm1VUp1LYizL3UzuhpG_KpRJ1zSQGGXyCpV5gc8HZQ8p-nhnY5wtUSZ5qgILv6sDsccldEJ90LbmSz5fdlPo7X45pYT60oid5aDJql3noGb_UW2KwAXgVxqMSfCTvCAj4TgQna3LtcWWbye0whzQzC1C7Ctu0NuEMt9_0rD-YXnJj69HV-lz7dPKgIEur0IhW_Nq9hPg_EfiWnm8HbUIAiH0OujoTGB2mR-wYYOp_GwXLoCc0ABqX36IdUQIDdgw8rSE0hIAhtD2nMKnwdDzGGKATehLPFR-3tlTWnWGrHiPJVfsFHIiSS5jkRqH349-9nIiRdRDSYiqibOiXHsSP5TUTpi8iAig).
-
-En la *antiguedad*, es decir, cuando revisé y repliqué por primera vez este artículo, la función *rdbwselect* en Stata permitía recuperar el ancho de banda óptimo aquí reportado (12.57):
+Otra función es *rdbwselect*, que permite la estimación del ancho de banda óptimo. Hay un *trade-off* entre sesgo y varianza en la selección del ancho de banda. Entre más grande sea la ventana, tenemos más observaciones y nuestros estimadores de salto en la función de esperanza condicional serán más precisos. Pero al mismo tiempo, entre más grande sea la ventana, más grande será el sesgo en la estimación de la pendiente de la línea de regresión al incluir observaciones cada vez más disimiles.
 
 ```{r, out.width="100%",fig.cap='Fuente: Anagol & Fujiwara (2016)',fig.align='center'}
-
 summary(rdbwselect(y = data.brasil$cand_winner,
                    x = data.brasil$run,
-                   kernel = 'uniform',
-                   cluster=data.brasil$id_munic, all=T))
+                   p = 2,
+                   kernel = 'triangular',
+                   cluster=data.brasil$id_munic,
+                   bwselect = "mserd"))
 ```
 
+
+Otros autores, como [Imbens y Kalyanaraman (2012)](https://watermark.silverchair.com/rdr043.pdf?token=AQECAHi208BE49Ooan9kkhW_Ercy7Dm3ZL_9Cf3qfKAc485ysgAAAvwwggL4BgkqhkiG9w0BBwagggLpMIIC5QIBADCCAt4GCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMNLn6ofuEpZYIbPhSAgEQgIICr_9ZaTO9ZtUyeddqejFel2IauNOEoeJKXH5QDHk3IgFt03mG523iBXeq4wIS5CBcK1W7AjY4H3-kJb6r2H09xeES5zsTEXnhxrKoyFmOnWDjj679CIRFcQkZIzasP83tUkwZM0LVPjiVeJAC-HZiR3D1h75wwgwK1od1oycJIc2wZRxcgr4QeUhWtpe6JO34YqiDPOYN7sMSqfVdwXJS53-EXnr0qCQM9PFY5T8cxeDDGhEXhG0DVs3lTwzHDZEbbX8-7EkLeBMaic7aqNaQgiQuc9DaLM1m23p9cpW0JeaiLLvdKm13hHLP3csRaf_TVKFCGGADjweQYGu49CTdNhnDbFyh0W0eVDirPndKSM-2REG7Y-6AZCeCbYl3TmfBLpIXDjN3pPAzLJmbWbik6vrvv9n6if_1eT2CjD3wMRxY01jFHYRZaXlttxTOWS3uBkNo0hNtHZLdvgw6tXH6yA38TPXfG4RIA3JfKtDOGL-9Ph7P02tSvjF2YSjGmoBo9IRjyhgL_7Ur_saa4_z2NWx-FCOmDVGSL2cxG1Nkam58oF7R0aochpxm1VUp1LYizL3UzuhpG_KpRJ1zSQGGXyCpV5gc8HZQ8p-nhnY5wtUSZ5qgILv6sDsccldEJ90LbmSz5fdlPo7X45pYT60oid5aDJql3noGb_UW2KwAXgVxqMSfCTvCAj4TgQna3LtcWWbye0whzQzC1C7Ctu0NuEMt9_0rD-YXnJj69HV-lz7dPKgIEur0IhW_Nq9hPg_EfiWnm8HbUIAiH0OujoTGB2mR-wYYOp_GwXLoCc0ABqX36IdUQIDdgw8rSE0hIAhtD2nMKnwdDzGGKATehLPFR-3tlTWnWGrHiPJVfsFHIiSS5jkRqH349-9nIiRdRDSYiqibOiXHsSP5TUTpi8iAig), proponen su propio algoritmo para calcular el ancho de venta óptimo. En la *antiguedad*, es decir, cuando revisé y repliqué por primera vez este artículo, la función *rdbwselect* permitía recuperar el ancho de banda óptimo reportado en el artículo, usando el algortimo de Imbens y Kalyanaraman (que resultaba ser 12.57). Actualmente, dicho algoritmo ya no está en *rdbwselect*. Sin embargo, podemos obtener aproximadamente el ancho óptimo de Imbens y Kalyanaraman usando la función *IKbandwidth* del paquete *rdd*:
+
+```{r echo=T, include=T, eval=T, results=F, message=F, warning=F}
+IKbandwidth(X=data.brasil$run,
+            Y=data.brasil$cand_winner,
+            cutpoint = NULL,
+            verbose = TRUE,
+            kernel = "rectangular")
+```
 Noten que si especificamos el ancho de ventana reportado de 12.57, obtenemos el resultado preferido por los autores en el artículo:
 
 ```{r echo=T, include=T, eval=T, results=F, message=F, warning=F}
@@ -289,6 +320,31 @@ tab2 <- stargazer(rd5, rd6, rd7,
           df=FALSE, digits=2)
 ```
 
+### *rdrobust*
+
+Finalmente, *rdrobust* estima el efecto del tratamiento con la elección óptima del ancho de banda:
+
+```{r echo=T, include=T, eval=T, results=F, message=F, warning=F}
+summary(rdrobust(y = data.brasil$cand_winner,
+                 x = data.brasil$run,
+                 p = 2, #default p = 1
+                 bwselect='mserd',
+                 kernel = 'triangular',
+                 cluster=data.brasil$id_munic)) 
+```
+
+Si en *rdrobust* introducimos *h=12.57* y un kernel uniforme, obtenemos lo que se reporta en el artículo:
+
+```{r echo=T, include=T, eval=T, results=F, message=F, warning=F}
+summary(rdrobust(y = data.brasil$cand_winner,
+                 x = data.brasil$run,
+                 p = 1, #default p = 1
+                 h = 12.57,
+                 kernel = 'uniform',
+                 cluster=data.brasil$id_munic)) 
+```
+
+
 ## Más materiales
 
 Consideren revisar el tutorial que Matias Catteneo dio [en el Chamberlain Seminar](https://www.chamberlainseminar.org/past-seminars/autumn-2020#h.41tsl12q6tcb):
@@ -299,4 +355,5 @@ Consideren revisar el tutorial que Matias Catteneo dio [en el Chamberlain Semina
 
 El tutorial está en Stata, pero las ideas son fácilmente trasladadas a cualquier software.
 
+Además, pueden profundizar en los detalles y múltiples opciones a especificar en *rdrobust* en la [documentación del paquete de R](https://rdpackages.github.io/references/Calonico-Cattaneo-Titiunik_2015_R.pdf).
 

@@ -16,6 +16,20 @@ toc: false
   font-size: 60% !important;
 }
 </style>
+<div id="paquetes" class="section level2">
+<h2>Paquetes</h2>
+<p>Usaremos paquetes que ya hemos usado antes:</p>
+<ul>
+<li><em>gtsummary</em> para hacer tablas descriptivas</li>
+<li>*lfe** para estimar modelos con efectos fijos, variables instrumentales y errores agrupados</li>
+</ul>
+<p>Además, usarmos algunos paquetes nuevos específicos para diseños con discontinuidades:</p>
+<ul>
+<li><em>rdrobust</em> con muchas aplicaciones, como gráficos y selectores de anchos de banda</li>
+<li><em>rdd</em> con opciones más restringidas de selectores de anchos de banda</li>
+<li><em>causaldata</em> son los datos incluidos en <a href="https://theeffectbook.net/index.html"><em>The Effect</em></a> y que nos servirán para una aplicación de diseños difusos</li>
+</ul>
+</div>
 <div id="el-efecto-seguidor" class="section level2">
 <h2>El <em>efecto seguidor</em></h2>
 <p>En esta aplicación estudiaremos el <em>efecto seguidor</em> o <em>runner-up effect</em>. <a href="https://www.journals.uchicago.edu/doi/abs/10.1086/686746">Anagol &amp; Fujiwara (2016)</a> estudian el efecto de ser etiquetado como el <em>seguidor</em> en elecciones municipales sobre la probabilidad de ser contentender y de ser electo en la siguiente elección.</p>
@@ -38,12 +52,12 @@ toc: false
               digits = all_continuous() ~ 2,
               label = run ~ &quot;Diferencia de votos&quot;,
               missing_text = &quot;(Missing)&quot;)</code></pre>
-<div id="fvywdvmyah" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="dwusaimuha" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#fvywdvmyah .gt_table {
+#dwusaimuha .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -68,7 +82,7 @@ toc: false
   border-left-color: #D3D3D3;
 }
 
-#fvywdvmyah .gt_heading {
+#dwusaimuha .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -80,7 +94,7 @@ toc: false
   border-right-color: #D3D3D3;
 }
 
-#fvywdvmyah .gt_title {
+#dwusaimuha .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -92,7 +106,7 @@ toc: false
   border-bottom-width: 0;
 }
 
-#fvywdvmyah .gt_subtitle {
+#dwusaimuha .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -104,13 +118,13 @@ toc: false
   border-top-width: 0;
 }
 
-#fvywdvmyah .gt_bottom_border {
+#dwusaimuha .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#fvywdvmyah .gt_col_headings {
+#dwusaimuha .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -125,7 +139,7 @@ toc: false
   border-right-color: #D3D3D3;
 }
 
-#fvywdvmyah .gt_col_heading {
+#dwusaimuha .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -145,7 +159,7 @@ toc: false
   overflow-x: hidden;
 }
 
-#fvywdvmyah .gt_column_spanner_outer {
+#dwusaimuha .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -157,15 +171,15 @@ toc: false
   padding-right: 4px;
 }
 
-#fvywdvmyah .gt_column_spanner_outer:first-child {
+#dwusaimuha .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#fvywdvmyah .gt_column_spanner_outer:last-child {
+#dwusaimuha .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#fvywdvmyah .gt_column_spanner {
+#dwusaimuha .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -177,7 +191,7 @@ toc: false
   width: 100%;
 }
 
-#fvywdvmyah .gt_group_heading {
+#dwusaimuha .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -202,7 +216,7 @@ toc: false
   vertical-align: middle;
 }
 
-#fvywdvmyah .gt_empty_group_heading {
+#dwusaimuha .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -217,15 +231,15 @@ toc: false
   vertical-align: middle;
 }
 
-#fvywdvmyah .gt_from_md > :first-child {
+#dwusaimuha .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#fvywdvmyah .gt_from_md > :last-child {
+#dwusaimuha .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#fvywdvmyah .gt_row {
+#dwusaimuha .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -244,7 +258,7 @@ toc: false
   overflow-x: hidden;
 }
 
-#fvywdvmyah .gt_stub {
+#dwusaimuha .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -257,7 +271,7 @@ toc: false
   padding-right: 5px;
 }
 
-#fvywdvmyah .gt_stub_row_group {
+#dwusaimuha .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -271,11 +285,11 @@ toc: false
   vertical-align: top;
 }
 
-#fvywdvmyah .gt_row_group_first td {
+#dwusaimuha .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#fvywdvmyah .gt_summary_row {
+#dwusaimuha .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -285,16 +299,16 @@ toc: false
   padding-right: 5px;
 }
 
-#fvywdvmyah .gt_first_summary_row {
+#dwusaimuha .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#fvywdvmyah .gt_first_summary_row.thick {
+#dwusaimuha .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#fvywdvmyah .gt_last_summary_row {
+#dwusaimuha .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -304,7 +318,7 @@ toc: false
   border-bottom-color: #D3D3D3;
 }
 
-#fvywdvmyah .gt_grand_summary_row {
+#dwusaimuha .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -314,7 +328,7 @@ toc: false
   padding-right: 5px;
 }
 
-#fvywdvmyah .gt_first_grand_summary_row {
+#dwusaimuha .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -324,11 +338,11 @@ toc: false
   border-top-color: #D3D3D3;
 }
 
-#fvywdvmyah .gt_striped {
+#dwusaimuha .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#fvywdvmyah .gt_table_body {
+#dwusaimuha .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -337,7 +351,7 @@ toc: false
   border-bottom-color: #D3D3D3;
 }
 
-#fvywdvmyah .gt_footnotes {
+#dwusaimuha .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -351,7 +365,7 @@ toc: false
   border-right-color: #D3D3D3;
 }
 
-#fvywdvmyah .gt_footnote {
+#dwusaimuha .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -360,7 +374,7 @@ toc: false
   padding-right: 5px;
 }
 
-#fvywdvmyah .gt_sourcenotes {
+#dwusaimuha .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -374,7 +388,7 @@ toc: false
   border-right-color: #D3D3D3;
 }
 
-#fvywdvmyah .gt_sourcenote {
+#dwusaimuha .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -382,64 +396,64 @@ toc: false
   padding-right: 5px;
 }
 
-#fvywdvmyah .gt_left {
+#dwusaimuha .gt_left {
   text-align: left;
 }
 
-#fvywdvmyah .gt_center {
+#dwusaimuha .gt_center {
   text-align: center;
 }
 
-#fvywdvmyah .gt_right {
+#dwusaimuha .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#fvywdvmyah .gt_font_normal {
+#dwusaimuha .gt_font_normal {
   font-weight: normal;
 }
 
-#fvywdvmyah .gt_font_bold {
+#dwusaimuha .gt_font_bold {
   font-weight: bold;
 }
 
-#fvywdvmyah .gt_font_italic {
+#dwusaimuha .gt_font_italic {
   font-style: italic;
 }
 
-#fvywdvmyah .gt_super {
+#dwusaimuha .gt_super {
   font-size: 65%;
 }
 
-#fvywdvmyah .gt_footnote_marks {
+#dwusaimuha .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#fvywdvmyah .gt_asterisk {
+#dwusaimuha .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#fvywdvmyah .gt_indent_1 {
+#dwusaimuha .gt_indent_1 {
   text-indent: 5px;
 }
 
-#fvywdvmyah .gt_indent_2 {
+#dwusaimuha .gt_indent_2 {
   text-indent: 10px;
 }
 
-#fvywdvmyah .gt_indent_3 {
+#dwusaimuha .gt_indent_3 {
   text-indent: 15px;
 }
 
-#fvywdvmyah .gt_indent_4 {
+#dwusaimuha .gt_indent_4 {
   text-indent: 20px;
 }
 
-#fvywdvmyah .gt_indent_5 {
+#dwusaimuha .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -670,9 +684,7 @@ data.brasil[perc.vars] &lt;- lapply(data.brasil[perc.vars],
 ## Multiple R-squared(proj model): 0.07501   Adjusted R-squared: 0.07479 
 ## F-statistic(full model, *iid*):334.2 on 5 and 20602 DF, p-value: &lt; 2.2e-16 
 ## F-statistic(proj model): 519.5 on 5 and 4470 DF, p-value: &lt; 2.2e-16</code></pre>
-<ul>
-<li>Para un resumen de los resultados puedo usar <em>stargazer</em></li>
-</ul>
+<p>Vemos un resumen de los resultados usando <em>stargazer</em>:</p>
 <pre class="r"><code>stargazer(rd1, rd2, rd3, rd4,
           title=&quot;Comparación de especificaciones de RD&quot;, type=&quot;text&quot;, 
           df=FALSE, digits=2)</code></pre>
@@ -683,44 +695,45 @@ data.brasil[perc.vars] &lt;- lapply(data.brasil[perc.vars],
 <p>Existe toda una literatura para analizar el <em>trade-off</em> entre sesgo y varianza en la elección del ancho de ventana. Por ejemplo, <a href="https://rdpackages.github.io/references/Calonico-Cattaneo-Titiunik_2015_R.pdf">Calonic, Cattaneo &amp; Titiunik, (2015)</a> proponen distintas formas de implementar algoritmos para estimar la discontinudad de la regresión con procedimientos totalmente dependiente de los datos (<em>data driven</em>).</p>
 <div id="rdplot" class="section level3">
 <h3><em>rdplot</em></h3>
-<p>Una de las funciones más útiles de <em>rdrobust</em> es crear el gráfico de la discontinuidad, usando un polinomio de orden 4 por defecto:</p>
-<pre class="r"><code>rdres &lt;- rdplot(y = data.brasil$cand_winner, x = data.brasil$run, title = &quot;Efecto seguidor&quot;,
-        y.label = &quot;Probabilidad de ganar en t+1&quot;,
-        x.label = &quot;Distancia con respecto al 3er lugar en t&quot;)</code></pre>
-<p>También podemos ver detalles de cómo se realiza la estimación y la selección del número de <em>bins</em></p>
+<p>Una de las funciones más útiles de <em>rdrobust</em> es crear el gráfico de la discontinuidad, usando un polinomio de orden <span class="math inline">\(p\)</span> y seleccionando de manera óptima el número de <em>bins</em> a graficar:</p>
+<pre class="r"><code>rdres &lt;- rdplot(y = data.brasil$cand_winner,
+                x = data.brasil$run,
+                p = 2, #default p = 4
+                binselect = &#39;esmv&#39;,
+                title = &quot;Efecto seguidor&quot;,
+                y.label = &quot;Probabilidad de ganar en t+1&quot;,
+                x.label = &quot;Distancia con respecto al 3er lugar en t&quot;)</code></pre>
+<p>También podemos ver detalles de cómo se realiza la estimación y la selección del número de <em>bins</em>:</p>
 <pre class="r"><code>summary(rdres)</code></pre>
+<p>¿Cómo se seleccionan óptimamente la cantidad de <em>bins</em>? Existen muchas maneras, pero expliquemos la que se utiliza por defecto. La idea es seleccionar el número de <em>bins</em> de tal forma que la muestra en <em>bins</em> tenga una varianza similar a la variabilidad que existe en los datos bruto. La opción <em>esmv</em> equivale a <em>mimicking variance evenly-spaced method using spacings estimators</em>.</p>
 </div>
 <div id="rdbwselect" class="section level3">
 <h3><em>rdbwselect</em></h3>
-<p>Otra función es <em>rdbwselect</em>, que permite la estimación del ancho de banda óptimo. Hay un <em>trade-off</em> entre sesgo y varianza en la selección del ancho de banda. Entre más grande sea la ventana, tenemos más observaciones y nuestros estimadores serán más precisos. Pero al mismo tiempo, entre más grande sea la ventana, más grande será el sesgo en la estimación de la pendiente de la línea de regresión al incluir observaciones cada vez más disimiles. Esta teoría esta formalizada en <a href="https://watermark.silverchair.com/rdr043.pdf?token=AQECAHi208BE49Ooan9kkhW_Ercy7Dm3ZL_9Cf3qfKAc485ysgAAAvwwggL4BgkqhkiG9w0BBwagggLpMIIC5QIBADCCAt4GCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMNLn6ofuEpZYIbPhSAgEQgIICr_9ZaTO9ZtUyeddqejFel2IauNOEoeJKXH5QDHk3IgFt03mG523iBXeq4wIS5CBcK1W7AjY4H3-kJb6r2H09xeES5zsTEXnhxrKoyFmOnWDjj679CIRFcQkZIzasP83tUkwZM0LVPjiVeJAC-HZiR3D1h75wwgwK1od1oycJIc2wZRxcgr4QeUhWtpe6JO34YqiDPOYN7sMSqfVdwXJS53-EXnr0qCQM9PFY5T8cxeDDGhEXhG0DVs3lTwzHDZEbbX8-7EkLeBMaic7aqNaQgiQuc9DaLM1m23p9cpW0JeaiLLvdKm13hHLP3csRaf_TVKFCGGADjweQYGu49CTdNhnDbFyh0W0eVDirPndKSM-2REG7Y-6AZCeCbYl3TmfBLpIXDjN3pPAzLJmbWbik6vrvv9n6if_1eT2CjD3wMRxY01jFHYRZaXlttxTOWS3uBkNo0hNtHZLdvgw6tXH6yA38TPXfG4RIA3JfKtDOGL-9Ph7P02tSvjF2YSjGmoBo9IRjyhgL_7Ur_saa4_z2NWx-FCOmDVGSL2cxG1Nkam58oF7R0aochpxm1VUp1LYizL3UzuhpG_KpRJ1zSQGGXyCpV5gc8HZQ8p-nhnY5wtUSZ5qgILv6sDsccldEJ90LbmSz5fdlPo7X45pYT60oid5aDJql3noGb_UW2KwAXgVxqMSfCTvCAj4TgQna3LtcWWbye0whzQzC1C7Ctu0NuEMt9_0rD-YXnJj69HV-lz7dPKgIEur0IhW_Nq9hPg_EfiWnm8HbUIAiH0OujoTGB2mR-wYYOp_GwXLoCc0ABqX36IdUQIDdgw8rSE0hIAhtD2nMKnwdDzGGKATehLPFR-3tlTWnWGrHiPJVfsFHIiSS5jkRqH349-9nIiRdRDSYiqibOiXHsSP5TUTpi8iAig">Imbens y Kalyanaraman (2012)</a>.</p>
-<p>En la <em>antiguedad</em>, es decir, cuando revisé y repliqué por primera vez este artículo, la función <em>rdbwselect</em> en Stata permitía recuperar el ancho de banda óptimo aquí reportado (12.57):</p>
+<p>Otra función es <em>rdbwselect</em>, que permite la estimación del ancho de banda óptimo. Hay un <em>trade-off</em> entre sesgo y varianza en la selección del ancho de banda. Entre más grande sea la ventana, tenemos más observaciones y nuestros estimadores de salto en la función de esperanza condicional serán más precisos. Pero al mismo tiempo, entre más grande sea la ventana, más grande será el sesgo en la estimación de la pendiente de la línea de regresión al incluir observaciones cada vez más disimiles.</p>
 <pre><code>## Call: rdbwselect
 ## 
 ## Number of Obs.                20608
-## BW type                         All
-## Kernel                      Uniform
+## BW type                       mserd
+## Kernel                   Triangular
 ## VCE method                       NN
 ## 
 ## Number of Obs.                10304        10304
-## Order est. (p)                    1            1
-## Order bias  (q)                   2            2
+## Order est. (p)                    2            2
+## Order bias  (q)                   3            3
 ## Unique Obs.                   10292        10292
 ## 
 ## =======================================================
 ##                   BW est. (h)    BW bias (b)
 ##             Left of c Right of c  Left of c Right of c
 ## =======================================================
-##      mserd    11.398     11.398     19.626     19.626
-##     msetwo    17.883     10.568     31.155     18.697
-##     msesum    13.231     13.231     22.733     22.733
-##   msecomb1    11.398     11.398     19.626     19.626
-##   msecomb2    13.231     11.398     22.733     19.626
-##      cerrd     7.232      7.232     19.626     19.626
-##     certwo    11.347      6.705     31.155     18.697
-##     cersum     8.395      8.395     22.733     22.733
-##   cercomb1     7.232      7.232     19.626     19.626
-##   cercomb2     8.395      7.232     22.733     19.626
+##      mserd    20.934     20.934     27.880     27.880
 ## =======================================================</code></pre>
+<p>Otros autores, como <a href="https://watermark.silverchair.com/rdr043.pdf?token=AQECAHi208BE49Ooan9kkhW_Ercy7Dm3ZL_9Cf3qfKAc485ysgAAAvwwggL4BgkqhkiG9w0BBwagggLpMIIC5QIBADCCAt4GCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMNLn6ofuEpZYIbPhSAgEQgIICr_9ZaTO9ZtUyeddqejFel2IauNOEoeJKXH5QDHk3IgFt03mG523iBXeq4wIS5CBcK1W7AjY4H3-kJb6r2H09xeES5zsTEXnhxrKoyFmOnWDjj679CIRFcQkZIzasP83tUkwZM0LVPjiVeJAC-HZiR3D1h75wwgwK1od1oycJIc2wZRxcgr4QeUhWtpe6JO34YqiDPOYN7sMSqfVdwXJS53-EXnr0qCQM9PFY5T8cxeDDGhEXhG0DVs3lTwzHDZEbbX8-7EkLeBMaic7aqNaQgiQuc9DaLM1m23p9cpW0JeaiLLvdKm13hHLP3csRaf_TVKFCGGADjweQYGu49CTdNhnDbFyh0W0eVDirPndKSM-2REG7Y-6AZCeCbYl3TmfBLpIXDjN3pPAzLJmbWbik6vrvv9n6if_1eT2CjD3wMRxY01jFHYRZaXlttxTOWS3uBkNo0hNtHZLdvgw6tXH6yA38TPXfG4RIA3JfKtDOGL-9Ph7P02tSvjF2YSjGmoBo9IRjyhgL_7Ur_saa4_z2NWx-FCOmDVGSL2cxG1Nkam58oF7R0aochpxm1VUp1LYizL3UzuhpG_KpRJ1zSQGGXyCpV5gc8HZQ8p-nhnY5wtUSZ5qgILv6sDsccldEJ90LbmSz5fdlPo7X45pYT60oid5aDJql3noGb_UW2KwAXgVxqMSfCTvCAj4TgQna3LtcWWbye0whzQzC1C7Ctu0NuEMt9_0rD-YXnJj69HV-lz7dPKgIEur0IhW_Nq9hPg_EfiWnm8HbUIAiH0OujoTGB2mR-wYYOp_GwXLoCc0ABqX36IdUQIDdgw8rSE0hIAhtD2nMKnwdDzGGKATehLPFR-3tlTWnWGrHiPJVfsFHIiSS5jkRqH349-9nIiRdRDSYiqibOiXHsSP5TUTpi8iAig">Imbens y Kalyanaraman (2012)</a>, proponen su propio algoritmo para calcular el ancho de venta óptimo. En la <em>antiguedad</em>, es decir, cuando revisé y repliqué por primera vez este artículo, la función <em>rdbwselect</em> permitía recuperar el ancho de banda óptimo reportado en el artículo, usando el algortimo de Imbens y Kalyanaraman (que resultaba ser 12.57). Actualmente, dicho algoritmo ya no está en <em>rdbwselect</em>. Sin embargo, podemos obtener aproximadamente el ancho óptimo de Imbens y Kalyanaraman usando la función <em>IKbandwidth</em> del paquete <em>rdd</em>:</p>
+<pre class="r"><code>IKbandwidth(X=data.brasil$run,
+            Y=data.brasil$cand_winner,
+            cutpoint = NULL,
+            verbose = TRUE,
+            kernel = &quot;rectangular&quot;)</code></pre>
 <p>Noten que si especificamos el ancho de ventana reportado de 12.57, obtenemos el resultado preferido por los autores en el artículo:</p>
 <pre class="r"><code>rd5 &lt;- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=subset(data.brasil,bw&lt;12.57))
 rd6 &lt;- felm(cand_winner ~ D  + run |0 | 0 | id_munic, data=subset(data.brasil,bw&lt;12.57/2))
@@ -730,6 +743,23 @@ tab2 &lt;- stargazer(rd5, rd6, rd7,
           title=&quot;Comparación de especificaciones de RD (2)&quot;, type=&quot;text&quot;, 
           df=FALSE, digits=2)</code></pre>
 </div>
+<div id="rdrobust-1" class="section level3">
+<h3><em>rdrobust</em></h3>
+<p>Finalmente, <em>rdrobust</em> estima el efecto del tratamiento con la elección óptima del ancho de banda:</p>
+<pre class="r"><code>summary(rdrobust(y = data.brasil$cand_winner,
+                 x = data.brasil$run,
+                 p = 2, #default p = 1
+                 bwselect=&#39;mserd&#39;,
+                 kernel = &#39;triangular&#39;,
+                 cluster=data.brasil$id_munic)) </code></pre>
+<p>Si en <em>rdrobust</em> introducimos <em>h=12.57</em> y un kernel uniforme, obtenemos lo que se reporta en el artículo:</p>
+<pre class="r"><code>summary(rdrobust(y = data.brasil$cand_winner,
+                 x = data.brasil$run,
+                 p = 1, #default p = 1
+                 h = 12.57,
+                 kernel = &#39;uniform&#39;,
+                 cluster=data.brasil$id_munic)) </code></pre>
+</div>
 </div>
 <div id="más-materiales" class="section level2">
 <h2>Más materiales</h2>
@@ -737,4 +767,5 @@ tab2 &lt;- stargazer(rd5, rd6, rd7,
 <iframe width="560" height="315" src="https://www.youtube.com/embed/rKH88HK0S-o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
 </iframe>
 <p>El tutorial está en Stata, pero las ideas son fácilmente trasladadas a cualquier software.</p>
+<p>Además, pueden profundizar en los detalles y múltiples opciones a especificar en <em>rdrobust</em> en la <a href="https://rdpackages.github.io/references/Calonico-Cattaneo-Titiunik_2015_R.pdf">documentación del paquete de R</a>.</p>
 </div>
