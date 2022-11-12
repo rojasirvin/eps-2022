@@ -1,5 +1,5 @@
 ---
-title: "Tarea 3"
+title: "Respuestas a la tarea 3"
 summary: ""
 weight: 1
 type: book
@@ -66,7 +66,7 @@ a. [5 puntos] Como punto de partida, estime el efecto del tratamiento sobre **di
                   data = acafs))$coef[1:2,1:3]
     ```
     
-    **Aunque noten que, con MCO y dummies, deberíamos aún estimar los errores agrupados a nivel estado. Si ignoramos la agrupación, el error estándar es 0.0037. Cuando tomamos en cuenta el agrupamiento, el error estimado es de 0.007 (casi el doble). felm y feols nos ahorran un paso al incluir directamente la opción para agrupar errores.**
+    *Aunque noten que, con MCO y dummies, deberíamos aún estimar los errores agrupados a nivel estado. Si ignoramos la agrupación, el error estándar es 0.0037. Cuando tomamos en cuenta el agrupamiento, el error estimado es de 0.007 (casi el doble). felm y feols nos ahorran un paso al incluir directamente la opción para agrupar errores.*
 
 a. [5 puntos] Realice la descomposición de Goodman-Bacon (2021). Construya un gráfico donde muestre en el eje $x$ el peso otorgado a cada comparación 2x2 y en el eje $y$ el efecto estimado correspondiente a cada comparación. Interprete el gráfico obtenido.
 
@@ -96,7 +96,7 @@ a. [5 puntos] Realice la descomposición de Goodman-Bacon (2021). Construya un g
 
     ```
     
-        *Las comparaciones que más pesan en el estimador de efectos fijos son las de estados tratados con los nunca tratados, que llegan a recibir un peso de más de 0.6. La comparación con más peso tiene un efecto estimado de 0.0749, parecida al 0.07 que se obtiene con efectos fijos.*
+    *Las comparaciones que más pesan en el estimador de efectos fijos son las de estados tratados con los nunca tratados, que llegan a recibir un peso de más de 0.6. La comparación con más peso tiene un efecto estimado de 0.0749, parecida al 0.07 que se obtiene con efectos fijos.*
 
 a. [5 puntos] Implemente el estimador de Sun & Abraham (2021) para estimar los efectos del tratamiento específicos para cada cohorte, considerando la agrupación de erores al nivel adecuado. Luego, use *iplot* para graficar los coeficientes estimados para cada valor de **real_year**. Interprete el gráfico obtenido.
 
@@ -190,7 +190,7 @@ a. [5 puntos] Estime el TOT (TT o ATT) del programa en el ingreso trimestral, **
 
 a. [5 puntos] En el matching de la parte b., evalúe qué tan bueno es el procedimiento en balancear las características observadas una vez realizado el matching. Cree un *love plot* y realice pruebas formales para contrastar las diferencias en características observables antes y después del matching.
 
-    *bal.tab del paquete *cobalt nos permite ver un resumen del balance:*
+    *bal.tab del paquete cobalt nos permite ver un resumen del balance:*
     ```{r}
     #Con esto elimino las dummies de estado de la salida
     bal.tab(m.out.a, m.threshold=0.1, un=T)
@@ -317,7 +317,7 @@ data.sharp %>%
 
     *El segundo consiste en permitir que la pendiente sea diferente antes y después de la discontinuidad:*
     
-    $$y_i=\alpha+\tau D_i+ +\beta_0(x_i-x_0)+\beta_1(x_i-x_0)D_i+\varepsilon_i$$
+    $$y_i=\alpha+\tau D_i +\beta_0(x_i-x_0)+\beta_1(x_i-x_0)D_i+\varepsilon_i$$
     
     *Más aún, es posible combinar estas dos posibilidades para dar lugar a modelos más flexibles. Se espera que las conclusiones sean robustas al uso de modelos extremadamente complejos.*
 
@@ -406,7 +406,7 @@ a. [5 puntos] Regrese a una ventana de 20 soles como en la parte b., pero ahora 
            data=filter(salud, ifh_norm>=-20 & ifh_norm <=20)))
     ```
     
-    *Podríamos usar rdrobust para estimar el efecto con la selección óptima del tamaño de ventana:*
+    *Más aún, podríamos usar rdrobust para estimar el efecto con la selección óptima del ancho de ventana:*
     
     ```{r}
     salud <- salud %>% 

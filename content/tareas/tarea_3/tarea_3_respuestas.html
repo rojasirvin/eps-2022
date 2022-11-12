@@ -1,5 +1,5 @@
 ---
-title: "Tarea 3"
+title: "Respuestas a la tarea 3"
 summary: ""
 weight: 1
 type: book
@@ -67,7 +67,7 @@ table(filter(acafs,year==2018)$yexp2)</code></pre>
 <pre><code>##               Estimate  Std. Error  t value
 ## (Intercept) 0.65698100 0.007239777 90.74603
 ## treated     0.07032067 0.003666975 19.17675</code></pre>
-<p><strong>Aunque noten que, con MCO y dummies, deberíamos aún estimar los errores agrupados a nivel estado. Si ignoramos la agrupación, el error estándar es 0.0037. Cuando tomamos en cuenta el agrupamiento, el error estimado es de 0.007 (casi el doble). felm y feols nos ahorran un paso al incluir directamente la opción para agrupar errores.</strong></p></li>
+<p><em>Aunque noten que, con MCO y dummies, deberíamos aún estimar los errores agrupados a nivel estado. Si ignoramos la agrupación, el error estándar es 0.0037. Cuando tomamos en cuenta el agrupamiento, el error estimado es de 0.007 (casi el doble). felm y feols nos ahorran un paso al incluir directamente la opción para agrupar errores.</em></p></li>
 <li><p>[5 puntos] Realice la descomposición de Goodman-Bacon (2021). Construya un gráfico donde muestre en el eje <span class="math inline">\(x\)</span> el peso otorgado a cada comparación 2x2 y en el eje <span class="math inline">\(y\)</span> el efecto estimado correspondiente a cada comparación. Interprete el gráfico obtenido.</p>
 <p><em>Como vimos en clase:</em></p>
 <pre class="r"><code>#Goodman-Bacon decomposition
@@ -93,7 +93,7 @@ df_bacon %&gt;%
   geom_point() +
   geom_hline(yintercept = round(twfe$coefficients, 4))</code></pre>
 <p><img src="/tareas/tarea_3/tarea_3_respuestas_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
-<pre><code> *Las comparaciones que más pesan en el estimador de efectos fijos son las de estados tratados con los nunca tratados, que llegan a recibir un peso de más de 0.6. La comparación con más peso tiene un efecto estimado de 0.0749, parecida al 0.07 que se obtiene con efectos fijos.*</code></pre></li>
+<p><em>Las comparaciones que más pesan en el estimador de efectos fijos son las de estados tratados con los nunca tratados, que llegan a recibir un peso de más de 0.6. La comparación con más peso tiene un efecto estimado de 0.0749, parecida al 0.07 que se obtiene con efectos fijos.</em></p></li>
 <li><p>[5 puntos] Implemente el estimador de Sun &amp; Abraham (2021) para estimar los efectos del tratamiento específicos para cada cohorte, considerando la agrupación de erores al nivel adecuado. Luego, use <em>iplot</em> para graficar los coeficientes estimados para cada valor de <strong>real_year</strong>. Interprete el gráfico obtenido.</p>
 <p><em>El primer paso es estimar los efectos fijos interactuados:</em></p>
 <pre class="r"><code>twfe_sa &lt;-  feols(dins ~ sunab(yexp2, rel_year) | stfips + year,
@@ -415,7 +415,7 @@ coeftest(tt1,
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <p><em>Se estima un efecto de 7830 pesos adicionales de ingreso trimestral para los participantes en el programa.</em></p></li>
 <li><p>[5 puntos] En el matching de la parte b., evalúe qué tan bueno es el procedimiento en balancear las características observadas una vez realizado el matching. Cree un <em>love plot</em> y realice pruebas formales para contrastar las diferencias en características observables antes y después del matching.</p>
-<p><em>bal.tab del paquete </em>cobalt nos permite ver un resumen del balance:*</p>
+<p><em>bal.tab del paquete cobalt nos permite ver un resumen del balance:</em></p>
 <pre class="r"><code>#Con esto elimino las dummies de estado de la salida
 bal.tab(m.out.a, m.threshold=0.1, un=T)</code></pre>
 <pre><code>## Call
@@ -557,7 +557,7 @@ data.sharp %&gt;%
 <p><em>donde <span class="math inline">\(x_i\)</span> es la variable de selección y <span class="math inline">\(D_i\)</span> es una variable indicadora que toma el valor de uno cuando el índice de prevalencia de la plaga rebasa el umbral. Controlar por <span class="math inline">\(x_i\)</span> captura la relación que tiene la prevalencia de la plaga en la seguridad alimentaria, por ejemplo, vía los rendimientos. Se recomiendan al menos dos tipos de procedimientos más completos para comprobar la robustez de los efectos encontrados.</em></p>
 <p><em>El primero es incluir un polinomio lo suficientemente flexible de <span class="math inline">\(x_i\)</span>:</em> <span class="math display">\[y_i=\alpha+\tau D_i+ Bf(x_i)+\varepsilon_i\]</span></p>
 <p><em>El segundo consiste en permitir que la pendiente sea diferente antes y después de la discontinuidad:</em></p>
-<p><span class="math display">\[y_i=\alpha+\tau D_i+ +\beta_0(x_i-x_0)+\beta_1(x_i-x_0)D_i+\varepsilon_i\]</span></p>
+<p><span class="math display">\[y_i=\alpha+\tau D_i +\beta_0(x_i-x_0)+\beta_1(x_i-x_0)D_i+\varepsilon_i\]</span></p>
 <p><em>Más aún, es posible combinar estas dos posibilidades para dar lugar a modelos más flexibles. Se espera que las conclusiones sean robustas al uso de modelos extremadamente complejos.</em></p></li>
 <li><p>[5 puntos] ¿Qué factores podrían invalidar el uso de este método para evaluar el programa?</p>
 <p><em>La principal preocupación es la posibilidad de manipulación de la prevalencia de la plaga para que la medición lo clasifique como receptor del programa. Podemos pensar en situaciones donde esto pudiera suceder con un individuo altamente sofisticado que pudiera manipular la presencia de la plaga de forma estratégica. Pensando que esto es costoso, el individuo estratégicamente debería seleccionar un punto justo por encima del umbral. Aunque difícil de suceder esta posibilidad podría investigarse empíricamente, por ejemplo, verificando que no haya “amontonamientos” justo por encima de la discontinuidad.</em></p>
@@ -713,7 +713,7 @@ data.sharp %&gt;%
 ## Residual standard error: 0.2603 on 2787 degrees of freedom
 ## Multiple R-squared:  0.02363,    Adjusted R-squared:  0.01977 
 ## F-statistic: 6.131 on 11 and 2787 DF,  p-value: 0.0000000005044</code></pre>
-<p><em>Podríamos usar rdrobust para estimar el efecto con la selección óptima del tamaño de ventana:</em></p>
+<p><em>Más aún, podríamos usar rdrobust para estimar el efecto con la selección óptima del ancho de ventana:</em></p>
 <pre class="r"><code>salud &lt;- salud %&gt;% 
   filter(high==0)
 
