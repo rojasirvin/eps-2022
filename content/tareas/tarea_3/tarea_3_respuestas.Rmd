@@ -1,0 +1,421 @@
+---
+title: "Tarea 3"
+summary: ""
+weight: 1
+type: book
+toc: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, warning = F, message = F)
+rm(list = ls())
+options(scipen=999) # Prevenir notación científica
+
+library(tidyverse)
+library(janitor)
+library(rdrobust)
+library(bacondecomp)
+library(lfe) #linear fixed effects
+library(fixest) #incluye el estimador de SA y el correspondiente gráfico de evento
+library(modelsummary)
+library(MatchIt)
+library(lmtest)
+library(sandwich)
+library(clubSandwich)
+library(cobalt)
+```
+
+## Pregunta 1
+
+Los datos en *ehec_data.csv* son datos de panel a nivel estado para los Estados Unidos de 2008 a 2019. A partir de 2014 se llevó a cabo un proceso de expansión de un programa de ayuda para subsidiar el costo de los servicios de salud de personas de bajos ingresos, *Medicaid Expansion*. La columna **yexp2** indica el año en que cada estado es tratado con la expansión del programa, **treated** es un indicador de si el estado $i$ es tratado en el año $t$, mientras que **rel_year** indica el número de años desde la expansión. Si *yexp2==Inf*, entonces el estado no ha sido tratado para 2019. Se busca estimar el efecto de la expansión del programa en el porcentaje de la población asegurada que es de bajos ingresos, sin hijos, y de entre 25 y 64 años de edad, **dins**.
+
+a. [5 puntos] ¿Por qué decimos que esta es una aplicación de la estimación de efectos de tratamiento con adopción escalonada?
+
+    *En esta aplicación, cada estado comienza a ser tratado en indistintos momentos del tiempo. Si hacemos un tabulado de **yexp2** notamos cuántos estados se vuelven tratados en cada año:*
+
+    ```{r}
+    acafs <- read_csv("ehec_data.csv") 
+    
+    table(filter(acafs,year==2018)$yexp2)
+    ```
+    *El panel comienza en 2008. 22 estados son tratados desde 2014, 3 en 2015 y así sucesivamente. 16 estados nunca son tratados*.
+
+a. [5 puntos] Como punto de partida, estime el efecto del tratamiento sobre **dins** usando efectos fijos (TWFE). Tome en cuenta la agrupación de los errores. Interprete sus resultados.
+
+    *Podemos hacer TWFE de muchas maneras.*
+    
+    *Con feols:*
+
+    ```{r}
+    summary(feols(dins ~ treated | stfips + year,
+                  data = acafs,
+                  cluster = ~stfips))
+    ```
+
+    *Con felm:*
+    
+    ```{r}
+    summary(felm(dins ~ treated | stfips + year | 0 | stfips,
+                  data = acafs))
+    ```
+    
+    *Y con una regresión lineal:*
+    
+    ```{r}
+    summary(lm(dins ~ treated + factor(stfips) + factor(year),
+                  data = acafs))$coef[1:2,1:3]
+    ```
+    
+    **Aunque noten que, con MCO y dummies, deberíamos aún estimar los errores agrupados a nivel estado. Si ignoramos la agrupación, el error estándar es 0.0037. Cuando tomamos en cuenta el agrupamiento, el error estimado es de 0.007 (casi el doble). felm y feols nos ahorran un paso al incluir directamente la opción para agrupar errores.**
+
+a. [5 puntos] Realice la descomposición de Goodman-Bacon (2021). Construya un gráfico donde muestre en el eje $x$ el peso otorgado a cada comparación 2x2 y en el eje $y$ el efecto estimado correspondiente a cada comparación. Interprete el gráfico obtenido.
+
+    *Como vimos en clase:*
+    
+    ```{r}
+    #Goodman-Bacon decomposition
+    df_bacon <- bacon(dins ~ treated,
+                      data = acafs,
+                      id_var = "stfips",
+                      time_var = "year")
+
+    coef_bacon <- sum(df_bacon$estimate * df_bacon$weight)
+    print(paste("Weighted sum of decomposition =", round(coef_bacon, 4)))
+
+    twfe <- feols(dins ~ treated | stfips + year,
+                  data = acafs,
+                  cluster = ~stfips)
+    #Gráfico----
+    df_bacon %>% 
+      ggplot(aes(x=weight,
+                 y=estimate,
+                 shape=type)) +
+      geom_point() +
+      geom_hline(yintercept = round(twfe$coefficients, 4))
+
+
+    ```
+    
+        *Las comparaciones que más pesan en el estimador de efectos fijos son las de estados tratados con los nunca tratados, que llegan a recibir un peso de más de 0.6. La comparación con más peso tiene un efecto estimado de 0.0749, parecida al 0.07 que se obtiene con efectos fijos.*
+
+a. [5 puntos] Implemente el estimador de Sun & Abraham (2021) para estimar los efectos del tratamiento específicos para cada cohorte, considerando la agrupación de erores al nivel adecuado. Luego, use *iplot* para graficar los coeficientes estimados para cada valor de **real_year**. Interprete el gráfico obtenido.
+
+    *El primer paso es estimar los efectos fijos interactuados:*
+
+    ```{r}
+    twfe_sa <-  feols(dins ~ sunab(yexp2, rel_year) | stfips + year,
+                       data = acafs,
+                       vcov = ~stfips)
+    
+    summary(twfe_sa)
+    ```
+    
+    *En el año de la expansión del programa, la cobertura en los estados tratados es 4.2% mayor. En los años 1 hasta 4, la cobertura se mantiene aproximadamente 7% por encima de los estados no tratados.* 
+    
+    ```{r}
+    twfe_sa %>% 
+    iplot(main = "fixest::sunab",
+          xlab = "Años desde el tratamiento",
+          xlim = c(-5, 5),
+          ref.line = 0)
+    ```
+
+a. [5 puntos] Reporte los resultados agregados obtenidos a partir del estimador de Sun & Abraham (2021). Realice la agregación para el efecto del tratamiento en los tratados (ATT) y para el efecto del tratamiento por cohorte. ¿Cómo se comparan estos efectos con el estimado por efectos fijos (TWFE)?
+
+    *El efecto del tratamiento usando el estimador de Sun & Abraham es de un incremento de 6.6% en la cobertura. Al desagregarlo por cohortes, para los estados que fueron tratados en 2014 hasta 2017, el efecto estimado está entre 5.4 y 6.9%. Para el cohorte de 2019, el efecto estimado es de 3.7%.*
+    
+    ```{r}
+    #Efecto de tratamiento
+    summary(twfe_sa, agg = "ATT")
+    
+    #Agregado por cohortes
+    summary(twfe_sa, agg = "cohort")
+    ```
+
+
+## Pregunta 2
+
+El año pasado se presentaron los resultados de [una evaluación](https://www.gob.mx/cms/uploads/attachment/file/669952/Estudio_EL_EFECTO_DEL_PROGRAMA_JCF_DURANTE_LA_PANDEMIA.pdf) del impacto del programa Jóvenes Construyendo el Futuro (JCF), realizada usando métodos de matching. Las tablas 1 y 2 del reporte muestran el ATE estimado en el ingreso trimestral entre los jóvenes que no asisten a la escuela y no están empleados y el ATE en la probabilidad de encontrar un trabajo entre los jóvenes en general, respectivamente. En este ejercicio extenderemos los resultados encontrados.
+
+Los datos en *datos_jcf_analisis.csv* están listos para analizarse. El propensity score (PS) usado en la evaluación usa los siguientes regresores $X$: **mujer** (dummy de sexo), **indigena** (dummy de pertenencia a una etnia), **rural** (dummy del ámbito rural), **escoacum** (años de escolaridad), **casadounion** (dummy para casados o en unión libre), **jefehog** (dummy para jefes del hogar), **haymenores** (dummy para la presencia de menores de edad en el hogar), **proggob** (dummy para beneficiarios de programas de gobierno), y **tot_integ** (número de miembros del hogar), así como dummies de estado, **cve_ent**.
+
+a. [5 puntos] Considere la comparación para el ingreso trimestral, **ingtot_tri**, entre tratados y no tratados. Los beneficiarios tienen *jcf2==1* y los jóvenes que no asisten a la escuela y no están empleados tienen *jcf2==0*. Muestra qué tan similares o qué tan diferentes son los individuos en ambos grupos en términos de las $X$.
+
+    *Estadística descriptiva:*
+
+    ```{r }
+    data.jcf <- read_csv("datos_jcf_analisis.csv")
+    ```
+    
+    ```{r}
+    datasummary(ingtot_tri + mujer + indigena + rural + escoacum + casadounion + jefehog + haymenores + proggob + tot_integ ~ factor(jcf2) * (mean + sd) * Arguments(na.rm=TRUE),
+                    fmt = "%.2f",
+                    data = data.jcf)
+    ```
+    
+    *Claramente los individuos que participan en el programa son diferentes a los que no. En el programa hay una proporción menor de mujeres que en el grupo no tratado; en el grupo tratado hay un nivel mayor de escolaridad acumulada; y los individuos del grupo tratado viven en hogares más pequeños que los del grupo no tratado. Entre muchas otras diferencias.*
+    
+    *El problema entonces es que existen factores que influyen en la probabilidad de recibir el tratamiento y en el ingreso, por lo que una comparación simple de individuos tratados y no tratados confundirá el efecto del tratamiento.*
+
+a. [5 puntos] Estime el TOT (TT o ATT) del programa en el ingreso trimestral, **ingtot_tri** usando el algoritmo de *vecino más cercano*. Para estimar el impacto en el ingreso trimestral se comparan a los beneficiarios de JCF con los jóvenes que no asisten a la escuela y no están empleados. Los beneficiarios tienen *jcf2==1* y los jóvenes que no asisten a la escuela y no están empleados tienen *jcf2==0*. Realice la inferencia estadística con errores agrupados a nivel grupo de emparejamiento. ¿De qué tamaño es el TOT estimado y es este efecto estadísticamente significativo?
+
+    ```{r}
+    sub.data <- data.jcf %>%
+    dplyr::select(ingtot_tri, jcf2, mujer, indigena, cve_ent, rural, escoacum, casadounion,
+        jefehog, haymenores, proggob, tot_integ, factor.x)
+
+    sub.data <- sub.data[complete.cases(sub.data), ]
+
+    
+    m.out.a <- matchit(formula=jcf2 ~ mujer + indigena + factor(cve_ent) + rural  + escoacum + casadounion + jefehog + haymenores + proggob + tot_integ,
+                     method = "nearest",
+                     distance= "glm",
+                     replace = FALSE,
+                     data = sub.data)
+    ```
+
+    *Estimamos el efecto del tratamiento:*
+    
+    ```{r}
+    tt1 <- lm(ingtot_tri ~ jcf2,
+          data = match.data(m.out.a))
+
+    #Errores agrupados a nivel subclass
+    coeftest(tt1,
+             vcov. = vcovCL,
+             cluster = ~subclass)
+    ```
+
+    *Se estima un efecto de 7830 pesos adicionales de ingreso trimestral para los participantes en el programa.*
+
+a. [5 puntos] En el matching de la parte b., evalúe qué tan bueno es el procedimiento en balancear las características observadas una vez realizado el matching. Cree un *love plot* y realice pruebas formales para contrastar las diferencias en características observables antes y después del matching.
+
+    *bal.tab del paquete *cobalt nos permite ver un resumen del balance:*
+    ```{r}
+    #Con esto elimino las dummies de estado de la salida
+    bal.tab(m.out.a, m.threshold=0.1, un=T)
+    ```
+    
+    *Y finalmente el loveplot:*
+        
+    ```{r}
+    m.out.a[["X"]][["factor(cve_ent)"]] <- NULL
+
+    love.plot(bal.tab(m.out.a),
+          threshold = .1)
+    ```
+    *Parece haber un buen balance, aunque la educación es la única variable que no queda bien balanceada. Después del emparejamiento, las medias (estandarizadas) entre tratados y no tratados difieren en más de 0.1.*
+    
+a. [5 puntos] Para la probabilidad de encontrar empleo, **encontro**, se comparan a los beneficiarios de JCF con los jóvenes en general. Los beneficiarios tienen *jcf==1*, mientras que el resto de los jóvenes tienen *jcf==0*. Realice la estimación del TOT y la inferencia, de manera análoga a lo realizado en la parte b.
+
+    ```{r}
+    sub.data <- data.jcf %>%
+      filter(transicion == 1) %>%
+      dplyr::select(encontro, jcf, mujer, indigena, cve_ent, rural, escoacum, casadounion, jefehog, haymenores, proggob, tot_integ, factor.x)
+
+    sub.data <- sub.data[complete.cases(sub.data), ]
+
+    m.out.b <- matchit(formula = jcf ~ mujer + indigena + factor(cve_ent) + rural + escoacum + casadounion + jefehog + haymenores + proggob + tot_integ,
+                       method = "nearest",
+                       ratio = 1,
+                       distance = "glm",
+                       replace = FALSE, data = sub.data)
+    ```
+    
+    *Estimamos el efecto del tratamiento:*
+    
+    ```{r}
+    tt2 <- lm(encontro ~ jcf,
+          data = match.data(m.out.b))
+
+    #Errores agrupados a nivel subclass
+    coeftest(tt2,
+             vcov. = vcovCL,
+             cluster = ~subclass)
+    ```
+    
+    *Los individuos tratados tienen una probabilidad 27.4 puntos porcentuales mayor de encontrar un empleo.*
+    
+a. [5 puntos] Estime ahora el TOT en el ingreso trimestral, como en la parte b., pero usando un caliper de 0.1 y 3 vecinos a ser emparejados. ¿Cómo cambian sus resultados respecto a los de la parte b.?
+
+    ```{r}
+    sub.data <- data.jcf %>% 
+      dplyr::select(ingtot_tri, jcf2, mujer, indigena, cve_ent, rural, escoacum, 
+               casadounion, jefehog, haymenores, proggob, tot_integ, factor.x)
+    
+    sub.data <- sub.data[complete.cases(sub.data), ] 
+    
+    m.out.c <- matchit(formula=jcf2 ~ mujer + indigena + factor(cve_ent) + rural  + escoacum + casadounion + jefehog + haymenores + proggob + tot_integ,
+                     method = "nearest",
+                     distance= "glm",
+                     ratio = 3,
+                     caliper = 0.1,
+                     replace = FALSE,
+                     data = sub.data)
+    ```
+
+    *Estimamos el efecto del tratamiento:*
+    
+    ```{r}
+    tt3 <- lm(ingtot_tri ~ jcf2,
+          data = match.data(m.out.c))
+
+    #Errores agrupados a nivel subclass
+    coeftest(tt3,
+             vcov. = vcovCL,
+             cluster = ~subclass)
+    ```
+    *Se estima ahora un efecto de 7258 pesos, menor al efecto de 7830 pesos estimado en la parte b.*
+
+## Pregunta 3
+
+Suponga que se convierte en asesor de la instancia gubernamental encargada de la seguridad alimentaria. Al gobierno le interesa que la seguridad alimentaria de las familias productoras de maíz para autoconsumo no se vea afectada negativamente por la presencia de cierta plaga y dará una transferencia per cápita a todos los pequeños productores de maíz cuyos cultivos se considere están afectados por dicha plaga. Para determinar qué hogares reciben la transferencia se decide usar un índice de prevalencia de la plaga y se selecciona un umbral por arriba del cual está demostrado que los rendimientos del cultivo del maíz se ven seriamente afectados. Esta inspección se llevará a cabo por autoridades federales y el umbral es conocido solo por estas autoridades. Cuando se determine que la prevalencia está por encima del umbral, el monto del programa será transferido de manera inmediata, electrónicamente.
+
+a. [5 puntos] ¿Qué aspectos del programa permitirían emplear un diseño de regresión discontinua para evaluar la efectividad de este sobre la seguridad alimentaria y cómo mostraría su validez empíricamente?
+
+    *En este caso podemos usar el método de regresión discontinua por las siguientes razones:*
+    
+    *i.	La variable de selección es continua.*
+    
+    *ii.	Es estatus de tratamiento es una función determinística de la posición de la variable de selección respecto al umbral.*
+    
+    *iii.	La probabilidad de recibir el tratamiento es discontinua en el umbral.*
+    
+    *iv.	Los productores no pueden manipular la prevalencia de la plaga para posicionarse estratégicamente por encima del umbral.*
+
+
+a. [5 puntos] ¿Cómo emplearía el diseño de este programa para evaluar su efectividad con un modelo de regresión discontinua nítida? Elabore una gráfica donde explique una situación en la que el programa muestra ser efectivo. Describa cómo usaría una regresión para hacer inferencia respecto a la efectividad del programa.
+
+    *La forma gráfica de inspeccionar la presencia de una regresión consiste en graficar la variable de resultados en función de la variable de asignación. En este caso, esperaríamos que las familias que están por encima del umbral tengan una diferencia notable en términos de seguridad alimentaria si la transferencia empleada se usa para comprar alimentos. No era estrictamente necesario simular un proceso para obtener una representación gráfica, pero aquí lo hice así. Quizás esto pueda ser de utilidad para futuras aplicaciones:*
+    
+    ```{r }
+set.seed(1711)
+  
+plaga <- runif(1000, -1, 1)
+y <- 3 + 2*plaga + 5*(plaga>=0) + rnorm(1000, mean = 0, sd = 0.2)
+
+data.sharp <- data.frame(y, plaga, c = 0)
+
+
+data.sharp %>% 
+  ggplot() +
+  geom_point(aes(x=plaga, y=y), size=0.5, alpha=0.5) +
+  geom_abline(intercept = 3, slope = 2, linetype = "dashed") +
+  geom_abline(intercept = 8, slope = 2, linetype = "dashed") +
+  geom_vline(xintercept = 0)
+
+    ```
+    
+  
+    *Paramétricamente, la forma más sencilla de identificar el efecto de la discontinuidad es especificando una regresión como sigue:*
+    
+    $$y_i=\alpha+\tau D_i+ \beta x_i+\varepsilon_i$$
+    
+    *donde $x_i$ es la variable de selección y $D_i$ es una variable indicadora que toma el valor de uno cuando el índice de prevalencia de la plaga rebasa el umbral. Controlar por $x_i$ captura la relación que tiene la prevalencia de la plaga en la seguridad alimentaria, por ejemplo, vía los rendimientos. Se recomiendan al menos dos tipos de procedimientos más completos para comprobar la robustez de los efectos encontrados.*
+    
+    *El primero es incluir un polinomio lo suficientemente flexible de $x_i$:* $$y_i=\alpha+\tau D_i+ Bf(x_i)+\varepsilon_i$$
+
+    *El segundo consiste en permitir que la pendiente sea diferente antes y después de la discontinuidad:*
+    
+    $$y_i=\alpha+\tau D_i+ +\beta_0(x_i-x_0)+\beta_1(x_i-x_0)D_i+\varepsilon_i$$
+    
+    *Más aún, es posible combinar estas dos posibilidades para dar lugar a modelos más flexibles. Se espera que las conclusiones sean robustas al uso de modelos extremadamente complejos.*
+
+
+a. [5 puntos] ¿Qué factores podrían invalidar el uso de este método para evaluar el programa?
+
+
+    *La principal preocupación es la posibilidad de manipulación de la prevalencia de la plaga para que la medición lo clasifique como receptor del programa. Podemos pensar en situaciones donde esto pudiera suceder con un individuo altamente sofisticado que pudiera manipular la presencia de la plaga de forma estratégica. Pensando que esto es costoso, el individuo estratégicamente debería seleccionar un punto justo por encima del umbral. Aunque difícil de suceder esta posibilidad podría investigarse empíricamente, por ejemplo, verificando que no haya “amontonamientos” justo por encima de la discontinuidad.*
+    
+    *Si existiera corrupción y muchos no elegibles recibieran la transferencia o si las familias no gastaran la transferencia en alimentos que mejoren su seguridad alimentaria el diseño también estaría comprometido.*
+
+
+a. Suponga que otro de los asesores juzga como *demasiado paternalista* la transferencia y propone que, en su lugar, se otorgue un cupón válido para canjearse por bultos de un plaguicida. Asumiendo que en una encuesta posterior usted podría conocer la cantidad precisa de plaguicida aplicado, ¿cómo emplearía un diseño de regresión discontinua difusa para evaluar el efecto del uso del plaguicida sobre la seguridad alimentaria? En particular, describa:
+    i. [5 puntos] ¿Cómo estimaría la forma reducida? ¿Cuál es el coeficiente relevante y cuál es su interpretación?
+    
+        *El problema puede ser visto entonces como un diseño de regresión discontinua difusa. La discontinuidad define la intensidad del tratamiento, en este caso dada por la cantidad de plaguicida efectivamente aplicado. La forma reducida se estima con una regresión de la variable de resultados sobre el instrumento. Al igual que cuando se estudió la interpretación del LATE, este coeficiente da la correlación entre la seguridad alimentaria y el estado del tratamiento, pero no toma en cuenta que la seguridad alimentaria también depende de la cantidad de plaguicida usado, una decisión endógena.*    
+    i. [5 puntos] ¿Cómo estimaría la primera y la segunda etapa? ¿Cuáles son los coeficientes relevantes y cuál es su interpretación? 
+    
+        *La primera etapa consiste en estimar la relación entre la variable endógena y el instrumento. En este caso, el instrumento es una variable indicadora que toma valor de 1 si la prevalencia de la plaga rebasa el umbral. La decisión endógena es la cantidad de plaguicida empleado. Se estima por una regresión de la variable endógena en función del instrumento.*
+        
+        *La segunda etapa consiste en estimar el efecto sobre la seguridad alimentaria de la cantidad plaguicida que predice el instrumento. Conceptualmente es como si se corriera una regresión de la variable de seguridad alimentaria en función de los valores ajustados en la primera etapa de la cantidad de plaguicida empleado. En la práctica, nunca se estiman dos regresiones separadas, sino que se usa la definición del estimador de mínimos cuadrados en dos etapas. El coeficiente es el efecto del uso de plaguicida en la seguridad alimentaria.*
+        
+    i. [5 puntos] ¿Cuáles son los supuestos necesarios para estimar este modelo usando variables instrumentales?
+    
+        *Los supuestos econométricos para la estimación del modelo de regresión discontinua difusa son los mismos que para cualquier otro problema de variables instrumentales: 1) Exclusión: el instrumento no pertenece a la ecuación estructural; y 2) Relevancia de la primera etapa: el instrumento está correlacionado con la variable endógena.*
+
+
+## Pregunta 4
+
+**Nota: por error escribí en la tarea que la intervención había ocurrido en Ecuador. Esto es incorrecto. De hecho, este ejercicio estuvo basado en una interevención realizada en Perú y reportada por Bernal, Carpio & Klein (2017): [The effects of access to health insurance: Evidence from a regression discontinuity design in Peru](https://www.sciencedirect.com/science/article/pii/S0047272717301299).**
+
+Los datos del archivo *salud_ecuador.csv* contienen información de una encuesta en hogares realizada en Perú Un programa del gobierno otorgó un seguro de salud para cubrir a hogares de trabajadores informales y pobres, típicamente excluidos de los servicios de salud. Para ello, se uso un índice de ingreso (IFH), expresado en soles, para determinar la elegibilidad. Aquellos hogares con un IFH menor o igual a 55 soles son considerados pobres. Se desea estimar el efecto del programa en la probabilidad de recibir algún tipo de asistencia médica en un hospital o con un doctor, **hospinter**, y en el gasto en salud del hogar, **gastosalud2**.
+
+a. [5 puntos] Genere una gráfica donde muestre evidencia de una discontinuidad en la variable **curative**, que indica si el hogar efectivamente recibió algún tipo de atención médica, para aquellos hogares que recibieron los beneficios del programa. Debe usar solo a los trabajadores informales, *formal==0*, y cuyo consumo de agua y electricidad no es considerado alto, *high==0*.
+
+    *Construimos un indicador de elegibilidad:*
+
+    ```{r}
+    salud <- read_csv("salud_ecuador.csv") %>% 
+      filter(formal==0) %>% 
+      mutate(ifh_norm=ifh-corte,
+      abajo_corte=ifelse(ifh<=corte, 1, 0))
+    ```
+
+    *Podemos usar rdplot para construir el gráfico, lo que nos permite seleccionar de manera óptima el número de ventanas en las que se construirá la proporción de personas que recibieron atención médica.*
+    
+    ```{r}
+    (rdplot(y = salud$curative,
+        x = salud$ifh_norm,
+        c=0,
+        p=1))
+    ```
+a. [5 puntos] Estime la versión más básica de un modelo de regresión discontinua para el efecto del programa sobre **hospinter** y **gastosalud2**. Reporte el coeficiente estimado del efecto del tratamiento y su significancia estadística. Use una ventana de 20 soles en el IFH antes y después del corte de elegibilidad. Interprete sus resultados.
+
+    ```{r}
+    summary(lm(hospinter ~ ifh_norm + abajo_corte,
+           data=filter(salud, ifh_norm>=-20 & ifh_norm <=20 & high==0)))
+    ```
+    
+    *Con un modelo lineal y una dummy de elegibilidad, estimamos un efecto de 7.5 puntos porcentuales en la probabilidad de recibir algún tipo de asistencia médica.*
+    
+a. [5 puntos] Estime la misma especificaciones que en la parte b., pero ahora con una ventana de 10 soles en el IFH. Interprete sus resultados.
+
+    *Al restringir la ventana de análisis obtenemos un efecto estimado de 9.5 puntos porcentuales:*
+
+    ```{r}
+    summary(lm(hospinter ~ ifh_norm + abajo_corte,
+           data=filter(salud, ifh_norm>=-10 & ifh_norm <=10 & high==0)))
+
+    ```
+
+a. [5 puntos] Regrese a una ventana de 20 soles como en la parte b., pero ahora permita un coeficiente distinto para el IFH antes y después del corte, y un polinomio de orden 2 para la variable de asignación. Interprete sus resultados.
+
+    *Permitiendo pendientes distintas y con un polinomio cuadrático de la variable de asignación obtenemos un efecto estimado de 8.5 puntos porcentuales:*
+    
+    ```{r}
+    summary(lm(hospinter ~ ifh_norm*abajo_corte + I(ifh_norm^2)*abajo_corte,
+           data=filter(salud, ifh_norm>=-20 & ifh_norm <=20 & high==0)))
+
+    ```
+    
+    *Como nota, los autores estiman el siguinte modelo para obtener los resultados reportados en la tabla 1 del artículo de 7.76 puntos porcentuales. Ellos introducen una serie de controles, lo cual no es raro en los análisis de diseños con discontinuidades:*
+    
+    ```{r}
+    summary(lm(hospinter ~ ifh_norm + abajo_corte + ifh_norm*abajo_corte + mujer + edad + educ + mieperho + hhmujer + high*ifh_norm + high*abajo_corte ,
+           data=filter(salud, ifh_norm>=-20 & ifh_norm <=20)))
+    ```
+    
+    *Podríamos usar rdrobust para estimar el efecto con la selección óptima del tamaño de ventana:*
+    
+    ```{r}
+    salud <- salud %>% 
+      filter(high==0)
+
+    summary(rdrobust(y=salud$hospinter,
+                     x=salud$ifh,
+                     c=55,
+                     vce = 'hc3'))
+    ```
+    
+    *El efecto estimado es de 8.7 puntos porcentuales. La venta seleccionada de manera óptima es de 12.65 soles.*

@@ -1,0 +1,748 @@
+---
+title: "Tarea 3"
+summary: ""
+weight: 1
+type: book
+toc: false
+---
+
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+
+
+<div id="pregunta-1" class="section level2">
+<h2>Pregunta 1</h2>
+<p>Los datos en <em>ehec_data.csv</em> son datos de panel a nivel estado para los Estados Unidos de 2008 a 2019. A partir de 2014 se llevó a cabo un proceso de expansión de un programa de ayuda para subsidiar el costo de los servicios de salud de personas de bajos ingresos, <em>Medicaid Expansion</em>. La columna <strong>yexp2</strong> indica el año en que cada estado es tratado con la expansión del programa, <strong>treated</strong> es un indicador de si el estado <span class="math inline">\(i\)</span> es tratado en el año <span class="math inline">\(t\)</span>, mientras que <strong>rel_year</strong> indica el número de años desde la expansión. Si <em>yexp2==Inf</em>, entonces el estado no ha sido tratado para 2019. Se busca estimar el efecto de la expansión del programa en el porcentaje de la población asegurada que es de bajos ingresos, sin hijos, y de entre 25 y 64 años de edad, <strong>dins</strong>.</p>
+<ol style="list-style-type: lower-alpha">
+<li><p>[5 puntos] ¿Por qué decimos que esta es una aplicación de la estimación de efectos de tratamiento con adopción escalonada?</p>
+<p><em>En esta aplicación, cada estado comienza a ser tratado en indistintos momentos del tiempo. Si hacemos un tabulado de <strong>yexp2</strong> notamos cuántos estados se vuelven tratados en cada año:</em></p>
+<pre class="r"><code>acafs &lt;- read_csv(&quot;ehec_data.csv&quot;) 
+
+table(filter(acafs,year==2018)$yexp2)</code></pre>
+<pre><code>## 
+## 2014 2015 2016 2017 2019  Inf 
+##   22    3    2    1    2   16</code></pre>
+<p><em>El panel comienza en 2008. 22 estados son tratados desde 2014, 3 en 2015 y así sucesivamente. 16 estados nunca son tratados</em>.</p></li>
+<li><p>[5 puntos] Como punto de partida, estime el efecto del tratamiento sobre <strong>dins</strong> usando efectos fijos (TWFE). Tome en cuenta la agrupación de los errores. Interprete sus resultados.</p>
+<p><em>Podemos hacer TWFE de muchas maneras.</em></p>
+<p><em>Con feols:</em></p>
+<pre class="r"><code>summary(feols(dins ~ treated | stfips + year,
+              data = acafs,
+              cluster = ~stfips))</code></pre>
+<pre><code>## OLS estimation, Dep. Var.: dins
+## Observations: 552 
+## Fixed-effects: stfips: 46,  year: 12
+## Standard-errors: Clustered (stfips) 
+##         Estimate Std. Error t value           Pr(&gt;|t|)    
+## treated 0.070321   0.007401 9.50152 0.0000000000025169 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## RMSE: 0.021082     Adj. R2: 0.93835 
+##                  Within R2: 0.426746</code></pre>
+<p><em>Con felm:</em></p>
+<pre class="r"><code>summary(felm(dins ~ treated | stfips + year | 0 | stfips,
+              data = acafs))</code></pre>
+<pre><code>## 
+## Call:
+##    felm(formula = dins ~ treated | stfips + year | 0 | stfips, data = acafs) 
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.069874 -0.013552  0.000138  0.014626  0.055667 
+## 
+## Coefficients:
+##         Estimate Cluster s.e. t value         Pr(&gt;|t|)    
+## treated 0.070321     0.007327   9.598 0.00000000000185 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.02229 on 494 degrees of freedom
+## Multiple R-squared(full model): 0.9447   Adjusted R-squared: 0.9383 
+## Multiple R-squared(proj model): 0.4267   Adjusted R-squared: 0.3606 
+## F-statistic(full model, *iid*):148.1 on 57 and 494 DF, p-value: &lt; 0.00000000000000022 
+## F-statistic(proj model): 92.12 on 1 and 45 DF, p-value: 0.000000000001851</code></pre>
+<p><em>Y con una regresión lineal:</em></p>
+<pre class="r"><code>summary(lm(dins ~ treated + factor(stfips) + factor(year),
+              data = acafs))$coef[1:2,1:3]</code></pre>
+<pre><code>##               Estimate  Std. Error  t value
+## (Intercept) 0.65698100 0.007239777 90.74603
+## treated     0.07032067 0.003666975 19.17675</code></pre>
+<p><strong>Aunque noten que, con MCO y dummies, deberíamos aún estimar los errores agrupados a nivel estado. Si ignoramos la agrupación, el error estándar es 0.0037. Cuando tomamos en cuenta el agrupamiento, el error estimado es de 0.007 (casi el doble). felm y feols nos ahorran un paso al incluir directamente la opción para agrupar errores.</strong></p></li>
+<li><p>[5 puntos] Realice la descomposición de Goodman-Bacon (2021). Construya un gráfico donde muestre en el eje <span class="math inline">\(x\)</span> el peso otorgado a cada comparación 2x2 y en el eje <span class="math inline">\(y\)</span> el efecto estimado correspondiente a cada comparación. Interprete el gráfico obtenido.</p>
+<p><em>Como vimos en clase:</em></p>
+<pre class="r"><code>#Goodman-Bacon decomposition
+df_bacon &lt;- bacon(dins ~ treated,
+                  data = acafs,
+                  id_var = &quot;stfips&quot;,
+                  time_var = &quot;year&quot;)</code></pre>
+<pre><code>##                       type  weight avg_est
+## 1 Earlier vs Later Treated 0.14911 0.06983
+## 2 Later vs Earlier Treated 0.05827 0.04486
+## 3     Treated vs Untreated 0.79262 0.07228</code></pre>
+<pre class="r"><code>coef_bacon &lt;- sum(df_bacon$estimate * df_bacon$weight)
+print(paste(&quot;Weighted sum of decomposition =&quot;, round(coef_bacon, 4)))</code></pre>
+<pre><code>## [1] &quot;Weighted sum of decomposition = 0.0703&quot;</code></pre>
+<pre class="r"><code>twfe &lt;- feols(dins ~ treated | stfips + year,
+              data = acafs,
+              cluster = ~stfips)
+#Gráfico----
+df_bacon %&gt;% 
+  ggplot(aes(x=weight,
+             y=estimate,
+             shape=type)) +
+  geom_point() +
+  geom_hline(yintercept = round(twfe$coefficients, 4))</code></pre>
+<p><img src="/tareas/tarea_3/tarea_3_respuestas_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre><code> *Las comparaciones que más pesan en el estimador de efectos fijos son las de estados tratados con los nunca tratados, que llegan a recibir un peso de más de 0.6. La comparación con más peso tiene un efecto estimado de 0.0749, parecida al 0.07 que se obtiene con efectos fijos.*</code></pre></li>
+<li><p>[5 puntos] Implemente el estimador de Sun &amp; Abraham (2021) para estimar los efectos del tratamiento específicos para cada cohorte, considerando la agrupación de erores al nivel adecuado. Luego, use <em>iplot</em> para graficar los coeficientes estimados para cada valor de <strong>real_year</strong>. Interprete el gráfico obtenido.</p>
+<p><em>El primer paso es estimar los efectos fijos interactuados:</em></p>
+<pre class="r"><code>twfe_sa &lt;-  feols(dins ~ sunab(yexp2, rel_year) | stfips + year,
+                   data = acafs,
+                   vcov = ~stfips)
+
+summary(twfe_sa)</code></pre>
+<pre><code>## OLS estimation, Dep. Var.: dins
+## Observations: 552 
+## Fixed-effects: stfips: 46,  year: 12
+## Standard-errors: Clustered (stfips) 
+##                Estimate Std. Error   t value         Pr(&gt;|t|)    
+## rel_year::-11  0.022047   0.007776  2.835379 0.00683379393984 ** 
+## rel_year::-10  0.039830   0.008122  4.903878 0.00001266034814 ***
+## rel_year::-9  -0.004968   0.007906 -0.628366 0.53294037220417    
+## rel_year::-8  -0.033882   0.008350 -4.057573 0.00019491690393 ***
+## rel_year::-7  -0.010788   0.007709 -1.399378 0.16855553396025    
+## rel_year::-6  -0.004554   0.006477 -0.703157 0.48557998167859    
+## rel_year::-5  -0.010723   0.006269 -1.710407 0.09407770894512 .  
+## rel_year::-4  -0.005125   0.005657 -0.905904 0.36981182113407    
+## rel_year::-3  -0.006712   0.006078 -1.104258 0.27535104672457    
+## rel_year::-2  -0.008383   0.004681 -1.790861 0.08004357207432 .  
+## rel_year::0    0.042493   0.006587  6.451151 0.00000006664434 ***
+## rel_year::1    0.064698   0.009092  7.116186 0.00000000685495 ***
+## rel_year::2    0.075028   0.008859  8.469311 0.00000000007224 ***
+## rel_year::3    0.070939   0.009773  7.258801 0.00000000421736 ***
+## rel_year::4    0.072751   0.012086  6.019649 0.00000029195460 ***
+## rel_year::5    0.080320   0.011092  7.241136 0.00000000447866 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## RMSE: 0.018984     Adj. R2: 0.943877
+##                  Within R2: 0.535186</code></pre>
+<p><em>En el año de la expansión del programa, la cobertura en los estados tratados es 4.2% mayor. En los años 1 hasta 4, la cobertura se mantiene aproximadamente 7% por encima de los estados no tratados.</em></p>
+<pre class="r"><code>twfe_sa %&gt;% 
+iplot(main = &quot;fixest::sunab&quot;,
+      xlab = &quot;Años desde el tratamiento&quot;,
+      xlim = c(-5, 5),
+      ref.line = 0)</code></pre>
+<p><img src="/tareas/tarea_3/tarea_3_respuestas_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p></li>
+<li><p>[5 puntos] Reporte los resultados agregados obtenidos a partir del estimador de Sun &amp; Abraham (2021). Realice la agregación para el efecto del tratamiento en los tratados (ATT) y para el efecto del tratamiento por cohorte. ¿Cómo se comparan estos efectos con el estimado por efectos fijos (TWFE)?</p>
+<p><em>El efecto del tratamiento usando el estimador de Sun &amp; Abraham es de un incremento de 6.6% en la cobertura. Al desagregarlo por cohortes, para los estados que fueron tratados en 2014 hasta 2017, el efecto estimado está entre 5.4 y 6.9%. Para el cohorte de 2019, el efecto estimado es de 3.7%.</em></p>
+<pre class="r"><code>#Efecto de tratamiento
+summary(twfe_sa, agg = &quot;ATT&quot;)</code></pre>
+<pre><code>## OLS estimation, Dep. Var.: dins
+## Observations: 552 
+## Fixed-effects: stfips: 46,  year: 12
+## Standard-errors: Clustered (stfips) 
+##     Estimate Std. Error t value         Pr(&gt;|t|)    
+## ATT 0.066802   0.008655 7.71828 0.00000000088884 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## RMSE: 0.018984     Adj. R2: 0.943877
+##                  Within R2: 0.535186</code></pre>
+<pre class="r"><code>#Agregado por cohortes
+summary(twfe_sa, agg = &quot;cohort&quot;)</code></pre>
+<pre><code>## OLS estimation, Dep. Var.: dins
+## Observations: 552 
+## Fixed-effects: stfips: 46,  year: 12
+## Standard-errors: Clustered (stfips) 
+##              Estimate Std. Error  t value            Pr(&gt;|t|)    
+## cohort::2014 0.068697   0.010232  6.71416 0.00000002707696277 ***
+## cohort::2015 0.062285   0.013607  4.57754 0.00003700349046899 ***
+## cohort::2016 0.053750   0.005218 10.30031 0.00000000000020414 ***
+## cohort::2017 0.060977   0.004060 15.01835           &lt; 2.2e-16 ***
+## cohort::2019 0.036544   0.005582  6.54712 0.00000004797213544 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## RMSE: 0.018984     Adj. R2: 0.943877
+##                  Within R2: 0.535186</code></pre></li>
+</ol>
+</div>
+<div id="pregunta-2" class="section level2">
+<h2>Pregunta 2</h2>
+<p>El año pasado se presentaron los resultados de <a href="https://www.gob.mx/cms/uploads/attachment/file/669952/Estudio_EL_EFECTO_DEL_PROGRAMA_JCF_DURANTE_LA_PANDEMIA.pdf">una evaluación</a> del impacto del programa Jóvenes Construyendo el Futuro (JCF), realizada usando métodos de matching. Las tablas 1 y 2 del reporte muestran el ATE estimado en el ingreso trimestral entre los jóvenes que no asisten a la escuela y no están empleados y el ATE en la probabilidad de encontrar un trabajo entre los jóvenes en general, respectivamente. En este ejercicio extenderemos los resultados encontrados.</p>
+<p>Los datos en <em>datos_jcf_analisis.csv</em> están listos para analizarse. El propensity score (PS) usado en la evaluación usa los siguientes regresores <span class="math inline">\(X\)</span>: <strong>mujer</strong> (dummy de sexo), <strong>indigena</strong> (dummy de pertenencia a una etnia), <strong>rural</strong> (dummy del ámbito rural), <strong>escoacum</strong> (años de escolaridad), <strong>casadounion</strong> (dummy para casados o en unión libre), <strong>jefehog</strong> (dummy para jefes del hogar), <strong>haymenores</strong> (dummy para la presencia de menores de edad en el hogar), <strong>proggob</strong> (dummy para beneficiarios de programas de gobierno), y <strong>tot_integ</strong> (número de miembros del hogar), así como dummies de estado, <strong>cve_ent</strong>.</p>
+<ol style="list-style-type: lower-alpha">
+<li><p>[5 puntos] Considere la comparación para el ingreso trimestral, <strong>ingtot_tri</strong>, entre tratados y no tratados. Los beneficiarios tienen <em>jcf2==1</em> y los jóvenes que no asisten a la escuela y no están empleados tienen <em>jcf2==0</em>. Muestra qué tan similares o qué tan diferentes son los individuos en ambos grupos en términos de las <span class="math inline">\(X\)</span>.</p>
+<p><em>Estadística descriptiva:</em></p>
+<pre class="r"><code>data.jcf &lt;- read_csv(&quot;datos_jcf_analisis.csv&quot;)</code></pre>
+<pre class="r"><code>datasummary(ingtot_tri + mujer + indigena + rural + escoacum + casadounion + jefehog + haymenores + proggob + tot_integ ~ factor(jcf2) * (mean + sd) * Arguments(na.rm=TRUE),
+                fmt = &quot;%.2f&quot;,
+                data = data.jcf)</code></pre>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="empty-cells: hide;border-bottom:hidden;" colspan="1">
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+0
+</div>
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+1
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+<p>mean</p>
+</th>
+<th style="text-align:right;">
+<p>sd</p>
+</th>
+<th style="text-align:right;">
+<p>mean</p>
+</th>
+<th style="text-align:right;">
+<p>sd</p>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<p>ingtot_tri</p>
+</td>
+<td style="text-align:right;">
+<p>1510.36</p>
+</td>
+<td style="text-align:right;">
+<p>8478.60</p>
+</td>
+<td style="text-align:right;">
+<p>9643.06</p>
+</td>
+<td style="text-align:right;">
+<p>6632.56</p>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<p>mujer</p>
+</td>
+<td style="text-align:right;">
+<p>0.76</p>
+</td>
+<td style="text-align:right;">
+<p>0.43</p>
+</td>
+<td style="text-align:right;">
+<p>0.59</p>
+</td>
+<td style="text-align:right;">
+<p>0.49</p>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<p>indigena</p>
+</td>
+<td style="text-align:right;">
+<p>0.22</p>
+</td>
+<td style="text-align:right;">
+<p>0.41</p>
+</td>
+<td style="text-align:right;">
+<p>0.59</p>
+</td>
+<td style="text-align:right;">
+<p>0.49</p>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<p>rural</p>
+</td>
+<td style="text-align:right;">
+<p>0.40</p>
+</td>
+<td style="text-align:right;">
+<p>0.49</p>
+</td>
+<td style="text-align:right;">
+<p>0.35</p>
+</td>
+<td style="text-align:right;">
+<p>0.48</p>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<p>escoacum</p>
+</td>
+<td style="text-align:right;">
+<p>10.39</p>
+</td>
+<td style="text-align:right;">
+<p>3.23</p>
+</td>
+<td style="text-align:right;">
+<p>12.03</p>
+</td>
+<td style="text-align:right;">
+<p>2.70</p>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<p>casadounion</p>
+</td>
+<td style="text-align:right;">
+<p>0.53</p>
+</td>
+<td style="text-align:right;">
+<p>0.50</p>
+</td>
+<td style="text-align:right;">
+<p>0.41</p>
+</td>
+<td style="text-align:right;">
+<p>0.49</p>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<p>jefehog</p>
+</td>
+<td style="text-align:right;">
+<p>0.06</p>
+</td>
+<td style="text-align:right;">
+<p>0.23</p>
+</td>
+<td style="text-align:right;">
+<p>0.14</p>
+</td>
+<td style="text-align:right;">
+<p>0.35</p>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<p>haymenores</p>
+</td>
+<td style="text-align:right;">
+<p>0.66</p>
+</td>
+<td style="text-align:right;">
+<p>0.47</p>
+</td>
+<td style="text-align:right;">
+<p>0.54</p>
+</td>
+<td style="text-align:right;">
+<p>0.50</p>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<p>proggob</p>
+</td>
+<td style="text-align:right;">
+<p>0.19</p>
+</td>
+<td style="text-align:right;">
+<p>0.39</p>
+</td>
+<td style="text-align:right;">
+<p>0.21</p>
+</td>
+<td style="text-align:right;">
+<p>0.41</p>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<p>tot_integ</p>
+</td>
+<td style="text-align:right;">
+<p>4.82</p>
+</td>
+<td style="text-align:right;">
+<p>1.97</p>
+</td>
+<td style="text-align:right;">
+<p>4.25</p>
+</td>
+<td style="text-align:right;">
+<p>2.00</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Claramente los individuos que participan en el programa son diferentes a los que no. En el programa hay una proporción menor de mujeres que en el grupo no tratado; en el grupo tratado hay un nivel mayor de escolaridad acumulada; y los individuos del grupo tratado viven en hogares más pequeños que los del grupo no tratado. Entre muchas otras diferencias.</em></p>
+<p><em>El problema entonces es que existen factores que influyen en la probabilidad de recibir el tratamiento y en el ingreso, por lo que una comparación simple de individuos tratados y no tratados confundirá el efecto del tratamiento.</em></p></li>
+<li><p>[5 puntos] Estime el TOT (TT o ATT) del programa en el ingreso trimestral, <strong>ingtot_tri</strong> usando el algoritmo de <em>vecino más cercano</em>. Para estimar el impacto en el ingreso trimestral se comparan a los beneficiarios de JCF con los jóvenes que no asisten a la escuela y no están empleados. Los beneficiarios tienen <em>jcf2==1</em> y los jóvenes que no asisten a la escuela y no están empleados tienen <em>jcf2==0</em>. Realice la inferencia estadística con errores agrupados a nivel grupo de emparejamiento. ¿De qué tamaño es el TOT estimado y es este efecto estadísticamente significativo?</p>
+<pre class="r"><code>sub.data &lt;- data.jcf %&gt;%
+dplyr::select(ingtot_tri, jcf2, mujer, indigena, cve_ent, rural, escoacum, casadounion,
+    jefehog, haymenores, proggob, tot_integ, factor.x)
+
+sub.data &lt;- sub.data[complete.cases(sub.data), ]
+
+
+m.out.a &lt;- matchit(formula=jcf2 ~ mujer + indigena + factor(cve_ent) + rural  + escoacum + casadounion + jefehog + haymenores + proggob + tot_integ,
+                 method = &quot;nearest&quot;,
+                 distance= &quot;glm&quot;,
+                 replace = FALSE,
+                 data = sub.data)</code></pre>
+<p><em>Estimamos el efecto del tratamiento:</em></p>
+<pre class="r"><code>tt1 &lt;- lm(ingtot_tri ~ jcf2,
+      data = match.data(m.out.a))
+
+#Errores agrupados a nivel subclass
+coeftest(tt1,
+         vcov. = vcovCL,
+         cluster = ~subclass)</code></pre>
+<pre><code>## 
+## t test of coefficients:
+## 
+##             Estimate Std. Error t value              Pr(&gt;|t|)    
+## (Intercept)  1812.55     412.32   4.396            0.00001627 ***
+## jcf2         7830.51     714.99  10.952 &lt; 0.00000000000000022 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p><em>Se estima un efecto de 7830 pesos adicionales de ingreso trimestral para los participantes en el programa.</em></p></li>
+<li><p>[5 puntos] En el matching de la parte b., evalúe qué tan bueno es el procedimiento en balancear las características observadas una vez realizado el matching. Cree un <em>love plot</em> y realice pruebas formales para contrastar las diferencias en características observables antes y después del matching.</p>
+<p><em>bal.tab del paquete </em>cobalt nos permite ver un resumen del balance:*</p>
+<pre class="r"><code>#Con esto elimino las dummies de estado de la salida
+bal.tab(m.out.a, m.threshold=0.1, un=T)</code></pre>
+<pre><code>## Call
+##  matchit(formula = jcf2 ~ mujer + indigena + factor(cve_ent) + 
+##     rural + escoacum + casadounion + jefehog + haymenores + proggob + 
+##     tot_integ, data = sub.data, method = &quot;nearest&quot;, distance = &quot;glm&quot;, 
+##     replace = FALSE)
+## 
+## Balance Measures
+##                        Type Diff.Un Diff.Adj        M.Threshold
+## distance           Distance  1.1091   0.0881     Balanced, &lt;0.1
+## mujer                Binary -0.1660   0.0551     Balanced, &lt;0.1
+## indigena             Binary  0.3714   0.0551     Balanced, &lt;0.1
+## factor(cve_ent)_01   Binary -0.1720  -0.0157     Balanced, &lt;0.1
+## factor(cve_ent)_02   Binary -0.3428  -0.0079     Balanced, &lt;0.1
+## factor(cve_ent)_03   Binary  0.0168   0.0079     Balanced, &lt;0.1
+## factor(cve_ent)_04   Binary  0.5524   0.0157     Balanced, &lt;0.1
+## factor(cve_ent)_05   Binary -0.0544   0.0000     Balanced, &lt;0.1
+## rural                Binary -0.0553   0.0709     Balanced, &lt;0.1
+## escoacum            Contin.  0.6086  -0.2096 Not Balanced, &gt;0.1
+## casadounion          Binary -0.1170   0.0709     Balanced, &lt;0.1
+## jefehog              Binary  0.0831   0.0551     Balanced, &lt;0.1
+## haymenores           Binary -0.1193   0.0787     Balanced, &lt;0.1
+## proggob              Binary  0.0220   0.0079     Balanced, &lt;0.1
+## tot_integ           Contin. -0.2856   0.0158     Balanced, &lt;0.1
+## 
+## Balance tally for mean differences
+##                    count
+## Balanced, &lt;0.1        14
+## Not Balanced, &gt;0.1     1
+## 
+## Variable with the greatest mean difference
+##  Variable Diff.Adj        M.Threshold
+##  escoacum  -0.2096 Not Balanced, &gt;0.1
+## 
+## Sample sizes
+##           Control Treated
+## All          1894     127
+## Matched       127     127
+## Unmatched    1767       0</code></pre>
+<p><em>Y finalmente el loveplot:</em></p>
+<pre class="r"><code>m.out.a[[&quot;X&quot;]][[&quot;factor(cve_ent)&quot;]] &lt;- NULL
+
+love.plot(bal.tab(m.out.a),
+      threshold = .1)</code></pre>
+<p><img src="/tareas/tarea_3/tarea_3_respuestas_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+<em>Parece haber un buen balance, aunque la educación es la única variable que no queda bien balanceada. Después del emparejamiento, las medias (estandarizadas) entre tratados y no tratados difieren en más de 0.1.</em></p></li>
+<li><p>[5 puntos] Para la probabilidad de encontrar empleo, <strong>encontro</strong>, se comparan a los beneficiarios de JCF con los jóvenes en general. Los beneficiarios tienen <em>jcf==1</em>, mientras que el resto de los jóvenes tienen <em>jcf==0</em>. Realice la estimación del TOT y la inferencia, de manera análoga a lo realizado en la parte b.</p>
+<pre class="r"><code>sub.data &lt;- data.jcf %&gt;%
+  filter(transicion == 1) %&gt;%
+  dplyr::select(encontro, jcf, mujer, indigena, cve_ent, rural, escoacum, casadounion, jefehog, haymenores, proggob, tot_integ, factor.x)
+
+sub.data &lt;- sub.data[complete.cases(sub.data), ]
+
+m.out.b &lt;- matchit(formula = jcf ~ mujer + indigena + factor(cve_ent) + rural + escoacum + casadounion + jefehog + haymenores + proggob + tot_integ,
+                   method = &quot;nearest&quot;,
+                   ratio = 1,
+                   distance = &quot;glm&quot;,
+                   replace = FALSE, data = sub.data)</code></pre>
+<p><em>Estimamos el efecto del tratamiento:</em></p>
+<pre class="r"><code>tt2 &lt;- lm(encontro ~ jcf,
+      data = match.data(m.out.b))
+
+#Errores agrupados a nivel subclass
+coeftest(tt2,
+         vcov. = vcovCL,
+         cluster = ~subclass)</code></pre>
+<pre><code>## 
+## t test of coefficients:
+## 
+##             Estimate Std. Error t value  Pr(&gt;|t|)    
+## (Intercept) 0.209677   0.052334  4.0065 0.0001064 ***
+## jcf         0.274194   0.077169  3.5532 0.0005421 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p><em>Los individuos tratados tienen una probabilidad 27.4 puntos porcentuales mayor de encontrar un empleo.</em></p></li>
+<li><p>[5 puntos] Estime ahora el TOT en el ingreso trimestral, como en la parte b., pero usando un caliper de 0.1 y 3 vecinos a ser emparejados. ¿Cómo cambian sus resultados respecto a los de la parte b.?</p>
+<pre class="r"><code>sub.data &lt;- data.jcf %&gt;% 
+  dplyr::select(ingtot_tri, jcf2, mujer, indigena, cve_ent, rural, escoacum, 
+           casadounion, jefehog, haymenores, proggob, tot_integ, factor.x)
+
+sub.data &lt;- sub.data[complete.cases(sub.data), ] 
+
+m.out.c &lt;- matchit(formula=jcf2 ~ mujer + indigena + factor(cve_ent) + rural  + escoacum + casadounion + jefehog + haymenores + proggob + tot_integ,
+                 method = &quot;nearest&quot;,
+                 distance= &quot;glm&quot;,
+                 ratio = 3,
+                 caliper = 0.1,
+                 replace = FALSE,
+                 data = sub.data)</code></pre>
+<p><em>Estimamos el efecto del tratamiento:</em></p>
+<pre class="r"><code>tt3 &lt;- lm(ingtot_tri ~ jcf2,
+      data = match.data(m.out.c))
+
+#Errores agrupados a nivel subclass
+coeftest(tt3,
+         vcov. = vcovCL,
+         cluster = ~subclass)</code></pre>
+<pre><code>## 
+## t test of coefficients:
+## 
+##             Estimate Std. Error t value              Pr(&gt;|t|)    
+## (Intercept)  2305.15     436.78  5.2776          0.0000002151 ***
+## jcf2         7258.98     717.62 10.1154 &lt; 0.00000000000000022 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p><em>Se estima ahora un efecto de 7258 pesos, menor al efecto de 7830 pesos estimado en la parte b.</em></p></li>
+</ol>
+</div>
+<div id="pregunta-3" class="section level2">
+<h2>Pregunta 3</h2>
+<p>Suponga que se convierte en asesor de la instancia gubernamental encargada de la seguridad alimentaria. Al gobierno le interesa que la seguridad alimentaria de las familias productoras de maíz para autoconsumo no se vea afectada negativamente por la presencia de cierta plaga y dará una transferencia per cápita a todos los pequeños productores de maíz cuyos cultivos se considere están afectados por dicha plaga. Para determinar qué hogares reciben la transferencia se decide usar un índice de prevalencia de la plaga y se selecciona un umbral por arriba del cual está demostrado que los rendimientos del cultivo del maíz se ven seriamente afectados. Esta inspección se llevará a cabo por autoridades federales y el umbral es conocido solo por estas autoridades. Cuando se determine que la prevalencia está por encima del umbral, el monto del programa será transferido de manera inmediata, electrónicamente.</p>
+<ol style="list-style-type: lower-alpha">
+<li><p>[5 puntos] ¿Qué aspectos del programa permitirían emplear un diseño de regresión discontinua para evaluar la efectividad de este sobre la seguridad alimentaria y cómo mostraría su validez empíricamente?</p>
+<p><em>En este caso podemos usar el método de regresión discontinua por las siguientes razones:</em></p>
+<p><em>i. La variable de selección es continua.</em></p>
+<p><em>ii. Es estatus de tratamiento es una función determinística de la posición de la variable de selección respecto al umbral.</em></p>
+<p><em>iii. La probabilidad de recibir el tratamiento es discontinua en el umbral.</em></p>
+<p><em>iv. Los productores no pueden manipular la prevalencia de la plaga para posicionarse estratégicamente por encima del umbral.</em></p></li>
+<li><p>[5 puntos] ¿Cómo emplearía el diseño de este programa para evaluar su efectividad con un modelo de regresión discontinua nítida? Elabore una gráfica donde explique una situación en la que el programa muestra ser efectivo. Describa cómo usaría una regresión para hacer inferencia respecto a la efectividad del programa.</p>
+<p><em>La forma gráfica de inspeccionar la presencia de una regresión consiste en graficar la variable de resultados en función de la variable de asignación. En este caso, esperaríamos que las familias que están por encima del umbral tengan una diferencia notable en términos de seguridad alimentaria si la transferencia empleada se usa para comprar alimentos. No era estrictamente necesario simular un proceso para obtener una representación gráfica, pero aquí lo hice así. Quizás esto pueda ser de utilidad para futuras aplicaciones:</em></p>
+<pre class="r"><code>set.seed(1711)
+
+plaga &lt;- runif(1000, -1, 1)
+y &lt;- 3 + 2*plaga + 5*(plaga&gt;=0) + rnorm(1000, mean = 0, sd = 0.2)
+
+data.sharp &lt;- data.frame(y, plaga, c = 0)
+
+
+data.sharp %&gt;% 
+  ggplot() +
+  geom_point(aes(x=plaga, y=y), size=0.5, alpha=0.5) +
+  geom_abline(intercept = 3, slope = 2, linetype = &quot;dashed&quot;) +
+  geom_abline(intercept = 8, slope = 2, linetype = &quot;dashed&quot;) +
+  geom_vline(xintercept = 0)</code></pre>
+<p><img src="/tareas/tarea_3/tarea_3_respuestas_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p><em>Paramétricamente, la forma más sencilla de identificar el efecto de la discontinuidad es especificando una regresión como sigue:</em></p>
+<p><span class="math display">\[y_i=\alpha+\tau D_i+ \beta x_i+\varepsilon_i\]</span></p>
+<p><em>donde <span class="math inline">\(x_i\)</span> es la variable de selección y <span class="math inline">\(D_i\)</span> es una variable indicadora que toma el valor de uno cuando el índice de prevalencia de la plaga rebasa el umbral. Controlar por <span class="math inline">\(x_i\)</span> captura la relación que tiene la prevalencia de la plaga en la seguridad alimentaria, por ejemplo, vía los rendimientos. Se recomiendan al menos dos tipos de procedimientos más completos para comprobar la robustez de los efectos encontrados.</em></p>
+<p><em>El primero es incluir un polinomio lo suficientemente flexible de <span class="math inline">\(x_i\)</span>:</em> <span class="math display">\[y_i=\alpha+\tau D_i+ Bf(x_i)+\varepsilon_i\]</span></p>
+<p><em>El segundo consiste en permitir que la pendiente sea diferente antes y después de la discontinuidad:</em></p>
+<p><span class="math display">\[y_i=\alpha+\tau D_i+ +\beta_0(x_i-x_0)+\beta_1(x_i-x_0)D_i+\varepsilon_i\]</span></p>
+<p><em>Más aún, es posible combinar estas dos posibilidades para dar lugar a modelos más flexibles. Se espera que las conclusiones sean robustas al uso de modelos extremadamente complejos.</em></p></li>
+<li><p>[5 puntos] ¿Qué factores podrían invalidar el uso de este método para evaluar el programa?</p>
+<p><em>La principal preocupación es la posibilidad de manipulación de la prevalencia de la plaga para que la medición lo clasifique como receptor del programa. Podemos pensar en situaciones donde esto pudiera suceder con un individuo altamente sofisticado que pudiera manipular la presencia de la plaga de forma estratégica. Pensando que esto es costoso, el individuo estratégicamente debería seleccionar un punto justo por encima del umbral. Aunque difícil de suceder esta posibilidad podría investigarse empíricamente, por ejemplo, verificando que no haya “amontonamientos” justo por encima de la discontinuidad.</em></p>
+<p><em>Si existiera corrupción y muchos no elegibles recibieran la transferencia o si las familias no gastaran la transferencia en alimentos que mejoren su seguridad alimentaria el diseño también estaría comprometido.</em></p></li>
+<li><p>Suponga que otro de los asesores juzga como <em>demasiado paternalista</em> la transferencia y propone que, en su lugar, se otorgue un cupón válido para canjearse por bultos de un plaguicida. Asumiendo que en una encuesta posterior usted podría conocer la cantidad precisa de plaguicida aplicado, ¿cómo emplearía un diseño de regresión discontinua difusa para evaluar el efecto del uso del plaguicida sobre la seguridad alimentaria? En particular, describa:</p>
+<ol style="list-style-type: lower-roman">
+<li><p>[5 puntos] ¿Cómo estimaría la forma reducida? ¿Cuál es el coeficiente relevante y cuál es su interpretación?</p>
+<p><em>El problema puede ser visto entonces como un diseño de regresión discontinua difusa. La discontinuidad define la intensidad del tratamiento, en este caso dada por la cantidad de plaguicida efectivamente aplicado. La forma reducida se estima con una regresión de la variable de resultados sobre el instrumento. Al igual que cuando se estudió la interpretación del LATE, este coeficiente da la correlación entre la seguridad alimentaria y el estado del tratamiento, pero no toma en cuenta que la seguridad alimentaria también depende de la cantidad de plaguicida usado, una decisión endógena.</em><br />
+</p></li>
+<li><p>[5 puntos] ¿Cómo estimaría la primera y la segunda etapa? ¿Cuáles son los coeficientes relevantes y cuál es su interpretación?</p>
+<p><em>La primera etapa consiste en estimar la relación entre la variable endógena y el instrumento. En este caso, el instrumento es una variable indicadora que toma valor de 1 si la prevalencia de la plaga rebasa el umbral. La decisión endógena es la cantidad de plaguicida empleado. Se estima por una regresión de la variable endógena en función del instrumento.</em></p>
+<p><em>La segunda etapa consiste en estimar el efecto sobre la seguridad alimentaria de la cantidad plaguicida que predice el instrumento. Conceptualmente es como si se corriera una regresión de la variable de seguridad alimentaria en función de los valores ajustados en la primera etapa de la cantidad de plaguicida empleado. En la práctica, nunca se estiman dos regresiones separadas, sino que se usa la definición del estimador de mínimos cuadrados en dos etapas. El coeficiente es el efecto del uso de plaguicida en la seguridad alimentaria.</em></p></li>
+<li><p>[5 puntos] ¿Cuáles son los supuestos necesarios para estimar este modelo usando variables instrumentales?</p>
+<p><em>Los supuestos econométricos para la estimación del modelo de regresión discontinua difusa son los mismos que para cualquier otro problema de variables instrumentales: 1) Exclusión: el instrumento no pertenece a la ecuación estructural; y 2) Relevancia de la primera etapa: el instrumento está correlacionado con la variable endógena.</em></p></li>
+</ol></li>
+</ol>
+</div>
+<div id="pregunta-4" class="section level2">
+<h2>Pregunta 4</h2>
+<p><strong>Nota: por error escribí en la tarea que la intervención había ocurrido en Ecuador. Esto es incorrecto. De hecho, este ejercicio estuvo basado en una interevención realizada en Perú y reportada por Bernal, Carpio &amp; Klein (2017): <a href="https://www.sciencedirect.com/science/article/pii/S0047272717301299">The effects of access to health insurance: Evidence from a regression discontinuity design in Peru</a>.</strong></p>
+<p>Los datos del archivo <em>salud_ecuador.csv</em> contienen información de una encuesta en hogares realizada en Perú Un programa del gobierno otorgó un seguro de salud para cubrir a hogares de trabajadores informales y pobres, típicamente excluidos de los servicios de salud. Para ello, se uso un índice de ingreso (IFH), expresado en soles, para determinar la elegibilidad. Aquellos hogares con un IFH menor o igual a 55 soles son considerados pobres. Se desea estimar el efecto del programa en la probabilidad de recibir algún tipo de asistencia médica en un hospital o con un doctor, <strong>hospinter</strong>, y en el gasto en salud del hogar, <strong>gastosalud2</strong>.</p>
+<ol style="list-style-type: lower-alpha">
+<li><p>[5 puntos] Genere una gráfica donde muestre evidencia de una discontinuidad en la variable <strong>curative</strong>, que indica si el hogar efectivamente recibió algún tipo de atención médica, para aquellos hogares que recibieron los beneficios del programa. Debe usar solo a los trabajadores informales, <em>formal==0</em>, y cuyo consumo de agua y electricidad no es considerado alto, <em>high==0</em>.</p>
+<p><em>Construimos un indicador de elegibilidad:</em></p>
+<pre class="r"><code>salud &lt;- read_csv(&quot;salud_ecuador.csv&quot;) %&gt;% 
+  filter(formal==0) %&gt;% 
+  mutate(ifh_norm=ifh-corte,
+  abajo_corte=ifelse(ifh&lt;=corte, 1, 0))</code></pre>
+<p><em>Podemos usar rdplot para construir el gráfico, lo que nos permite seleccionar de manera óptima el número de ventanas en las que se construirá la proporción de personas que recibieron atención médica.</em></p>
+<pre class="r"><code>(rdplot(y = salud$curative,
+    x = salud$ifh_norm,
+    c=0,
+    p=1))</code></pre>
+<pre><code>## [1] &quot;Mass points detected in the running variable.&quot;</code></pre>
+<p><img src="/tareas/tarea_3/tarea_3_respuestas_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<pre><code>## Call: rdplot
+## 
+## Number of Obs.                 4161
+## Kernel                      Uniform
+## 
+## Number of Obs.                 1786            2375
+## Eff. Number of Obs.            1786            2375
+## Order poly. fit (p)               1               1
+## BW poly. fit (h)             52.680          45.000
+## Number of bins scale          1.000           1.000</code></pre></li>
+<li><p>[5 puntos] Estime la versión más básica de un modelo de regresión discontinua para el efecto del programa sobre <strong>hospinter</strong> y <strong>gastosalud2</strong>. Reporte el coeficiente estimado del efecto del tratamiento y su significancia estadística. Use una ventana de 20 soles en el IFH antes y después del corte de elegibilidad. Interprete sus resultados.</p>
+<pre class="r"><code>summary(lm(hospinter ~ ifh_norm + abajo_corte,
+       data=filter(salud, ifh_norm&gt;=-20 &amp; ifh_norm &lt;=20 &amp; high==0)))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = hospinter ~ ifh_norm + abajo_corte, data = filter(salud, 
+##     ifh_norm &gt;= -20 &amp; ifh_norm &lt;= 20 &amp; high == 0))
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.11584 -0.09100 -0.07349 -0.05720  0.95706 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)   
+## (Intercept) 0.040276   0.016013   2.515  0.01201 * 
+## ifh_norm    0.003336   0.001322   2.524  0.01172 * 
+## abajo_corte 0.075748   0.028665   2.643  0.00832 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.267 on 1377 degrees of freedom
+## Multiple R-squared:  0.005211,   Adjusted R-squared:  0.003767 
+## F-statistic: 3.607 on 2 and 1377 DF,  p-value: 0.02739</code></pre>
+<p><em>Con un modelo lineal y una dummy de elegibilidad, estimamos un efecto de 7.5 puntos porcentuales en la probabilidad de recibir algún tipo de asistencia médica.</em></p></li>
+<li><p>[5 puntos] Estime la misma especificaciones que en la parte b., pero ahora con una ventana de 10 soles en el IFH. Interprete sus resultados.</p>
+<p><em>Al restringir la ventana de análisis obtenemos un efecto estimado de 9.5 puntos porcentuales:</em></p>
+<pre class="r"><code>summary(lm(hospinter ~ ifh_norm + abajo_corte,
+       data=filter(salud, ifh_norm&gt;=-10 &amp; ifh_norm &lt;=10 &amp; high==0)))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = hospinter ~ ifh_norm + abajo_corte, data = filter(salud, 
+##     ifh_norm &gt;= -10 &amp; ifh_norm &lt;= 10 &amp; high == 0))
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.12475 -0.09155 -0.07533 -0.05196  0.96501 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)  
+## (Intercept) 0.030162   0.022211   1.358   0.1749  
+## ifh_norm    0.006042   0.003416   1.768   0.0774 .
+## abajo_corte 0.094920   0.039814   2.384   0.0174 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.2674 on 742 degrees of freedom
+## Multiple R-squared:  0.008117,   Adjusted R-squared:  0.005444 
+## F-statistic: 3.036 on 2 and 742 DF,  p-value: 0.04861</code></pre></li>
+<li><p>[5 puntos] Regrese a una ventana de 20 soles como en la parte b., pero ahora permita un coeficiente distinto para el IFH antes y después del corte, y un polinomio de orden 2 para la variable de asignación. Interprete sus resultados.</p>
+<p><em>Permitiendo pendientes distintas y con un polinomio cuadrático de la variable de asignación obtenemos un efecto estimado de 8.5 puntos porcentuales:</em></p>
+<pre class="r"><code>summary(lm(hospinter ~ ifh_norm*abajo_corte + I(ifh_norm^2)*abajo_corte,
+       data=filter(salud, ifh_norm&gt;=-20 &amp; ifh_norm &lt;=20 &amp; high==0)))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = hospinter ~ ifh_norm * abajo_corte + I(ifh_norm^2) * 
+##     abajo_corte, data = filter(salud, ifh_norm &gt;= -20 &amp; ifh_norm &lt;= 
+##     20 &amp; high == 0))
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.11937 -0.08966 -0.07383 -0.06220  0.96171 
+## 
+## Coefficients:
+##                              Estimate  Std. Error t value Pr(&gt;|t|)  
+## (Intercept)                0.03491180  0.03097606   1.127   0.2599  
+## ifh_norm                   0.00424052  0.00763589   0.555   0.5788  
+## abajo_corte                0.08473801  0.04341774   1.952   0.0512 .
+## I(ifh_norm^2)             -0.00002482  0.00038952  -0.064   0.9492  
+## ifh_norm:abajo_corte       0.00086895  0.01041891   0.083   0.9335  
+## abajo_corte:I(ifh_norm^2)  0.00013485  0.00052613   0.256   0.7978  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.2673 on 1374 degrees of freedom
+## Multiple R-squared:  0.005349,   Adjusted R-squared:  0.00173 
+## F-statistic: 1.478 on 5 and 1374 DF,  p-value: 0.194</code></pre>
+<p><em>Como nota, los autores estiman el siguinte modelo para obtener los resultados reportados en la tabla 1 del artículo de 7.76 puntos porcentuales. Ellos introducen una serie de controles, lo cual no es raro en los análisis de diseños con discontinuidades:</em></p>
+<pre class="r"><code>summary(lm(hospinter ~ ifh_norm + abajo_corte + ifh_norm*abajo_corte + mujer + edad + educ + mieperho + hhmujer + high*ifh_norm + high*abajo_corte ,
+       data=filter(salud, ifh_norm&gt;=-20 &amp; ifh_norm &lt;=20)))</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = hospinter ~ ifh_norm + abajo_corte + ifh_norm * 
+##     abajo_corte + mujer + edad + educ + mieperho + hhmujer + 
+##     high * ifh_norm + high * abajo_corte, data = filter(salud, 
+##     ifh_norm &gt;= -20 &amp; ifh_norm &lt;= 20))
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.19246 -0.09996 -0.06800 -0.03213  1.01593 
+## 
+## Coefficients:
+##                        Estimate Std. Error t value    Pr(&gt;|t|)    
+## (Intercept)          -0.0384750  0.0252462  -1.524     0.12762    
+## ifh_norm              0.0032150  0.0017490   1.838     0.06613 .  
+## abajo_corte           0.0776036  0.0280042   2.771     0.00562 ** 
+## mujer                 0.0593305  0.0100506   5.903 0.000000004 ***
+## edad                  0.0010654  0.0002408   4.424 0.000010044 ***
+## educ                  0.0001496  0.0011152   0.134     0.89332    
+## mieperho              0.0028616  0.0025268   1.133     0.25752    
+## hhmujer              -0.0050833  0.0116655  -0.436     0.66304    
+## high                  0.0237133  0.0232315   1.021     0.30747    
+## ifh_norm:abajo_corte -0.0002819  0.0021416  -0.132     0.89528    
+## ifh_norm:high        -0.0030204  0.0020495  -1.474     0.14067    
+## abajo_corte:high     -0.0558826  0.0391695  -1.427     0.15378    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.2603 on 2787 degrees of freedom
+## Multiple R-squared:  0.02363,    Adjusted R-squared:  0.01977 
+## F-statistic: 6.131 on 11 and 2787 DF,  p-value: 0.0000000005044</code></pre>
+<p><em>Podríamos usar rdrobust para estimar el efecto con la selección óptima del tamaño de ventana:</em></p>
+<pre class="r"><code>salud &lt;- salud %&gt;% 
+  filter(high==0)
+
+summary(rdrobust(y=salud$hospinter,
+                 x=salud$ifh,
+                 c=55,
+                 vce = &#39;hc3&#39;))</code></pre>
+<pre><code>## Sharp RD estimates using local polynomial regression.
+## 
+## Number of Obs.                 2131
+## BW type                       mserd
+## Kernel                   Triangular
+## VCE method                      HC3
+## 
+## Number of Obs.                 1397          734
+## Eff. Number of Obs.             499          435
+## Order est. (p)                    1            1
+## Order bias  (q)                   2            2
+## BW est. (h)                  12.658       12.658
+## BW bias (b)                  20.196       20.196
+## rho (h/b)                     0.627        0.627
+## Unique Obs.                     235          138
+## 
+## =============================================================================
+##         Method     Coef. Std. Err.         z     P&gt;|z|      [ 95% C.I. ]       
+## =============================================================================
+##   Conventional    -0.087     0.038    -2.324     0.020    [-0.161 , -0.014]    
+##         Robust         -         -    -1.990     0.047    [-0.178 , -0.001]    
+## =============================================================================</code></pre>
+<p><em>El efecto estimado es de 8.7 puntos porcentuales. La venta seleccionada de manera óptima es de 12.65 soles.</em></p></li>
+</ol>
+</div>
