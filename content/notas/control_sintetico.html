@@ -1,0 +1,89 @@
+---
+title: "Control sintético"
+summary: " "
+weight: 1
+type: book
+toc: false
+---
+
+
+
+<div id="estudios-de-evento" class="section level2">
+<h2>Estudios de evento</h2>
+<p>Los estudios de evento ocurren cuando una política o programa se lleva a cabo a nivel agregado y afecta a unas pocas (a veces una) unidades.</p>
+<p>Un ejemplo clásico es el estudio de Card (1990) sobre el efecto de la inmigración en los mercados laborales locales. Para ello, empleó datos sobre salarios y empleo en el área metropolitana de Miami y los comparó con el promedio de otras cuatro ciudades con proporciones similares de hispanos y negros, antes y después de la llegada de los <em>Marieles</em>. Para consturir su grupo de comparación, Card utilizó el promedio de las variables de salarios y empleo de Atlanta, Houston, Los Angeles y Tampa.</p>
+<p>Al comparar las tendencias en empleo y salarios con las de este conjunto de ciudades Card concluye que la llegada de inmigrantes no tuvo ningún efecto negativo. Tampoco encuentra evidencia de que la distribución de ingresos de los no cubanos se hubiera hecho más desigual, ni de que hubieran efectos concentrados en los grupos menos educados. Card concluye que Miami tuvo la capacidad para absorber el choque de oferta de trabajo sin efectos en el resto del empleo.</p>
+<p>Sin embargo, resulta natural preguntarnos cómo escogemos las unidades de comparación y si existe alguna manera de saber qué tan buenas son las unidades de comparación elegidas como contrafactual para reproducir lo que le hubiera pasado a la unidad tratada de no haber recibido el tratamiento.</p>
+</div>
+<div id="extensión-sistemática-de-los-estudios-de-evento" class="section level2">
+<h2>Extensión sistemática de los estudios de evento</h2>
+<p>El control sintético permite estudiar sistemáticamente estudios de eventos. En otras ciencias sociales los estudios de eventos regularmente se realizan mediante un análisis detallado de las condiciones institucionales, políticas e históricas de la unidad tratada.</p>
+<p>El control sintético nos permite seleccionar sistemáticamente las unidades de comparación. Con las características de las unidades no tratadas, el control sintético construye una unidad sintética que se emplea para compararla con la unidad tratada y medir el efecto del tratamiento. Es decir, el método consiste en construir una unidad sintética que representa a la unidad tratada como si no hubiera recibido el tratamiento</p>
+</div>
+<div id="el-modelo" class="section level2">
+<h2>El modelo</h2>
+<p>Consideremos <span class="math inline">\(J+1\)</span> unidades, siendo <span class="math inline">\({2,...,J+1}\)</span> las no tratadas, mientras que <span class="math inline">\(t=1,...,T\)</span> denota el tiempo. Asumimos que en <span class="math inline">\(T_0\)</span> ocurre una intervención que solo afecta a <span class="math inline">\(1\)</span>.</p>
+<p>Consideremos los resultados contrafactuales <span class="math inline">\(Y_{it}^I\)</span> para un individuo intervenido, mientras que <span class="math inline">\(Y_{it}^N\)</span> para uno no intervenido. Asumimos que antes de la intervención, ninguna unidad fue afectada, por lo que <span class="math inline">\(Y_{it}^N=Y_{it}^I \quad \forall i,t &lt; T_0\)</span>.</p>
+<p>Entonces, el efecto del tratamiento en es:</p>
+<p><span class="math display">\[\alpha_1=\left(\alpha_{1T_0+1},..., \alpha_{1T}\right)\]</span></p>
+<p>con <span class="math inline">\(t\geq T_0\)</span> y <span class="math inline">\(\alpha_{1t}=Y_{1t}^I-Y_{1t}^N\)</span></p>
+</div>
+<div id="proceso-generador-de-datos" class="section level2">
+<h2>Proceso generador de datos</h2>
+<p>Consideremos un modelo bastante general para la variable de interés (modelo de factores):</p>
+<p><span class="math display">\[Y_{it}^N=\delta_t+\theta_t Z_i + \lambda_t\mu_i+\varepsilon_{it}\]</span></p>
+<p>Aquí, <span class="math inline">\(Z_i\)</span> son variables no afectadas por la intervención, <span class="math inline">\(\theta_t\)</span> es un vector de parámetros (que varía en el tiempo), <span class="math inline">\(\delta_t\)</span> son factores comúnes desconocidos (efectos temporales en un modelo de panel), <span class="math inline">\(\mu_i\)</span> es un vector de factores no observados (<em>unknown loadings</em>) y <span class="math inline">\(\lambda_t\)</span> son factores comúnes no observables.</p>
+</div>
+<div id="control-sintético" class="section level2">
+<h2>Control sintético</h2>
+<p>Consideremos un vector de pesos <span class="math inline">\(W=\left(w_2,...,w_{J+1}\right)\)</span>, con <span class="math inline">\(w_j \geq 0 \quad \forall j\geq 2\)</span>. Los pesos están normalizados tales que <span class="math inline">\(w_2+\ldots+w_{J+1}=1\)</span>. Cada vector <span class="math inline">\(W\)</span> diferente representa un potencial control sintético, es decir, un promedio ponderado de las unidades no tratadas. Así, la variable de resultados para un control sintético (definido por <span class="math inline">\(W\)</span>) es:</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y_{Wt}^N&amp;=\sum_{j=2}^{J+1} w_j Y_{jt}= \\
+    &amp;=\delta_t+\theta_t \left(\sum_{j=2}^{J+1} w_j Z_j\right) + \lambda_t \left(\sum_{j=2}^{J+1} w_j \mu_j \right) + \left(\sum_{j=2}^{J+1} w_j\varepsilon_{jt} \right)
+\end{aligned}
+\]</span></p>
+<p>Calaramente, hay una infinidad de CS, pues hay una infinidad de maneras de asignar los pesos a las unidades no tratadas.</p>
+<p>Supongamos que existe una matriz <span class="math inline">\(W^*\)</span> tal que el control sintético replica la unidad tratada antes de la intervención. Esto es:</p>
+<p><span class="math display">\[\sum_{j=2}^{J+1} w^*_j Z_j=Z_1\]</span></p>
+<p>Entonces, control sintético replica la variable de resultados pre-intervención:</p>
+<p><span class="math display">\[\sum_{j=2}^{J+1} w^*_j Y_{jt}=Y_{1t} \quad \forall t\in{1,...,T_0}\]</span></p>
+<p>Abadie, Diamond y Hainmueller (2010) dan las condiciones bajo las que el sesgo del control sintético queda acotado. Una de estas condiciones es tener suficientes periodos pre intervención.</p>
+<p>Por tanto, el efecto del tratamiento puede estimarse como:</p>
+<p><span class="math display">\[\hat{\alpha}_{1t}=Y_{1t}-\sum_{j=2}^{J+1} w^*_j Y_{jt}=Y_{1t}-Y_{W^*t}\]</span>
+para <span class="math inline">\(t\in \{T_0+1,\ldots,T\}\)</span>.</p>
+</div>
+<div id="estimación" class="section level2">
+<h2>Estimación</h2>
+<p>Para la versión del control sintético aquí descrita, necesitamos datos de panel pre y post intervención para la variable dependiente, además de algunos puntos pre intervención para las variables <span class="math inline">\(Z\)</span>. Requerimos suficientes periodos pre intervención para asegurarnos que el control sintético replica bien a la unidad tratada antes de la intervención. Entonces, la estimación se resumen a cómo escogemos los pesos.</p>
+<p>Definamos <span class="math inline">\(X_1=(Z_1&#39;,\tilde{Y}_1^{K_1},\ldots,\tilde{Y}_1^{K_M})\)</span> el vector que colecciona las características de la unidad tratada preintervención. En el vector <span class="math inline">\(X_1\)</span> permitimos que haya <span class="math inline">\(M\)</span> combinaciones lineales de la variable de resultados pre-intervención. Por ejemplo, una combinación lineal de la variable de resultados pre-intervención es:</p>
+<p><span class="math display">\[\tilde{Y}_i^K=\sum_{s=1}^{T_0}k_sY_{is},\quad\quad K=(k_1,\ldots,k_{T_0})&#39;\]</span>
+es decir, podemos incluir el valor de la variable de resultados en algunos años pre intervención o el promedio de todos los años pre intervención. Definimos lo análogo, pero para las unidades no tratadas, como la matrix <span class="math inline">\(X_0\)</span>. Definimos <span class="math inline">\(X_1-X_0W\)</span> como una medida de discrepancia entre <span class="math inline">\(X_1\)</span> y <span class="math inline">\(X_0W\)</span>.</p>
+<p>Planteamos entonces una función objetivo para minimizar las discrepancias:</p>
+<p><span class="math display">\[\min_{W\in\mathcal{W}}(X_1-X_0W)V&#39;(X_1-X_0W)\]</span>
+donde <span class="math inline">\(V\)</span> es una matriz positiva definida.</p>
+<p>La solución a este problema de optimización es <span class="math inline">\(W^*(V)\)</span>, que depende de <span class="math inline">\(V\)</span>. <span class="math inline">\(V\)</span> es un vector de pesos que refleja la importancia relativa de las variables en <span class="math inline">\(X_1\)</span> y <span class="math inline">\(X_0\)</span>. Siguiendo a Abadie &amp; Gardeazabal (2003), podemos realizar un proceso que minimice la distancia entre el valor observado de la variable de resultados y el el contrafactual definido por <span class="math inline">\(W^*(V)\)</span>.</p>
+<p>Definamos <span class="math inline">\(\mathcal{Y_1}\)</span> como el vector de variables de resultados en la unidad tratada para los periodos pre intervención y <span class="math inline">\(\mathcal{Y_0}\)</span> a la matriz de las mismas variables para los no tratados. Entonces, podemos encontrar la <span class="math inline">\(V\)</span> óptima como</p>
+<p><span class="math display">\[V^*=\arg\min_{V\in\mathcal{V}}(\mathcal{Y}_1-\mathcal{Y}_0W^*(V))&#39;(\mathcal{Y}_1-\mathcal{Y}_0W^*(V))\]</span>
+Por lo tanto, los pesos para el control sintético estarán dados por <span class="math inline">\(W^*(V^*)\)</span>.</p>
+</div>
+<div id="inferencia" class="section level2">
+<h2>Inferencia</h2>
+<p>A diferencia de las técnicas basadas en regresión, aquí no tenemos errores estándar para hacer inferencia sobre si las diferencias son estadísticamente significativas. Por tanto, se propone hacer inferencia basada en placebos.</p>
+<p>Noten que para cada estado (incluyendo a los no tratados) podemos estimar su control sintético. Esto es una prueba placebo porque sabemos que para las unidades del grupo donador no ocurrió una intervención. Para cada placebo obtenemos una gráfica del efecto del tratamiento, aunque sabemos que este efecto debería ser cercano a cero.</p>
+<p>La inferencia estará basada en analizar qué tan común es ver efectos de la magnitud del encontrado con el control sintético para la unidad tratada.</p>
+</div>
+<div id="error-de-predicción-cuadrado-medio-mspe" class="section level2">
+<h2>Error de predicción cuadrado medio (MSPE)</h2>
+<p>Otra medida comúnmente usada es el MSPE, interpretado como una medida del ajuste del control sintético estimado. Definamos el promedio de las discrepancias cuadradas entre la unidad verdadera y su control sintético para la unidad <span class="math inline">\(j\)</span> como sigue:</p>
+<p><span class="math display">\[ratio_{j}^{MSPE}=\frac{MSPE_{post}}{MSPE_{pre}}\]</span></p>
+<p>Podemos construir dicho estadístico para cada una de las unidades, ordenarlos de menor a mayor y observar en dónde se ubica <span class="math inline">\(ratio_1^{MSPE}\)</span>. Esperaríamos que se encontrara en el 5% más grande de los ratio estimados.</p>
+</div>
+<div id="conclusión" class="section level2">
+<h2>Conclusión</h2>
+<p>La construcción del control sintético se basa en lo que dicen los datos (<em>data driven</em>) para la selección de las unidades que son usadas en la construcción del contrafactual y los pesos que se le asignan a dichas unidades. El investigador debe ser transparente al mostrar qué tan bueno es el control sintético que construye. Para construir el control sintético no se usan los datos post intervención por lo que, al menos en teoría, el investigador no debería seleccionar el control sintético guíado por las conclusiones que resultan.</p>
+</div>
+<div id="materiales-adicionales" class="section level2">
+<h2>Materiales adicionales</h2>
+<p>El texto de Abadie (2019), <a href="https://www.aeaweb.org/articles?id=10.1257/jel.20191450">Using synthetic controls: Feasibility, data requirements, and methodological aspects</a> provee una revisión detallada del estimador de control sintético, así como una guía para la implementación.</p>
+</div>
