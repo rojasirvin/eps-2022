@@ -125,9 +125,17 @@ La inferencia estará basada en analizar qué tan común es ver efectos de la ma
 
 Otra medida comúnmente usada es el MSPE, interpretado como una medida del ajuste del control sintético estimado. Definamos el promedio de las discrepancias cuadradas entre la unidad verdadera y su control sintético para la unidad $j$ como sigue:
 
-$$ratio_{j}^{MSPE}=\frac{MSPE_{post}}{MSPE_{pre}}$$
+$$ratio_{j}^{MSPE}=\frac{MSPE_{j, post}}{MSPE_{j, pre}}$$
 
 Podemos construir dicho estadístico para cada una de las unidades, ordenarlos de menor a mayor y observar en dónde se ubica $ratio_1^{MSPE}$. Esperaríamos que se encontrara en el 5% más grande de los ratio estimados.
+
+## Aplicación: la proposición 99 en California
+
+Usaremos el paquete *Synth* para reproducir los resultados principales del artículo clásico de XX.
+
+Script: [control_sintetico.R](/notas/control_sintetico.R)
+
+Datos: [california_panel.csv](/notas/california_panel.csv)
 
 ## Conclusión
 

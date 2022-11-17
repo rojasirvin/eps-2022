@@ -76,8 +76,14 @@ Por lo tanto, los pesos para el control sintético estarán dados por <span clas
 <div id="error-de-predicción-cuadrado-medio-mspe" class="section level2">
 <h2>Error de predicción cuadrado medio (MSPE)</h2>
 <p>Otra medida comúnmente usada es el MSPE, interpretado como una medida del ajuste del control sintético estimado. Definamos el promedio de las discrepancias cuadradas entre la unidad verdadera y su control sintético para la unidad <span class="math inline">\(j\)</span> como sigue:</p>
-<p><span class="math display">\[ratio_{j}^{MSPE}=\frac{MSPE_{post}}{MSPE_{pre}}\]</span></p>
+<p><span class="math display">\[ratio_{j}^{MSPE}=\frac{MSPE_{j, post}}{MSPE_{j, pre}}\]</span></p>
 <p>Podemos construir dicho estadístico para cada una de las unidades, ordenarlos de menor a mayor y observar en dónde se ubica <span class="math inline">\(ratio_1^{MSPE}\)</span>. Esperaríamos que se encontrara en el 5% más grande de los ratio estimados.</p>
+</div>
+<div id="aplicación-la-proposición-99-en-california" class="section level2">
+<h2>Aplicación: la proposición 99 en California</h2>
+<p>Usaremos el paquete <em>Synth</em> para reproducir los resultados principales del artículo clásico de XX.</p>
+<p>Script: <a href="/notas/control_sintetico.R">control_sintetico.R</a></p>
+<p>Datos: <a href="/notas/california_panel.csv">california_panel.csv</a></p>
 </div>
 <div id="conclusión" class="section level2">
 <h2>Conclusión</h2>
