@@ -131,7 +131,7 @@ Podemos construir dicho estadístico para cada una de las unidades, ordenarlos d
 
 ## Aplicación: la proposición 99 en California
 
-Usaremos el paquete *Synth* para reproducir los resultados principales del artículo clásico de XX.
+Usaremos el paquete *Synth* para reproducir los resultados principales del artículo clásico de Abadie, Diamond & Hainmueller (2010), [Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program](https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746).
 
 Script: [control_sintetico.R](/notas/control_sintetico.R)
 
