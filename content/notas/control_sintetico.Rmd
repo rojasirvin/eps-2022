@@ -141,6 +141,10 @@ Datos: [california_panel.csv](/notas/california_panel.csv)
 
 La construcción del control sintético se basa en lo que dicen los datos (*data driven*) para la selección de las unidades que son usadas en la construcción del contrafactual y los pesos que se le asignan a dichas unidades. El investigador debe ser transparente al mostrar qué tan bueno es el control sintético que construye. Para construir el control sintético no se usan los datos post intervención por lo que, al menos en teoría, el investigador no debería seleccionar el control sintético guíado por las conclusiones que resultan.
 
+Además, aquí puden encontrar una clase del mismo Alberto Abadie:
+
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/nKzNp-qpE-I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Materiales adicionales
 
