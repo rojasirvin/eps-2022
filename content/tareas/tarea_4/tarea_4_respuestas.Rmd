@@ -360,6 +360,9 @@ placebos %>%
       geom_histogram(binwidth  = 20)
     ```
 
-    *El País Vasco resulta tener la sexta razón de MSPE más grande. Mi interpretación es la siguiente: hay regiones que crecieron debido a cambios estructurales en su economía ocurridas en algún momento posterior a 1970. Cataluña debe ser un típico ejemplo. Entonces, el MSPE post 1970 está capturando las discrepancias entre el sintético que proyecta lo que hubiera pasado si no hubiera habido estos cambios y lo que efectivamente sucedió a estas regiones, que no tiene que ver con el terrorismo.*
+    *El País Vasco resulta tener la sexta razón de MSPE más grande. A continuación vemos un resumen de los datos usados para obtener el MSPE. Para que esta razón sea grande, puede ser que el numerador sea grande (es decir, que las diferencias post entre las series observadas y las sintéticas sean grandes), o que el denominador sea pequeño (es decir, que las diferencias pre sean pequeñas). La diferencia post del País Vasco es de hecho la segunda más grande, solo después de región 4, Asturias. Las otras regiones que tienen MSPE más altos que el País Vasco tienen diferencias post muy pequeñas, pero que se ven infladas por muy buenos ajustes pre. En general, la evidencia parece indicar que efectivamente el efecto sobre el País Vasco es atípico.*
     
-    *Recuerden que el placebo asume que nada pasa en el resto de las unidades. La lección que sacamos de esto es que tengamos cuidado con los placebos en el espacio cuando es posible que las unidades del grupo donador sufran cambios post intervención, no relacionados a la intervención.*
+    ```{r echo=T, eval=T, results=T, warning=F, cache=T}
+    mspe
+    ```
+
