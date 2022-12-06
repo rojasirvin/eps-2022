@@ -611,27 +611,28 @@ Asturias. Las otras regiones que tienen MSPE más altos que el País Vasco
 tienen diferencias post muy pequeñas, pero que se ven infladas por muy
 buenos ajustes pre. En general, la evidencia parece indicar que
 efectivamente el efecto sobre el País Vasco es atípico.</em></p>
-<pre class="r"><code>mspe</code></pre>
+<pre class="r"><code>mspe %&gt;% 
+  arrange(desc(ratio_mspe))</code></pre>
 <pre><code>## # A tibble: 17 × 5
 ##    region    post      pre ratio_mspe tipo          
 ##     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;         
-##  1      2 0.338   0.000748     452.   Otras regiones
-##  2      3 0.0614  0.00190       32.3  Otras regiones
-##  3      4 0.711   0.000628    1132.   Otras regiones
-##  4      5 4.09    0.152         26.9  Otras regiones
-##  5      6 0.0733  0.00725       10.1  Otras regiones
-##  6      7 0.0898  0.00144       62.2  Otras regiones
-##  7      8 0.00724 0.000933       7.75 Otras regiones
-##  8      9 0.165   0.00548       30.0  Otras regiones
-##  9     10 0.471   0.00848       55.5  Otras regiones
-## 10     11 0.138   0.00185       74.5  Otras regiones
-## 11     12 0.741   0.0790         9.37 Otras regiones
-## 12     13 0.0674  0.00181       37.3  Otras regiones
-## 13     14 0.674   0.593          1.14 Otras regiones
-## 14     15 0.175   0.00846       20.7  Otras regiones
-## 15     16 0.0861  0.000357     241.   Otras regiones
-## 16     17 0.493   0.00821       60.1  País Vasco    
-## 17     18 0.0395  0.000658      60.0  Otras regiones</code></pre></li>
+##  1      4 0.711   0.000628    1132.   Otras regiones
+##  2      2 0.338   0.000748     452.   Otras regiones
+##  3     16 0.0861  0.000357     241.   Otras regiones
+##  4     11 0.138   0.00185       74.5  Otras regiones
+##  5      7 0.0898  0.00144       62.2  Otras regiones
+##  6     17 0.493   0.00821       60.1  País Vasco    
+##  7     18 0.0395  0.000658      60.0  Otras regiones
+##  8     10 0.471   0.00848       55.5  Otras regiones
+##  9     13 0.0674  0.00181       37.3  Otras regiones
+## 10      3 0.0614  0.00190       32.3  Otras regiones
+## 11      9 0.165   0.00548       30.0  Otras regiones
+## 12      5 4.09    0.152         26.9  Otras regiones
+## 13     15 0.175   0.00846       20.7  Otras regiones
+## 14      6 0.0733  0.00725       10.1  Otras regiones
+## 15     12 0.741   0.0790         9.37 Otras regiones
+## 16      8 0.00724 0.000933       7.75 Otras regiones
+## 17     14 0.674   0.593          1.14 Otras regiones</code></pre></li>
 </ol>
 </div>
 

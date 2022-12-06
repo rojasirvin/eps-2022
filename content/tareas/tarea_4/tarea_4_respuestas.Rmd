@@ -363,6 +363,7 @@ placebos %>%
     *El País Vasco resulta tener la sexta razón de MSPE más grande. A continuación vemos un resumen de los datos usados para obtener el MSPE. Para que esta razón sea grande, puede ser que el numerador sea grande (es decir, que las diferencias post entre las series observadas y las sintéticas sean grandes), o que el denominador sea pequeño (es decir, que las diferencias pre sean pequeñas). La diferencia post del País Vasco es de hecho la segunda más grande, solo después de región 4, Asturias. Las otras regiones que tienen MSPE más altos que el País Vasco tienen diferencias post muy pequeñas, pero que se ven infladas por muy buenos ajustes pre. En general, la evidencia parece indicar que efectivamente el efecto sobre el País Vasco es atípico.*
     
     ```{r echo=T, eval=T, results=T, warning=F, cache=T}
-    mspe
+    mspe %>% 
+      arrange(desc(ratio_mspe))
     ```
 
